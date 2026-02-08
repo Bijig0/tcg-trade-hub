@@ -37,7 +37,7 @@ const MyListingsScreen = () => {
   const deleteListing = useDeleteListing();
 
   const handleCreatePress = () => {
-    router.push('/(tabs)/listings/create');
+    router.push('/(tabs)/(listings)/new');
   };
 
   const handleDeletePress = useCallback(
@@ -73,7 +73,7 @@ const MyListingsScreen = () => {
 
     return (
       <Pressable
-        onPress={() => router.push(`/(tabs)/feed/${item.id}`)}
+        onPress={() => router.push(`/(tabs)/(home)/listing/${item.id}`)}
         className="mx-4 mb-3 flex-row rounded-xl border border-border bg-card p-3 active:bg-accent"
       >
         <Image

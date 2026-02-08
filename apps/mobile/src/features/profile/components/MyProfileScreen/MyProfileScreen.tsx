@@ -104,13 +104,13 @@ const MyProfileScreen = () => {
 
       {/* Action buttons */}
       <View className="mt-6 gap-3 px-6">
-        <Button variant="outline" onPress={() => router.push('/(tabs)/profile/collection')}>
+        <Button variant="outline" onPress={() => router.push('/(tabs)/(profile)/collection')}>
           <Text className="text-base font-medium text-foreground">My Collection</Text>
         </Button>
-        <Button variant="outline" onPress={() => router.push('/(tabs)/profile/edit')}>
+        <Button variant="outline" onPress={() => router.push('/(tabs)/(profile)/edit')}>
           <Text className="text-base font-medium text-foreground">Edit Profile</Text>
         </Button>
-        <Button variant="outline" onPress={() => router.push('/(tabs)/profile/settings')}>
+        <Button variant="outline" onPress={() => router.push('/(tabs)/(profile)/settings')}>
           <Text className="text-base font-medium text-foreground">Settings</Text>
         </Button>
       </View>

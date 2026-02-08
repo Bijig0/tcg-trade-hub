@@ -244,7 +244,7 @@ const SettingsScreen = () => {
 
         <View className="gap-3">
           <Pressable
-            onPress={() => router.push('/(tabs)/profile/blocked-users')}
+            onPress={() => router.push('/(tabs)/(profile)/blocked-users')}
             className="rounded-lg border border-border bg-card p-3 active:bg-accent"
           >
             <Text className="text-sm text-foreground">Blocked Users</Text>

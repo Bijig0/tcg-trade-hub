@@ -190,7 +190,7 @@ const ListingDetailScreen = () => {
             <Text className="mb-3 text-sm font-medium text-muted-foreground">Listed by</Text>
 
             <Pressable
-              onPress={() => router.push(`/(tabs)/profile/${listing.user_id}`)}
+              onPress={() => router.push(`/(tabs)/(home)/user/${listing.user_id}`)}
               className="flex-row items-center gap-3"
             >
               <Avatar

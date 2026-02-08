@@ -38,7 +38,7 @@ const ListingCard = ({ listing, className }: ListingCardProps) => {
   const typeConfig = LISTING_TYPE_CONFIG[listing.type];
 
   const handlePress = () => {
-    router.push(`/(tabs)/feed/${listing.id}`);
+    router.push(`/(tabs)/(home)/listing/${listing.id}`);
   };
 
   return (

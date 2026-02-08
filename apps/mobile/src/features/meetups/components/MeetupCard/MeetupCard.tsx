@@ -47,7 +47,7 @@ const MeetupCard = ({ meetup, className }: MeetupCardProps) => {
   const locationName = shop?.name ?? meetup.location_name ?? 'Location TBD';
 
   const handlePress = () => {
-    router.push(`/(tabs)/meetups/${meetup.id}`);
+    router.push(`/(tabs)/(meetups)/${meetup.id}`);
   };
 
   if (!statusConfig) return null;

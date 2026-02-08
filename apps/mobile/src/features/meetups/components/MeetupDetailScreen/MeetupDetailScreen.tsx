@@ -95,7 +95,7 @@ const MeetupDetailScreen = () => {
 
   const handleOpenChat = () => {
     if (meetup.conversation) {
-      router.push(`/(tabs)/messages/${meetup.conversation.id}`);
+      router.push(`/(tabs)/(messages)/chat/${meetup.conversation.id}`);
     }
   };
 

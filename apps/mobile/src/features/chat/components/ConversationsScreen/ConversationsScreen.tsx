@@ -84,7 +84,7 @@ const ConversationsScreen = () => {
   const { data: conversations, isLoading, refetch } = useConversations();
 
   const handlePress = (conversationId: string) => {
-    router.push(`/(tabs)/chat/${conversationId}`);
+    router.push(`/(tabs)/(messages)/chat/${conversationId}`);
   };
 
   if (isLoading) {
