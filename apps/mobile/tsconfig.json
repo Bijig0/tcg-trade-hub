@@ -8,9 +8,19 @@
     "noFallthroughCasesInSwitch": true,
     "exactOptionalPropertyTypes": false,
     "paths": {
-      "@/*": ["./src/*"],
-      "@tcg-trade-hub/database": ["../../packages/database/src"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@tcg-trade-hub/database": [
+        "../../packages/database/src"
+      ]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
+  ]
 }
