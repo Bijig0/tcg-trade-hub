@@ -7,7 +7,6 @@ import {
   TextInput,
   Pressable,
   Image,
-  FlatList,
   Switch,
 } from 'react-native';
 import { X, Search, Plus } from 'lucide-react-native';
@@ -17,7 +16,7 @@ import { useAuth } from '@/context/AuthProvider';
 import Button from '@/components/ui/Button/Button';
 import Input from '@/components/ui/Input/Input';
 import useSendMessage from '@/features/chat/hooks/useSendMessage/useSendMessage';
-import type { CardRef, CardOfferPayload } from '@tcg-trade-hub/database';
+import type { CardRef, CardOfferPayload, Json } from '@tcg-trade-hub/database';
 
 export type OfferModalProps = {
   visible: boolean;
@@ -204,7 +203,7 @@ const OfferModal = ({
         conversationId,
         type: 'card_offer',
         body: 'Sent a trade offer',
-        payload: payload as unknown as Record<string, unknown>,
+        payload: payload as unknown as Json,
       },
       {
         onSuccess: handleClose,

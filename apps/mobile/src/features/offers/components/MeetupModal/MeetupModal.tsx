@@ -13,17 +13,13 @@ import { supabase } from '@/lib/supabase';
 import Button from '@/components/ui/Button/Button';
 import Input from '@/components/ui/Input/Input';
 import useSendMessage from '@/features/chat/hooks/useSendMessage/useSendMessage';
-import type { ShopRow, MeetupProposalPayload } from '@tcg-trade-hub/database';
+import type { ShopRow, MeetupProposalPayload, Json } from '@tcg-trade-hub/database';
 
 export type MeetupModalProps = {
   visible: boolean;
   onClose: () => void;
   conversationId: string;
 };
-
-type LocationOption =
-  | { type: 'shop'; shop: ShopRow }
-  | { type: 'custom' };
 
 /** Modal for creating a meetup proposal with location selection, date/time pickers, and a note */
 const MeetupModal = ({
@@ -111,7 +107,7 @@ const MeetupModal = ({
         conversationId,
         type: 'meetup_proposal',
         body: 'Proposed a meetup',
-        payload: payload as unknown as Record<string, unknown>,
+        payload: payload as unknown as Json,
       },
       {
         onSuccess: handleClose,
