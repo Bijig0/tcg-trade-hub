@@ -1,4 +1,4 @@
-import type { TcgType, CardCondition } from '@tcg-trade-hub/database';
+import type { CardCondition } from '@tcg-trade-hub/database';
 
 type CsvRow = {
   name: string;

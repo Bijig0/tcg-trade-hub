@@ -3,7 +3,6 @@ import { View, Text, Image, Pressable, FlatList, Alert, type ListRenderItemInfo 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Plus, Trash2, Clock } from 'lucide-react-native';
-import { cn } from '@/lib/cn';
 import Badge from '@/components/ui/Badge/Badge';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
