@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, FlatList, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthProvider';
 import Avatar from '@/components/ui/Avatar/Avatar';
@@ -23,9 +24,9 @@ const MyProfileScreen = () => {
 
   if (!profile) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['top']}>
         <ActivityIndicator size="large" />
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -61,7 +62,8 @@ const MyProfileScreen = () => {
   );
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerClassName="pb-8">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <ScrollView className="flex-1" contentContainerClassName="pb-8">
       {/* Profile header */}
       <View className="items-center px-6 pt-8">
         <Avatar uri={profile.avatar_url} fallback={initials} size="lg" className="h-20 w-20" />
@@ -139,6 +141,7 @@ const MyProfileScreen = () => {
         )}
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, SectionList, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
 import useMeetups, { type MeetupWithDetails } from '../../hooks/useMeetups/useMeetups';
 import MeetupCard from '../MeetupCard/MeetupCard';
@@ -18,19 +19,19 @@ const MeetupsScreen = () => {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['top']}>
         <ActivityIndicator size="large" />
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (isError) {
     return (
-      <View className="flex-1 items-center justify-center bg-background px-6">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-6" edges={['top']}>
         <Text className="text-center text-base text-destructive">
           Failed to load meetups. Pull to retry.
         </Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -39,13 +40,13 @@ const MeetupsScreen = () => {
 
   if (upcoming.length === 0 && past.length === 0) {
     return (
-      <View className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
         <EmptyState
           icon={<Text className="text-5xl">🤝</Text>}
           title="No meetups yet"
           description="Match and chat with traders to plan meetups!"
         />
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -72,7 +73,7 @@ const MeetupsScreen = () => {
   const keyExtractor = (item: MeetupWithDetails) => item.id;
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <SectionList
         sections={sections}
         keyExtractor={keyExtractor}
@@ -83,7 +84,7 @@ const MeetupsScreen = () => {
         contentContainerClassName="pb-8"
         stickySectionHeadersEnabled={false}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

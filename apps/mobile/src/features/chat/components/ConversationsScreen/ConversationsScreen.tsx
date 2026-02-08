@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, FlatList, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MessageSquare } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
@@ -88,7 +89,7 @@ const ConversationsScreen = () => {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
         {Array.from({ length: 5 }).map((_, i) => (
           <View key={i} className="flex-row items-center gap-3 px-4 py-3">
             <Skeleton className="h-14 w-14 rounded-full" />
@@ -98,12 +99,12 @@ const ConversationsScreen = () => {
             </View>
           </View>
         ))}
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <FlatList
         data={conversations}
         keyExtractor={(item) => item.conversationId}
@@ -128,7 +129,7 @@ const ConversationsScreen = () => {
         onRefresh={refetch}
         refreshing={isLoading}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
