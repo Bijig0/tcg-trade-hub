@@ -3,7 +3,7 @@ import { View, Text, Image, ScrollView, Pressable, Dimensions, ActivityIndicator
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Star, Heart, User } from 'lucide-react-native';
-import { cn } from '@/lib/cn';
+
 import Badge from '@/components/ui/Badge/Badge';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Button from '@/components/ui/Button/Button';

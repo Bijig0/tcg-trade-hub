@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Image, Dimensions, ScrollView, Pressable } from 'react-native';
+import { View, Text, Image, Dimensions, ScrollView } from 'react-native';
 import { cn } from '@/lib/cn';
 import Badge from '@/components/ui/Badge/Badge';
 import type { ListingWithDistance } from '../../schemas';

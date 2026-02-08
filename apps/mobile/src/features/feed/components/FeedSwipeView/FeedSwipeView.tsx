@@ -39,7 +39,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
   const recordSwipe = useRecordSwipe();
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [matchData, setMatchData] = useState<MatchRow | null>(null);
+  const [, setMatchData] = useState<MatchRow | null>(null);
   const [showMatch, setShowMatch] = useState(false);
 
   const translateX = useSharedValue(0);

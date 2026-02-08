@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, Pressable, Image, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import useMyCollection from '../../hooks/useMyCollection/useMyCollection';

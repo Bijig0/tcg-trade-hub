@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { List, Layers } from 'lucide-react-native';
-import { cn } from '@/lib/cn';
+
 import { useFeedStore } from '@/stores/feedStore/feedStore';
 import FilterBar from '../FilterBar/FilterBar';
 import FeedListView from '../FeedListView/FeedListView';

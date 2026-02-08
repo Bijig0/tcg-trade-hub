@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, Pressable } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/context/AuthProvider';
 import Card, {

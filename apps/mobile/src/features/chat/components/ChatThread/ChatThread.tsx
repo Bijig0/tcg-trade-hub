@@ -45,7 +45,7 @@ export type ChatThreadProps = {
 /** Full chat screen with message list, input bar, and toolbar */
 const ChatThread = ({
   conversationId,
-  matchId,
+  matchId: _matchId,
   otherUser,
   onOpenOfferModal,
   onOpenMeetupModal,

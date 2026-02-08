@@ -20,7 +20,7 @@ const WEIGHTS = {
 const RECENCY_DECAY_DAYS = 7;
 const EARTH_RADIUS_KM = 6371;
 
-const haversineDistance = (a: Point, b: Point): number => {
+const _haversineDistance = (a: Point, b: Point): number => {
   const toRad = (deg: number) => (deg * Math.PI) / 180;
   const dLat = toRad(b.latitude - a.latitude);
   const dLon = toRad(b.longitude - a.longitude);
@@ -77,7 +77,7 @@ const computeRecencyScore = (createdAt: string): number => {
 const rankListings = (
   listings: ListingRow[],
   userListings: ListingRow[],
-  userLocation: Point,
+  _userLocation: Point,
   maxRadiusKm = 25,
 ): RankedListing[] => {
   const ranked = listings.map((listing) => {

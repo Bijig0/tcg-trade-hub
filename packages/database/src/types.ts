@@ -54,6 +54,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       collection_items: {
         Row: {
@@ -104,6 +105,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       listings: {
         Row: {
@@ -166,6 +168,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       swipes: {
         Row: {
@@ -189,6 +192,7 @@ export type Database = {
           direction?: SwipeDirection;
           created_at?: string;
         };
+        Relationships: [];
       };
       matches: {
         Row: {
@@ -221,6 +225,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       conversations: {
         Row: {
@@ -241,6 +246,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       messages: {
         Row: {
@@ -270,6 +276,7 @@ export type Database = {
           payload?: Json | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       meetups: {
         Row: {
@@ -314,6 +321,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       shops: {
         Row: {
@@ -355,6 +363,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       ratings: {
         Row: {
@@ -384,6 +393,7 @@ export type Database = {
           comment?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       blocks: {
         Row: {
@@ -404,6 +414,7 @@ export type Database = {
           blocked_id?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
       reports: {
         Row: {
@@ -439,7 +450,14 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
     };
     Enums: {
       tcg_type: TcgType;
@@ -452,6 +470,9 @@ export type Database = {
       meetup_status: MeetupStatus;
       report_category: ReportCategory;
       report_status: ReportStatus;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 };
