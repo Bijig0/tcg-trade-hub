@@ -63,7 +63,7 @@ const MyProfileScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-    <ScrollView className="flex-1" contentContainerClassName="pb-8">
+      <ScrollView className="flex-1" contentContainerClassName="pb-8">
       {/* Profile header */}
       <View className="items-center px-6 pt-8">
         <Avatar uri={profile.avatar_url} fallback={initials} size="lg" className="h-20 w-20" />
@@ -140,7 +140,7 @@ const MyProfileScreen = () => {
           />
         )}
       </View>
-    </ScrollView>
+      </ScrollView>
     </SafeAreaView>
   );
 };
