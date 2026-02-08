@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+// @ts-expect-error expo-notifications not installed yet
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { supabase } from '@/lib/supabase';
