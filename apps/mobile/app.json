@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "TCG Trade Hub",
+    "slug": "tcg-trade-hub",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#09090b"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.tcgtradehub.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "TCG Trade Hub needs your location to find nearby card shops and traders.",
+        "NSCameraUsageDescription": "TCG Trade Hub needs camera access to photograph your cards.",
+        "NSPhotoLibraryUsageDescription": "TCG Trade Hub needs photo library access to upload card photos."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#09090b"
+      },
+      "package": "com.tcgtradehub.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA"
+      ]
+    },
+    "scheme": "tcg-trade-hub",
+    "plugins": [
+      "expo-router",
+      "expo-location",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "TCG Trade Hub needs photo access to upload card photos.",
+          "cameraPermission": "TCG Trade Hub needs camera access to photograph your cards."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

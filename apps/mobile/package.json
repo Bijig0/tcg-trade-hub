@@ -1,0 +1,53 @@
+{
+  "name": "@tcg-trade-hub/mobile",
+  "version": "1.0.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start",
+    "build": "expo export",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf .expo dist node_modules"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.1.0",
+    "@supabase/supabase-js": "^2.47.0",
+    "@tanstack/react-query": "^5.62.0",
+    "expo": "~52.0.0",
+    "expo-auth-session": "~6.0.0",
+    "expo-constants": "~17.0.0",
+    "expo-document-picker": "~13.0.0",
+    "expo-image-picker": "~16.0.0",
+    "expo-linking": "~7.0.0",
+    "expo-location": "~18.0.0",
+    "expo-router": "~4.0.0",
+    "expo-status-bar": "~2.0.0",
+    "expo-web-browser": "~14.0.0",
+    "immer": "^10.1.1",
+    "nativewind": "^4.1.23",
+    "react": "18.3.1",
+    "react-native": "0.76.5",
+    "react-native-gesture-handler": "~2.20.0",
+    "react-native-maps": "1.18.0",
+    "react-native-reanimated": "~3.16.0",
+    "react-native-safe-area-context": "4.14.0",
+    "react-native-screens": "~4.4.0",
+    "react-native-svg": "15.8.0",
+    "zod": "^3.24.0",
+    "zustand": "^5.0.0",
+    "lucide-react-native": "^0.468.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.6.0",
+    "@tcg-trade-hub/database": "workspace:*"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@testing-library/react-native": "^12.9.0",
+    "@types/react": "~18.3.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}

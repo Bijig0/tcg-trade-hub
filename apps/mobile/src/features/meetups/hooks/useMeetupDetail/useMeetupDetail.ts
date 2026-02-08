@@ -1,0 +1,96 @@
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthProvider';
+import { meetupKeys } from '../../queryKeys';
+import type {
+  MeetupRow,
+  ShopRow,
+  UserRow,
+  MatchRow,
+  ConversationRow,
+} from '@tcg-trade-hub/database';
+
+export type MeetupDetail = MeetupRow & {
+  match: MatchRow;
+  shop: ShopRow | null;
+  other_user: Pick<
+    UserRow,
+    'id' | 'display_name' | 'avatar_url' | 'rating_score' | 'total_trades'
+  >;
+  conversation: Pick<ConversationRow, 'id'> | null;
+  is_user_a: boolean;
+};
+
+/**
+ * Hook that fetches a single meetup by ID with all joined data.
+ *
+ * Resolves the match, both users, the shop location, and the related
+ * conversation for the match.
+ */
+const useMeetupDetail = (meetupId: string) => {
+  const { user } = useAuth();
+
+  return useQuery<MeetupDetail, Error>({
+    queryKey: meetupKeys.detail(meetupId),
+    queryFn: async () => {
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: meetup, error } = await supabase
+        .from('meetups')
+        .select(
+          `
+          *,
+          match:matches!match_id (
+            *
+          ),
+          shop:shops!shop_id (
+            *
+          )
+        `,
+        )
+        .eq('id', meetupId)
+        .single();
+
+      if (error) throw error;
+      if (!meetup) throw new Error('Meetup not found');
+
+      const match = (meetup as Record<string, unknown>).match as MatchRow;
+      const isUserA = match.user_a_id === user.id;
+      const otherUserId = isUserA ? match.user_b_id : match.user_a_id;
+
+      // Fetch other user's profile
+      const { data: otherUser, error: userError } = await supabase
+        .from('users')
+        .select('id, display_name, avatar_url, rating_score, total_trades')
+        .eq('id', otherUserId)
+        .single();
+
+      if (userError) throw userError;
+
+      // Fetch the conversation for this match
+      const { data: conversation } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('match_id', match.id)
+        .single();
+
+      return {
+        ...(meetup as unknown as MeetupRow),
+        match,
+        shop: (meetup as Record<string, unknown>).shop as ShopRow | null,
+        other_user: otherUser ?? {
+          id: otherUserId,
+          display_name: 'Unknown',
+          avatar_url: null,
+          rating_score: 0,
+          total_trades: 0,
+        },
+        conversation: conversation ?? null,
+        is_user_a: isUserA,
+      };
+    },
+    enabled: !!meetupId && !!user,
+  });
+};
+
+export default useMeetupDetail;
