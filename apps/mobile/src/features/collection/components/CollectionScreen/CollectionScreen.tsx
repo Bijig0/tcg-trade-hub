@@ -99,9 +99,7 @@ const CollectionScreen: React.FC = () => {
           {item.set_name}
         </Text>
         <View className="mt-1 flex-row gap-2">
-          <Badge variant="secondary">
-            <Text className="text-xs">{CONDITION_LABELS[item.condition]}</Text>
-          </Badge>
+          <Badge variant="secondary">{CONDITION_LABELS[item.condition]}</Badge>
           <Text className="text-xs text-muted-foreground">x{item.quantity}</Text>
         </View>
       </View>
