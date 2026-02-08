@@ -28,8 +28,7 @@ const useUpdateProfile = () => {
 
       const { data, error } = await supabase
         .from('users')
-        .update(params)
-        .eq('id', user.id)
+        .upsert({ id: user.id, email: user.email!, display_name: user.email!.split('@')[0], ...params })
         .select()
         .single();
 

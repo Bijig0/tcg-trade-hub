@@ -25,7 +25,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
       .from('users')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
     setProfile(data);
   };
 

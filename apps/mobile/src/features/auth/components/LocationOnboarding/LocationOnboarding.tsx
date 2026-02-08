@@ -76,8 +76,7 @@ const LocationOnboarding = () => {
 
       const { error } = await supabase
         .from('users')
-        .update(updatePayload)
-        .eq('id', user.id);
+        .upsert({ id: user.id, email: user.email!, display_name: user.email!.split('@')[0], ...updatePayload });
 
       if (error) throw error;
 
