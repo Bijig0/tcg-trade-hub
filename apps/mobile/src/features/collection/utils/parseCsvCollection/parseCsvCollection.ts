@@ -1,13 +1,5 @@
 import type { CardCondition } from '@tcg-trade-hub/database';
 
-type CsvRow = {
-  name: string;
-  set?: string;
-  number?: string;
-  condition?: string;
-  quantity: number;
-};
-
 type ParsedCollectionItem = {
   card_name: string;
   set_name: string;

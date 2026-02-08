@@ -50,6 +50,8 @@ const MeetupCard = ({ meetup, className }: MeetupCardProps) => {
     router.push(`/(tabs)/meetups/${meetup.id}`);
   };
 
+  if (!statusConfig) return null;
+
   return (
     <Pressable
       onPress={handlePress}
