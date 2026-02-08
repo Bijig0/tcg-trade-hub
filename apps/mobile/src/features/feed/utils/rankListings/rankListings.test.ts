@@ -37,8 +37,8 @@ describe('rankListings', () => {
     ];
 
     const result = rankListings(listings, userListings, userLocation);
-    expect(result[0].listing.id).toBe('l2');
-    expect(result[0].score).toBeGreaterThan(result[1].score);
+    expect(result[0]!.listing.id).toBe('l2');
+    expect(result[0]!.score).toBeGreaterThan(result[1]!.score);
   });
 
   it('should score TCG matches higher than non-matching TCGs', () => {
@@ -51,7 +51,7 @@ describe('rankListings', () => {
     ];
 
     const result = rankListings(listings, userListings, userLocation);
-    expect(result[0].listing.id).toBe('l2');
+    expect(result[0]!.listing.id).toBe('l2');
   });
 
   it('should rank newer listings higher', () => {
@@ -68,7 +68,7 @@ describe('rankListings', () => {
     ];
 
     const result = rankListings(listings, [], userLocation);
-    expect(result[0].listing.id).toBe('new');
+    expect(result[0]!.listing.id).toBe('new');
   });
 
   it('should return empty array for empty input', () => {

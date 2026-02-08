@@ -15,12 +15,11 @@ import type { CollectionItemRow, TcgType } from '@tcg-trade-hub/database';
 type FilterTcg = TcgType | 'all';
 
 const CollectionScreen: React.FC = () => {
-  const router = useRouter();
-  const { data: items, isLoading } = useMyCollection();
+  const { data: items } = useMyCollection();
   const removeItem = useRemoveCollectionItem();
   const addItem = useAddCollectionItem();
   const [filterTcg, setFilterTcg] = useState<FilterTcg>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery] = useState('');
 
   const filteredItems = (items ?? []).filter((item) => {
     if (filterTcg !== 'all' && item.tcg !== filterTcg) return false;
