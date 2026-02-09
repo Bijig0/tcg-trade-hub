@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
 import type { TcgType, NormalizedCard } from '@tcg-trade-hub/database';
+import { cardDataService } from '@/services/cardData';
 
 type UseCardSearchOptions = {
   tcg: TcgType | null;
@@ -8,7 +8,7 @@ type UseCardSearchOptions = {
 };
 
 /**
- * Hook that searches for cards using the `card-search` edge function.
+ * Hook that searches for cards via the card data service adapter.
  *
  * Only fires when query is 2+ characters long. Returns NormalizedCard[].
  * Intended to be used with a debounced input value.
@@ -18,21 +18,9 @@ const useCardSearch = ({ tcg, query }: UseCardSearchOptions) => {
 
   return useQuery<NormalizedCard[], Error>({
     queryKey: ['card-search', tcg, query],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke<{ cards: NormalizedCard[] }>(
-        'card-search',
-        {
-          body: { tcg, query },
-        },
-      );
-
-      if (error) throw error;
-      if (!data) return [];
-
-      return data.cards;
-    },
+    queryFn: () => cardDataService.searchCards(query, tcg!),
     enabled,
-    staleTime: 1000 * 60 * 10, // Cache card searches for 10 minutes
+    staleTime: 1000 * 60 * 10,
   });
 };
 

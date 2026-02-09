@@ -1,4 +1,4 @@
-import type { CardCondition } from '@tcg-trade-hub/database';
+import type { CardCondition, GradingCompany } from '@tcg-trade-hub/database';
 
 type ParsedCollectionItem = {
   card_name: string;
@@ -6,6 +6,9 @@ type ParsedCollectionItem = {
   card_number: string;
   condition: CardCondition;
   quantity: number;
+  grading_company: GradingCompany | null;
+  grading_score: string | null;
+  purchase_price: number | null;
 };
 
 const CONDITION_MAP: Record<string, CardCondition> = {
@@ -21,9 +24,17 @@ const CONDITION_MAP: Record<string, CardCondition> = {
   'dmg': 'dmg',
 };
 
+const GRADING_MAP: Record<string, GradingCompany> = {
+  'psa': 'psa',
+  'cgc': 'cgc',
+  'bgs': 'bgs',
+  'beckett': 'bgs',
+};
+
 /**
  * Parses a CSV string into collection items.
- * Supports common CSV formats from TCGPlayer and Moxfield exports.
+ * Supports common CSV formats from TCGPlayer and Moxfield exports,
+ * plus grading and purchase price columns.
  */
 const parseCsvCollection = (csvText: string): ParsedCollectionItem[] => {
   const lines = csvText.trim().split('\n');
@@ -37,6 +48,9 @@ const parseCsvCollection = (csvText: string): ParsedCollectionItem[] => {
   const numberIdx = headers.findIndex((h) => h === 'number' || h === 'card number' || h === 'collector number');
   const condIdx = headers.findIndex((h) => h === 'condition' || h === 'cond');
   const qtyIdx = headers.findIndex((h) => h === 'quantity' || h === 'qty' || h === 'count');
+  const gradingIdx = headers.findIndex((h) => h === 'grading_company' || h === 'grading' || h === 'grader');
+  const gradeIdx = headers.findIndex((h) => h === 'grading_score' || h === 'grade' || h === 'score');
+  const priceIdx = headers.findIndex((h) => h === 'price' || h === 'purchase_price' || h === 'cost');
 
   if (nameIdx === -1) return [];
 
@@ -56,12 +70,24 @@ const parseCsvCollection = (csvText: string): ParsedCollectionItem[] => {
     const rawQty = qtyIdx >= 0 ? cols[qtyIdx] : '1';
     const quantity = Math.max(1, parseInt(rawQty ?? '1', 10) || 1);
 
+    const rawGrading = gradingIdx >= 0 ? cols[gradingIdx]?.toLowerCase() ?? '' : '';
+    const grading_company = GRADING_MAP[rawGrading] ?? null;
+
+    const grading_score = gradeIdx >= 0 && cols[gradeIdx] ? cols[gradeIdx]! : null;
+
+    const rawPrice = priceIdx >= 0 ? cols[priceIdx] : '';
+    const parsedPrice = rawPrice ? parseFloat(rawPrice) : NaN;
+    const purchase_price = !isNaN(parsedPrice) ? parsedPrice : null;
+
     items.push({
       card_name: name,
       set_name: setIdx >= 0 ? cols[setIdx] ?? '' : '',
       card_number: numberIdx >= 0 ? cols[numberIdx] ?? '' : '',
       condition,
       quantity,
+      grading_company,
+      grading_score,
+      purchase_price,
     });
   }
 

@@ -15,6 +15,8 @@ export const MessageTypeSchema = z.enum(['text', 'image', 'card_offer', 'card_of
 export const MeetupStatusSchema = z.enum(['confirmed', 'completed', 'cancelled']);
 export const ReportCategorySchema = z.enum(['inappropriate_content', 'scam', 'counterfeit', 'no_show', 'harassment', 'other']);
 export const ReportStatusSchema = z.enum(['pending', 'reviewed', 'resolved']);
+export const GradingCompanySchema = z.enum(['psa', 'cgc', 'bgs']);
+export const SealedProductTypeSchema = z.enum(['booster_box', 'etb', 'booster_pack', 'tin', 'collection_box', 'blister']);
 
 // --- Normalized card shape (cross-TCG) ---
 export const NormalizedCardSchema = z.object({
@@ -87,6 +89,13 @@ export const CollectionItemRowSchema = z.object({
   rarity: z.string().nullable(),
   condition: CardConditionSchema,
   quantity: z.number().int().positive(),
+  is_wishlist: z.boolean(),
+  market_price: z.number().nullable(),
+  grading_company: GradingCompanySchema.nullable(),
+  grading_score: z.string().nullable(),
+  is_sealed: z.boolean(),
+  product_type: SealedProductTypeSchema.nullable(),
+  purchase_price: z.number().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -98,6 +107,13 @@ export const CollectionItemInsertSchema = CollectionItemRowSchema.omit({
 }).extend({
   condition: CardConditionSchema.default('nm'),
   quantity: z.number().int().positive().default(1),
+  is_wishlist: z.boolean().default(false),
+  market_price: z.number().nullable().optional(),
+  grading_company: GradingCompanySchema.nullable().optional(),
+  grading_score: z.string().nullable().optional(),
+  is_sealed: z.boolean().default(false),
+  product_type: SealedProductTypeSchema.nullable().optional(),
+  purchase_price: z.number().nullable().optional(),
 });
 
 export const ListingRowSchema = z.object({

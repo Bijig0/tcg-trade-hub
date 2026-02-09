@@ -15,6 +15,9 @@ describe('parseCsvCollection', () => {
       card_number: '',
       condition: 'nm',
       quantity: 2,
+      grading_company: null,
+      grading_score: null,
+      purchase_price: null,
     });
     expect(result[1]?.condition).toBe('lp');
   });
@@ -54,5 +57,20 @@ Card B,2
 `;
     const result = parseCsvCollection(csv);
     expect(result).toHaveLength(2);
+  });
+
+  it('should parse grading and purchase price columns', () => {
+    const csv = `Name,Set,Condition,Quantity,Grading,Grade,Price
+"Charizard VMAX","Darkness Ablaze","NM",1,PSA,10,250.00
+"Pikachu V","Vivid Voltage","LP",2,,,`;
+
+    const result = parseCsvCollection(csv);
+    expect(result).toHaveLength(2);
+    expect(result[0]?.grading_company).toBe('psa');
+    expect(result[0]?.grading_score).toBe('10');
+    expect(result[0]?.purchase_price).toBe(250);
+    expect(result[1]?.grading_company).toBeNull();
+    expect(result[1]?.grading_score).toBeNull();
+    expect(result[1]?.purchase_price).toBeNull();
   });
 });

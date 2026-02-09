@@ -70,6 +70,13 @@ export type Database = {
           rarity: string | null;
           condition: CardCondition;
           quantity: number;
+          is_wishlist: boolean;
+          market_price: number | null;
+          grading_company: GradingCompany | null;
+          grading_score: string | null;
+          is_sealed: boolean;
+          product_type: SealedProductType | null;
+          purchase_price: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -86,6 +93,13 @@ export type Database = {
           rarity?: string | null;
           condition?: CardCondition;
           quantity?: number;
+          is_wishlist?: boolean;
+          market_price?: number | null;
+          grading_company?: GradingCompany | null;
+          grading_score?: string | null;
+          is_sealed?: boolean;
+          product_type?: SealedProductType | null;
+          purchase_price?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -102,6 +116,13 @@ export type Database = {
           rarity?: string | null;
           condition?: CardCondition;
           quantity?: number;
+          is_wishlist?: boolean;
+          market_price?: number | null;
+          grading_company?: GradingCompany | null;
+          grading_score?: string | null;
+          is_sealed?: boolean;
+          product_type?: SealedProductType | null;
+          purchase_price?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -487,6 +508,8 @@ export type MessageType = 'text' | 'image' | 'card_offer' | 'card_offer_response
 export type MeetupStatus = 'confirmed' | 'completed' | 'cancelled';
 export type ReportCategory = 'inappropriate_content' | 'scam' | 'counterfeit' | 'no_show' | 'harassment' | 'other';
 export type ReportStatus = 'pending' | 'reviewed' | 'resolved';
+export type GradingCompany = 'psa' | 'cgc' | 'bgs';
+export type SealedProductType = 'booster_box' | 'etb' | 'booster_pack' | 'tin' | 'collection_box' | 'blister';
 
 // Convenience row types
 export type UserRow = Database['public']['Tables']['users']['Row'];
@@ -494,6 +517,7 @@ export type UserInsert = Database['public']['Tables']['users']['Insert'];
 export type UserUpdate = Database['public']['Tables']['users']['Update'];
 export type CollectionItemRow = Database['public']['Tables']['collection_items']['Row'];
 export type CollectionItemInsert = Database['public']['Tables']['collection_items']['Insert'];
+export type CollectionItemUpdate = Database['public']['Tables']['collection_items']['Update'];
 export type ListingRow = Database['public']['Tables']['listings']['Row'];
 export type ListingInsert = Database['public']['Tables']['listings']['Insert'];
 export type ListingUpdate = Database['public']['Tables']['listings']['Update'];

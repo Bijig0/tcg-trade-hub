@@ -3,19 +3,18 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthProvider';
 import { collectionKeys } from '../../queryKeys';
 
-/** Fetches the current user's card collection (not wishlist, not sealed) */
-const useMyCollection = () => {
+/** Fetches the current user's wishlist items (is_wishlist = true) */
+const useMyWishlist = () => {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: collectionKeys.myCollection(),
+    queryKey: collectionKeys.myWishlist(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('collection_items')
         .select('*')
         .eq('user_id', user!.id)
-        .eq('is_wishlist', false)
-        .eq('is_sealed', false)
+        .eq('is_wishlist', true)
         .order('tcg')
         .order('card_name');
 
@@ -26,4 +25,4 @@ const useMyCollection = () => {
   });
 };
 
-export default useMyCollection;
+export default useMyWishlist;

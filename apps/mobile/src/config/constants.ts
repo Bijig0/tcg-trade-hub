@@ -39,3 +39,25 @@ export const LISTING_TYPE_SHORT = {
   wtb: 'WTB',
   wtt: 'WTT',
 } as const;
+
+export const GRADING_COMPANY_LABELS = {
+  psa: 'PSA',
+  cgc: 'CGC',
+  bgs: 'BGS',
+} as const;
+
+export const SEALED_PRODUCT_TYPE_LABELS = {
+  booster_box: 'Booster Box',
+  etb: 'Elite Trainer Box',
+  booster_pack: 'Booster Pack',
+  tin: 'Tin',
+  collection_box: 'Collection Box',
+  blister: 'Blister',
+} as const;
+
+/** PSA: integers 1-10. CGC/BGS: 1-10 with half steps. */
+export const GRADING_SCORE_OPTIONS = {
+  psa: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+  cgc: ['1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5', '5.5', '6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10'],
+  bgs: ['1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5', '5.5', '6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', 'Pristine 10'],
+} as const;
