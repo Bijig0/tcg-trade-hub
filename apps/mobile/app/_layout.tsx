@@ -1,12 +1,36 @@
+import 'expo-crypto';
 import '../src/global.css';
 
 import React from 'react';
-import { Slot, useRouter, useSegments } from 'expo-router';
+import { Slot, useRouter, useSegments, ErrorBoundary } from 'expo-router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, Text, ScrollView, LogBox } from 'react-native';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider, useAuth } from '@/context/AuthProvider';
+
+// Log all errors to console with full stack traces
+const originalConsoleError = console.error;
+console.error = (...args: unknown[]) => {
+  originalConsoleError(...args);
+};
+
+if (__DEV__) {
+  // Show full error details instead of alert dialogs
+  LogBox.ignoreAllLogs(false);
+
+  const originalHandler = ErrorUtils.getGlobalHandler();
+  ErrorUtils.setGlobalHandler((error: Error, isFatal?: boolean) => {
+    console.error(
+      `[${isFatal ? 'FATAL' : 'ERROR'}] ${error.message}\n${error.stack}`,
+    );
+    if (originalHandler) {
+      originalHandler(error, isFatal);
+    }
+  });
+}
+
+export { ErrorBoundary };
 
 const RootNavigator = () => {
   const { session, isLoading, isOnboarded } = useAuth();
