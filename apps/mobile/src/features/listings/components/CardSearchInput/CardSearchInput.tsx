@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { View, Text, Image, Pressable, FlatList, ActivityIndicator, type ListRenderItemInfo } from 'react-native';
+import { View, Text, Image, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { cn } from '@/lib/cn';
 import Input from '@/components/ui/Input/Input';
 import useCardSearch from '../../hooks/useCardSearch/useCardSearch';
@@ -56,8 +56,9 @@ const CardSearchInput = ({ tcg, onSelect, className }: CardSearchInputProps) => 
     [onSelect],
   );
 
-  const renderResult = ({ item }: ListRenderItemInfo<NormalizedCard>) => (
+  const renderResult = (item: NormalizedCard) => (
     <Pressable
+      key={`${item.tcg}-${item.externalId}`}
       onPress={() => handleSelect(item)}
       className="flex-row items-center gap-3 px-3 py-2 active:bg-accent"
     >
@@ -82,8 +83,6 @@ const CardSearchInput = ({ tcg, onSelect, className }: CardSearchInputProps) => 
     </Pressable>
   );
 
-  const keyExtractor = (item: NormalizedCard) => `${item.tcg}-${item.externalId}`;
-
   return (
     <View className={cn('relative', className)}>
       <Input
@@ -103,13 +102,14 @@ const CardSearchInput = ({ tcg, onSelect, className }: CardSearchInputProps) => 
               <Text className="mt-2 text-xs text-muted-foreground">Searching cards...</Text>
             </View>
           ) : results && results.length > 0 ? (
-            <FlatList
-              data={results}
-              keyExtractor={keyExtractor}
-              renderItem={renderResult}
-              keyboardShouldPersistTaps="handled"
-              ItemSeparatorComponent={() => <View className="h-px bg-border" />}
-            />
+            <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled>
+              {results.map((item, index) => (
+                <React.Fragment key={`${item.tcg}-${item.externalId}`}>
+                  {index > 0 && <View className="h-px bg-border" />}
+                  {renderResult(item)}
+                </React.Fragment>
+              ))}
+            </ScrollView>
           ) : (
             <View className="items-center py-4">
               <Text className="text-sm text-muted-foreground">No cards found</Text>
