@@ -9,6 +9,7 @@ import Slider from '@/components/ui/Slider/Slider';
 import { cn } from '@/lib/cn';
 import { TCG_LABELS, MIN_RADIUS_KM, MAX_RADIUS_KM } from '@/config/constants';
 import useUpdateProfile from '../../hooks/useUpdateProfile/useUpdateProfile';
+import DevUserSwitcher from '../DevUserSwitcher/DevUserSwitcher';
 import type { TcgType } from '@tcg-trade-hub/database';
 
 const ALL_TCGS: TcgType[] = ['pokemon', 'mtg', 'yugioh'];
@@ -300,6 +301,23 @@ const SettingsScreen = () => {
       <View className="px-4 py-4">
         <Separator />
       </View>
+
+      {/* Developer Tools (dev only) */}
+      {__DEV__ && (
+        <>
+          <View className="px-4">
+            <Text className="mb-3 text-lg font-bold text-foreground">Developer Tools</Text>
+            <Text className="mb-2 text-xs text-muted-foreground">
+              Quick-switch between test accounts
+            </Text>
+            <DevUserSwitcher />
+          </View>
+
+          <View className="px-4 py-4">
+            <Separator />
+          </View>
+        </>
+      )}
 
       {/* Sign out */}
       <View className="px-4">
