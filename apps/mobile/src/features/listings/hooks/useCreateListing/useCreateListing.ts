@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { randomUUID } from 'expo-crypto';
 import { supabase } from '@/lib/supabase';
 import { listingKeys } from '../../queryKeys';
 import { feedKeys } from '../../../feed/queryKeys';
@@ -44,7 +45,7 @@ const useCreateListing = () => {
       if (!user) throw new Error('User not authenticated');
 
       // Generate a temporary ID for the storage path
-      const tempId = crypto.randomUUID();
+      const tempId = randomUUID();
 
       // Upload photos in parallel
       const photoUrls = await Promise.all(
