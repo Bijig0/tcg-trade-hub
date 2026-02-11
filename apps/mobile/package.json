@@ -5,6 +5,7 @@
   "main": "expo-router/entry",
   "scripts": {
     "dev": "expo start",
+    "dev:second": "bash scripts/dev-second-sim.sh",
     "build": "expo export",
     "lint": "eslint .",
     "test": "vitest run",
