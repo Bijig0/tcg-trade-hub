@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import useEmailAuth from '../../hooks/useEmailAuth/useEmailAuth';
 import { RegisterFormSchema, type RegisterForm } from '../../schemas';
@@ -33,9 +34,10 @@ const RegisterScreen: React.FC = () => {
   };
 
   return (
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-background"
+      className="flex-1"
     >
       <ScrollView
         contentContainerClassName="flex-1 justify-center px-6 py-12"
@@ -90,6 +92,7 @@ const RegisterScreen: React.FC = () => {
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

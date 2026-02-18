@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@/context/AuthProvider';
@@ -101,9 +102,10 @@ const EditProfileScreen = () => {
   };
 
   return (
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-background"
+      className="flex-1"
     >
       <ScrollView contentContainerClassName="pb-8" keyboardShouldPersistTaps="handled">
         {/* Avatar picker */}
@@ -189,6 +191,7 @@ const EditProfileScreen = () => {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

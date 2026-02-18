@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, Image, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import useMyCollection from '../../hooks/useMyCollection/useMyCollection';
 import useMyWishlist from '../../hooks/useMyWishlist/useMyWishlist';
@@ -87,7 +88,8 @@ const CardDetailScreen: React.FC = () => {
     : null;
 
   return (
-    <ScrollView className="flex-1 bg-background px-4 pt-6">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <ScrollView className="flex-1 px-4 pt-6">
       <View className="mb-4 flex-row items-center">
         <Button variant="ghost" size="sm" onPress={() => router.back()}>
           <Text className="text-sm text-primary">Back</Text>
@@ -238,6 +240,7 @@ const CardDetailScreen: React.FC = () => {
         </Button>
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

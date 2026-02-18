@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, FlatList, ActivityIndicator, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Badge from '@/components/ui/Badge/Badge';
@@ -95,7 +96,8 @@ const PublicProfileScreen = () => {
   );
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerClassName="pb-8">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <ScrollView className="flex-1" contentContainerClassName="pb-8">
       {/* Header actions */}
       <View className="flex-row justify-end gap-2 px-4 pt-4">
         <Button variant="ghost" size="sm" onPress={handleReport}>
@@ -170,6 +172,7 @@ const PublicProfileScreen = () => {
         )}
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

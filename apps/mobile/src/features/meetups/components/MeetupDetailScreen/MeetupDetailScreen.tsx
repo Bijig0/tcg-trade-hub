@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Badge from '@/components/ui/Badge/Badge';
@@ -133,7 +134,7 @@ const MeetupDetailScreen = () => {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScrollView contentContainerClassName="pb-8">
         {/* Map placeholder */}
         {meetup.location_coords ? (
@@ -246,7 +247,7 @@ const MeetupDetailScreen = () => {
         meetupId={meetup.id}
         rateeId={rateeId}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, FlatList, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Button from '@/components/ui/Button/Button';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
@@ -77,14 +78,14 @@ const BlockedUsersScreen = () => {
   const keyExtractor = (item: BlockedUser) => item.id;
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <FlatList
         data={blockedUsers}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
         contentContainerClassName="pb-8"
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

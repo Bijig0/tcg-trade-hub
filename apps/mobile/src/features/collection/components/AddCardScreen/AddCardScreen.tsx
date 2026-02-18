@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, Pressable, Image, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { TcgType, NormalizedCard, GradingCompany } from '@tcg-trade-hub/database';
 import useCardSearch from '@/features/listings/hooks/useCardSearch/useCardSearch';
@@ -94,7 +95,8 @@ const AddCardScreen: React.FC = () => {
   // Step 1: TCG selection
   if (step === 'tcg') {
     return (
-      <View className="flex-1 bg-background px-4 pt-6">
+      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <View className="flex-1 px-4 pt-6">
         <Text className="mb-2 text-xl font-bold text-foreground">
           {isWishlist ? 'Add to Wishlist' : 'Add to Collection'}
         </Text>
@@ -114,13 +116,15 @@ const AddCardScreen: React.FC = () => {
           <Text className="text-sm text-muted-foreground">Cancel</Text>
         </Button>
       </View>
+      </SafeAreaView>
     );
   }
 
   // Step 2: Card search
   if (step === 'search') {
     return (
-      <View className="flex-1 bg-background px-4 pt-6">
+      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <View className="flex-1 px-4 pt-6">
         <View className="mb-4 flex-row items-center">
           <Pressable onPress={() => setStep('tcg')} className="mr-3 p-1">
             <Text className="text-lg text-primary">Back</Text>
@@ -186,12 +190,14 @@ const AddCardScreen: React.FC = () => {
           }
         />
       </View>
+      </SafeAreaView>
     );
   }
 
   // Step 3: Card details
   return (
-    <ScrollView className="flex-1 bg-background px-4 pt-6">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <ScrollView className="flex-1 px-4 pt-6">
       <View className="mb-4 flex-row items-center">
         <Pressable onPress={() => setStep('search')} className="mr-3 p-1">
           <Text className="text-lg text-primary">Back</Text>
@@ -301,6 +307,7 @@ const AddCardScreen: React.FC = () => {
         </>
       ) : null}
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

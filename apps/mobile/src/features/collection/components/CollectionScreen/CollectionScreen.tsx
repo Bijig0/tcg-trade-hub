@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, Pressable, Image, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
@@ -192,7 +193,8 @@ const CollectionScreen: React.FC = () => {
       : 'Track your sealed products and their value.';
 
   return (
-    <View className="flex-1 bg-background px-4 pt-4">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <View className="flex-1 px-4 pt-4">
       {/* Portfolio Value Header */}
       <View className="mb-4 rounded-xl bg-card p-4">
         <View className="flex-row items-baseline justify-between">
@@ -273,6 +275,7 @@ const CollectionScreen: React.FC = () => {
         }
       />
     </View>
+    </SafeAreaView>
   );
 };
 

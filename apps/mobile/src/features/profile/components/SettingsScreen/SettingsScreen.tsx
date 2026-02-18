@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Switch, Pressable, Alert, Linking } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthProvider';
 import { supabase } from '@/lib/supabase';
@@ -122,7 +123,8 @@ const SettingsScreen = () => {
   const isEmailAuth = user?.app_metadata?.provider === 'email';
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerClassName="pb-12">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <ScrollView className="flex-1" contentContainerClassName="pb-12">
       {/* Account Section */}
       <View className="px-4 pt-6">
         <Text className="mb-3 text-lg font-bold text-foreground">Account</Text>
@@ -326,6 +328,7 @@ const SettingsScreen = () => {
         </Button>
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 };
 
