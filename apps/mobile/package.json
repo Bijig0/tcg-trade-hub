@@ -4,7 +4,7 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "dev": "expo start --port 8082",
+    "dev": "bash scripts/dev.sh",
     "build": "expo export",
     "lint": "eslint .",
     "test": "vitest run",
