@@ -437,6 +437,60 @@ export type Database = {
         };
         Relationships: [];
       };
+      pre_registrations: {
+        Row: {
+          id: string;
+          email: string;
+          display_name: string | null;
+          tcg: TcgType;
+          card_name: string;
+          card_set: string | null;
+          card_external_id: string | null;
+          card_image_url: string | null;
+          listing_type: ListingType;
+          asking_price: number | null;
+          city: string | null;
+          zip_code: string | null;
+          country: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          display_name?: string | null;
+          tcg: TcgType;
+          card_name: string;
+          card_set?: string | null;
+          card_external_id?: string | null;
+          card_image_url?: string | null;
+          listing_type: ListingType;
+          asking_price?: number | null;
+          city?: string | null;
+          zip_code?: string | null;
+          country?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          display_name?: string | null;
+          tcg?: TcgType;
+          card_name?: string;
+          card_set?: string | null;
+          card_external_id?: string | null;
+          card_image_url?: string | null;
+          listing_type?: ListingType;
+          asking_price?: number | null;
+          city?: string | null;
+          zip_code?: string | null;
+          country?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       reports: {
         Row: {
           id: string;
@@ -536,3 +590,5 @@ export type BlockRow = Database['public']['Tables']['blocks']['Row'];
 export type BlockInsert = Database['public']['Tables']['blocks']['Insert'];
 export type ReportRow = Database['public']['Tables']['reports']['Row'];
 export type ReportInsert = Database['public']['Tables']['reports']['Insert'];
+export type PreRegistrationRow = Database['public']['Tables']['pre_registrations']['Row'];
+export type PreRegistrationInsert = Database['public']['Tables']['pre_registrations']['Insert'];
