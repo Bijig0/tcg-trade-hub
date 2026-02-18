@@ -315,3 +315,41 @@ export const MessagePayloadSchema = z.discriminatedUnion('type', [
 ]);
 
 export type MessagePayload = z.infer<typeof MessagePayloadSchema>;
+
+// --- Pre-registration schemas ---
+export const PreRegistrationRowSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  display_name: z.string().nullable(),
+  tcg: TcgTypeSchema,
+  card_name: z.string(),
+  card_set: z.string().nullable(),
+  card_external_id: z.string().nullable(),
+  card_image_url: z.string().nullable(),
+  listing_type: ListingTypeSchema,
+  asking_price: z.number().nullable(),
+  city: z.string().nullable(),
+  zip_code: z.string().nullable(),
+  country: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export type PreRegistrationRow = z.infer<typeof PreRegistrationRowSchema>;
+
+export const PreRegistrationInsertSchema = PreRegistrationRowSchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+}).extend({
+  display_name: z.string().nullable().optional(),
+  card_set: z.string().nullable().optional(),
+  card_external_id: z.string().nullable().optional(),
+  card_image_url: z.string().nullable().optional(),
+  asking_price: z.number().positive().nullable().optional(),
+  city: z.string().nullable().optional(),
+  zip_code: z.string().nullable().optional(),
+  country: z.string().nullable().optional(),
+});
+
+export type PreRegistrationInsert = z.infer<typeof PreRegistrationInsertSchema>;
