@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { List, Layers } from 'lucide-react-native';
 
 import { useFeedStore } from '@/stores/feedStore/feedStore';
+import usePrefetchTabs from '@/hooks/usePrefetchTabs/usePrefetchTabs';
 import FilterBar from '../FilterBar/FilterBar';
 import FeedListView from '../FeedListView/FeedListView';
 import FeedSwipeView from '../FeedSwipeView/FeedSwipeView';
@@ -22,6 +23,8 @@ export type FeedScreenProps = {
  * the user has no active listings.
  */
 const FeedScreen = ({ hasActiveListings = true }: FeedScreenProps) => {
+  usePrefetchTabs();
+
   const viewMode = useFeedStore((s) => s.viewMode);
   const setViewMode = useFeedStore((s) => s.setViewMode);
 
