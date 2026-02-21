@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, Layers, MessageCircle, Calendar, User } from 'lucide-react-native';
+import { Layers, MessageCircle, Calendar, User } from 'lucide-react-native';
 
 const TabsLayout = () => {
   return (
@@ -10,13 +10,6 @@ const TabsLayout = () => {
         tabBarInactiveTintColor: '#a1a1aa',
       }}
     >
-      <Tabs.Screen
-        name="(home)"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
-        }}
-      />
       <Tabs.Screen
         name="(listings)"
         options={{

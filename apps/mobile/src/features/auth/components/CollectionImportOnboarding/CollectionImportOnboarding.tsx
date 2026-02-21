@@ -46,7 +46,7 @@ const CollectionImportOnboarding = () => {
   const [importedCount, setImportedCount] = useState(0);
 
   const handleSkip = () => {
-    router.replace('/(tabs)/(home)');
+    router.replace('/(tabs)/(listings)');
   };
 
   const handleCsvImport = async () => {
@@ -95,7 +95,7 @@ const CollectionImportOnboarding = () => {
       Alert.alert(
         'Import successful',
         `${items.length} cards imported to your collection.`,
-        [{ text: 'Continue', onPress: () => router.replace('/(tabs)/(home)') }],
+        [{ text: 'Continue', onPress: () => router.replace('/(tabs)/(listings)') }],
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Import failed';

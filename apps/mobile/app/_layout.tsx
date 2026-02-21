@@ -53,7 +53,7 @@ const RootNavigator = () => {
       }
     } else {
       if (inAuthGroup || inOnboardingGroup) {
-        router.replace('/(tabs)/(home)');
+        router.replace('/(tabs)/(listings)');
       }
     }
   }, [session, isLoading, isOnboarded, segments]);
