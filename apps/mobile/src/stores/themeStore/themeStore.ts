@@ -12,7 +12,7 @@ type ThemeState = {
 export const useThemeStore = create<ThemeState>()(
   persist(
     immer((set) => ({
-      themeName: 'modern-collector' as ThemeName,
+      themeName: 'dark-luxury' as ThemeName,
       setTheme: (name) =>
         set((state) => {
           state.themeName = name;

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { View, StatusBar } from 'react-native';
 import { vars } from 'react-native-css-interop';
-import { THEMES, type ThemeName } from '@/config/themes';
+import { THEME, THEMES, type ThemeName } from '@/config/themes';
 import { useThemeStore } from '@/stores/themeStore/themeStore';
 
 type ThemeContextValue = {
@@ -18,7 +18,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export const ThemeProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const themeName = useThemeStore((s) => s.themeName);
-  const theme = THEMES[themeName];
+  const theme = THEMES[themeName] ?? THEME;
 
   const themeStyle = useMemo(() => vars(theme.vars), [themeName]);
 
