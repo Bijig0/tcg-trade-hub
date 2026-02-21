@@ -1,40 +1,18 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, Image, Pressable, SectionList, Alert, type SectionListRenderItemInfo } from 'react-native';
+import { View, Text, FlatList, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Plus, Trash2, Clock, ArrowRight, ChevronDown, ChevronRight } from 'lucide-react-native';
-import Badge from '@/components/ui/Badge/Badge';
+import { Plus, ArrowRight, Package, Handshake, Archive } from 'lucide-react-native';
+import SegmentedFilter from '@/components/ui/SegmentedFilter/SegmentedFilter';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import useMyListings from '../../hooks/useMyListings/useMyListings';
 import useDeleteListing from '../../hooks/useDeleteListing/useDeleteListing';
-import type { ListingRow, ListingStatus } from '@tcg-trade-hub/database';
-
-type ListingSection = {
-  title: string;
-  key: string;
-  data: ListingRow[];
-  isHistory?: boolean;
-  historyCount?: number;
-};
-
-const LISTING_TYPE_CONFIG = {
-  wts: { label: 'WTS', variant: 'default' as const },
-  wtb: { label: 'WTB', variant: 'secondary' as const },
-  wtt: { label: 'WTT', variant: 'outline' as const },
-} as const;
-
-const STATUS_CONFIG: Record<ListingStatus, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
-  active: { label: 'Active', variant: 'default' },
-  matched: { label: 'Matched', variant: 'secondary' },
-  completed: { label: 'Completed', variant: 'outline' },
-  expired: { label: 'Removed', variant: 'destructive' },
-};
-
-const SECTION_HEADERS = {
-  wts: 'Want to Sell',
-  wtb: 'Want to Buy',
-  wtt: 'Want to Trade',
-} as const;
+import groupListingsByTab from '../../utils/groupListingsByTab/groupListingsByTab';
+import ActiveListingCard from '../ActiveListingCard/ActiveListingCard';
+import MatchedListingCard from '../MatchedListingCard/MatchedListingCard';
+import HistoryListingCard from '../HistoryListingCard/HistoryListingCard';
+import type { MyListingWithMatch, ListingTab } from '../../schemas';
+import type { SegmentedFilterItem } from '@/components/ui/SegmentedFilter/SegmentedFilter';
 
 const LISTING_TYPE_DESCRIPTIONS = [
   { type: 'WTS', label: 'Want to Sell', description: 'List cards you want to sell' },
@@ -42,28 +20,43 @@ const LISTING_TYPE_DESCRIPTIONS = [
   { type: 'WTT', label: 'Want to Trade', description: 'Find trade partners nearby' },
 ] as const;
 
-const ACTIVE_STATUSES = new Set<ListingStatus>(['active', 'matched']);
-const HISTORY_STATUSES = new Set<ListingStatus>(['completed', 'expired']);
+const EMPTY_STATE_CONFIG: Record<ListingTab, { icon: typeof Package; title: string; subtitle: string }> = {
+  active: {
+    icon: Package,
+    title: 'No Active Listings',
+    subtitle: 'Tap + to create your first listing.',
+  },
+  matched: {
+    icon: Handshake,
+    title: 'No Matches Yet',
+    subtitle: 'When someone matches with your listing, it will appear here.',
+  },
+  history: {
+    icon: Archive,
+    title: 'No History',
+    subtitle: 'Completed and removed listings will show up here.',
+  },
+};
 
 /**
- * Main listings screen and app landing page.
+ * Main listings screen with industry-standard status tabs.
  *
- * Groups active/matched listings by type (WTS, WTB, WTT) with section headers.
- * Shows a collapsible History section at the bottom for completed/expired listings.
- * Matched listings are highlighted with a colored left border.
+ * Three tabs: Active | Matched | History
+ * Each tab shows a flat FlatList of cards with per-card status treatment.
+ * First-time empty state (zero total listings) shows onboarding view.
  */
 const MyListingsScreen = () => {
   const router = useRouter();
   const { data: listings, isLoading, refetch, isRefetching } = useMyListings();
   const deleteListing = useDeleteListing();
-  const [historyExpanded, setHistoryExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState<ListingTab>('active');
 
   const handleCreatePress = () => {
     router.push('/(tabs)/(listings)/new');
   };
 
   const handleDeletePress = useCallback(
-    (listing: ListingRow) => {
+    (listing: MyListingWithMatch) => {
       Alert.alert(
         'Remove Listing',
         `Are you sure you want to remove "${listing.card_name}"?`,
@@ -80,145 +73,67 @@ const MyListingsScreen = () => {
     [deleteListing],
   );
 
-  const sections = useMemo(() => {
-    const allListings = listings ?? [];
+  const { groups, counts } = useMemo(
+    () => groupListingsByTab(listings ?? []),
+    [listings],
+  );
 
-    const active = allListings.filter((l) => ACTIVE_STATUSES.has(l.status));
-    const history = allListings.filter((l) => HISTORY_STATUSES.has(l.status));
+  const tabItems: SegmentedFilterItem<ListingTab>[] = useMemo(
+    () => [
+      { value: 'active', label: 'Active', count: counts.active },
+      { value: 'matched', label: 'Matched', count: counts.matched },
+      { value: 'history', label: 'History', count: counts.history },
+    ],
+    [counts],
+  );
 
-    const wts = active.filter((l) => l.type === 'wts');
-    const wtb = active.filter((l) => l.type === 'wtb');
-    const wtt = active.filter((l) => l.type === 'wtt');
+  const currentData = groups[activeTab];
 
-    const result: ListingSection[] = [];
+  const renderItem = useCallback(
+    ({ item }: { item: MyListingWithMatch }) => {
+      switch (activeTab) {
+        case 'active':
+          return <ActiveListingCard listing={item} onDelete={handleDeletePress} />;
+        case 'matched':
+          return <MatchedListingCard listing={item} />;
+        case 'history':
+          return <HistoryListingCard listing={item} />;
+      }
+    },
+    [activeTab, handleDeletePress],
+  );
 
-    if (wts.length > 0) result.push({ title: SECTION_HEADERS.wts, key: 'wts', data: wts });
-    if (wtb.length > 0) result.push({ title: SECTION_HEADERS.wtb, key: 'wtb', data: wtb });
-    if (wtt.length > 0) result.push({ title: SECTION_HEADERS.wtt, key: 'wtt', data: wtt });
-
-    if (history.length > 0) {
-      result.push({
-        title: 'History',
-        key: 'history',
-        data: historyExpanded ? history : [],
-        isHistory: true,
-        historyCount: history.length,
-      });
-    }
-
-    return result;
-  }, [listings, historyExpanded]);
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
-  const renderItem = ({ item, section }: SectionListRenderItemInfo<ListingRow, ListingSection>) => {
-    const typeConfig = LISTING_TYPE_CONFIG[item.type];
-    const statusConfig = STATUS_CONFIG[item.status];
-    const isMatched = item.status === 'matched';
-    const isHistory = section.isHistory === true;
-
+  const renderEmptyState = () => {
+    const config = EMPTY_STATE_CONFIG[activeTab];
+    const Icon = config.icon;
     return (
-      <Pressable
-        onPress={() => router.push(`/(tabs)/(listings)/listing/${item.id}`)}
-        className={`mx-4 mb-3 flex-row rounded-xl border border-border bg-card p-3 active:bg-accent ${
-          isMatched ? 'border-l-4 border-l-primary' : ''
-        } ${isHistory ? 'opacity-60' : ''}`}
-      >
-        <Image
-          source={{ uri: item.card_image_url }}
-          className="h-20 w-14 rounded-lg bg-muted"
-          resizeMode="cover"
-        />
-
-        <View className="ml-3 flex-1 justify-between">
-          <View>
-            <View className="flex-row items-center gap-2">
-              {!isHistory && <Badge variant={typeConfig.variant}>{typeConfig.label}</Badge>}
-              <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
-            </View>
-
-            <Text
-              className={`mt-1 text-base font-semibold ${isHistory ? 'text-muted-foreground' : 'text-card-foreground'}`}
-              numberOfLines={1}
-            >
-              {item.card_name}
-            </Text>
-
-            {item.asking_price != null && (
-              <Text className="text-sm text-muted-foreground">
-                ${item.asking_price.toFixed(2)}
-              </Text>
-            )}
-          </View>
-
-          <View className="mt-1 flex-row items-center gap-1">
-            <Clock size={10} className="text-muted-foreground" />
-            <Text className="text-xs text-muted-foreground">
-              {formatDate(item.created_at)}
-            </Text>
-          </View>
-        </View>
-
-        {!isHistory && (
-          <Pressable
-            onPress={() => handleDeletePress(item)}
-            className="ml-2 items-center justify-center px-1"
-            hitSlop={8}
-          >
-            <Trash2 size={18} className="text-destructive" />
-          </Pressable>
-        )}
-      </Pressable>
-    );
-  };
-
-  const renderSectionHeader = ({ section }: { section: ListingSection }) => {
-    if (section.isHistory) {
-      return (
-        <Pressable
-          onPress={() => setHistoryExpanded((prev) => !prev)}
-          className="mx-4 mb-2 mt-6 flex-row items-center justify-between rounded-lg bg-muted/50 px-3 py-2.5"
-        >
-          <View className="flex-row items-center gap-2">
-            <Text className="text-base font-semibold text-muted-foreground">
-              {section.title}
-            </Text>
-            <View className="rounded-full bg-muted px-2 py-0.5">
-              <Text className="text-xs font-medium text-muted-foreground">
-                {section.historyCount}
-              </Text>
-            </View>
-          </View>
-          {historyExpanded ? (
-            <ChevronDown size={18} className="text-muted-foreground" />
-          ) : (
-            <ChevronRight size={18} className="text-muted-foreground" />
-          )}
-        </Pressable>
-      );
-    }
-
-    return (
-      <View className="bg-background px-4 pb-2 pt-5">
-        <Text className="text-base font-semibold text-foreground">{section.title}</Text>
+      <View className="flex-1 items-center justify-center px-8 pt-20">
+        <Icon size={48} className="text-muted-foreground" />
+        <Text className="mt-4 text-lg font-semibold text-foreground">
+          {config.title}
+        </Text>
+        <Text className="mt-1 text-center text-sm text-muted-foreground">
+          {config.subtitle}
+        </Text>
       </View>
     );
   };
 
-  const keyExtractor = (item: ListingRow) => item.id;
+  const keyExtractor = (item: MyListingWithMatch) => item.id;
 
+  // Loading state
   if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-background" edges={['top']}>
         <View className="border-b border-border px-4 py-3">
           <Text className="text-xl font-bold text-foreground">My Listings</Text>
+        </View>
+        <View className="flex-row border-b border-border">
+          {['Active', 'Matched', 'History'].map((label) => (
+            <View key={label} className="flex-1 items-center pb-2.5 pt-3">
+              <Skeleton className="h-4 w-16 rounded" />
+            </View>
+          ))}
         </View>
         <View className="flex-1 gap-3 px-4 pt-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -237,8 +152,8 @@ const MyListingsScreen = () => {
   }
 
   const allListings = listings ?? [];
-  const hasActiveListings = allListings.some((l) => ACTIVE_STATUSES.has(l.status));
 
+  // First-time empty state — no listings at all
   if (allListings.length === 0) {
     return (
       <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -280,23 +195,21 @@ const MyListingsScreen = () => {
         <Text className="text-xl font-bold text-foreground">My Listings</Text>
       </View>
 
-      {!hasActiveListings && (
-        <View className="mx-4 mt-4 rounded-lg border border-dashed border-border bg-muted/30 p-4">
-          <Text className="text-center text-sm text-muted-foreground">
-            No active listings. Tap + to create one.
-          </Text>
-        </View>
-      )}
+      <SegmentedFilter
+        items={tabItems}
+        value={activeTab}
+        onValueChange={setActiveTab}
+      />
 
-      <SectionList
-        sections={sections}
+      <FlatList
+        data={currentData}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
-        renderSectionHeader={renderSectionHeader}
+        ListEmptyComponent={renderEmptyState}
         refreshing={isRefetching}
         onRefresh={refetch}
-        contentContainerClassName="pb-24"
-        stickySectionHeadersEnabled={false}
+        contentContainerClassName="pb-24 pt-3"
+        contentContainerStyle={currentData.length === 0 ? { flex: 1 } : undefined}
       />
 
       <Pressable
