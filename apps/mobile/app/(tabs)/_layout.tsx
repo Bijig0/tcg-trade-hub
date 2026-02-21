@@ -1,13 +1,17 @@
 import { Tabs } from 'expo-router';
 import { Layers, MessageCircle, Calendar, User } from 'lucide-react-native';
+import { useTheme } from '@/context/ThemeProvider';
 
 const TabsLayout = () => {
+  const { tabBar } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#18181b',
-        tabBarInactiveTintColor: '#a1a1aa',
+        tabBarActiveTintColor: tabBar.activeTintColor,
+        tabBarInactiveTintColor: tabBar.inactiveTintColor,
+        tabBarStyle: { backgroundColor: tabBar.backgroundColor },
       }}
     >
       <Tabs.Screen

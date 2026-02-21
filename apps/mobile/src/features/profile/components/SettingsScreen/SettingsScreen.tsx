@@ -9,6 +9,8 @@ import Separator from '@/components/ui/Separator/Separator';
 import Slider from '@/components/ui/Slider/Slider';
 import { cn } from '@/lib/cn';
 import { TCG_LABELS, MIN_RADIUS_KM, MAX_RADIUS_KM } from '@/config/constants';
+import { THEME_LIST, type ThemeName } from '@/config/themes';
+import { useThemeStore } from '@/stores/themeStore/themeStore';
 import useUpdateProfile from '../../hooks/useUpdateProfile/useUpdateProfile';
 import DevUserSwitcher from '../DevUserSwitcher/DevUserSwitcher';
 import type { TcgType } from '@tcg-trade-hub/database';
@@ -29,6 +31,8 @@ const SettingsScreen = () => {
   const router = useRouter();
   const { profile, user, signOut } = useAuth();
   const updateProfile = useUpdateProfile();
+  const currentTheme = useThemeStore((s) => s.themeName);
+  const setTheme = useThemeStore((s) => s.setTheme);
 
   const [radiusKm, setRadiusKm] = useState(profile?.radius_km ?? 25);
   const [selectedTcgs, setSelectedTcgs] = useState<TcgType[]>(profile?.preferred_tcgs ?? []);
@@ -210,6 +214,42 @@ const SettingsScreen = () => {
                 </Pressable>
               );
             })}
+          </View>
+
+          <View>
+            <Text className="mb-2 text-sm font-medium text-foreground">Theme</Text>
+            <View className="flex-row gap-2">
+              {THEME_LIST.map(({ name, meta }) => {
+                const isSelected = currentTheme === name;
+                return (
+                  <Pressable
+                    key={name}
+                    onPress={() => setTheme(name)}
+                    className={cn(
+                      'flex-1 items-center rounded-lg border p-3',
+                      isSelected ? 'border-primary bg-primary/10' : 'border-border bg-card',
+                    )}
+                  >
+                    <View className="mb-2 flex-row gap-1">
+                      {[meta.previewColors.background, meta.previewColors.primary, meta.previewColors.accent].map(
+                        (color) => (
+                          <View
+                            key={color}
+                            style={{ backgroundColor: color, width: 16, height: 16, borderRadius: 8 }}
+                          />
+                        ),
+                      )}
+                    </View>
+                    <Text className="text-center text-xs text-foreground" numberOfLines={1}>
+                      {meta.label}
+                    </Text>
+                    {isSelected ? (
+                      <Text className="mt-1 text-xs font-bold text-primary">{'\u2713'}</Text>
+                    ) : null}
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
 
           <View>

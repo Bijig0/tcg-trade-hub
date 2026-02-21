@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ActivityIndicator, View, Text, ScrollView, LogBox } from 'react-native';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider, useAuth } from '@/context/AuthProvider';
+import { ThemeProvider } from '@/context/ThemeProvider';
 
 // Log all errors to console with full stack traces
 const originalConsoleError = console.error;
@@ -74,7 +75,9 @@ const RootLayout = () => {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <SafeAreaProvider>
-          <RootNavigator />
+          <ThemeProvider>
+            <RootNavigator />
+          </ThemeProvider>
         </SafeAreaProvider>
       </AuthProvider>
     </QueryClientProvider>
