@@ -11,6 +11,9 @@ export { default as BulkPricingStep } from './components/BulkPricingStep/BulkPri
 export { default as WantedCardPicker } from './components/WantedCardPicker/WantedCardPicker';
 export { default as WtsConfirmStep } from './components/WtsConfirmStep/WtsConfirmStep';
 export { default as WttConfirmStep } from './components/WttConfirmStep/WttConfirmStep';
+export { default as ActiveListingCard } from './components/ActiveListingCard/ActiveListingCard';
+export { default as MatchedListingCard } from './components/MatchedListingCard/MatchedListingCard';
+export { default as HistoryListingCard } from './components/HistoryListingCard/HistoryListingCard';
 
 // Hooks
 export { default as useMyListings } from './hooks/useMyListings/useMyListings';
@@ -24,9 +27,21 @@ export { default as useDeleteListing } from './hooks/useDeleteListing/useDeleteL
 export { listingKeys } from './queryKeys';
 
 // Schemas & types
-export { CreateListingFormSchema, BulkWtsFormSchema, WttFormSchema } from './schemas';
-export type { CreateListingForm, SelectedCard, WantedCard, BulkWtsForm, WttForm } from './schemas';
+export { CreateListingFormSchema, BulkWtsFormSchema, WttFormSchema, LISTING_TABS } from './schemas';
+export type {
+  CreateListingForm,
+  SelectedCard,
+  WantedCard,
+  BulkWtsForm,
+  WttForm,
+  MyListingWithMatch,
+  MatchedUserInfo,
+  ListingTab,
+} from './schemas';
 
 // Utils
 export { default as calculateTradeBalance } from './utils/calculateTradeBalance/calculateTradeBalance';
 export type { TradeBalance, Fairness } from './utils/calculateTradeBalance/calculateTradeBalance';
+export { default as groupListingsByTab } from './utils/groupListingsByTab/groupListingsByTab';
+export type { GroupedListings } from './utils/groupListingsByTab/groupListingsByTab';
+export { default as formatListingDate } from './utils/formatListingDate/formatListingDate';

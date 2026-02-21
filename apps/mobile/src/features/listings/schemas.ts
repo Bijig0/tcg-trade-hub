@@ -6,6 +6,7 @@ import {
   NormalizedCardSchema,
   CardRefSchema,
 } from '@tcg-trade-hub/database';
+import type { ListingRow } from '@tcg-trade-hub/database';
 
 /**
  * Schema for the create listing form (WTB flow — unchanged).
@@ -97,3 +98,20 @@ export const WttFormSchema = z.object({
 });
 
 export type WttForm = z.infer<typeof WttFormSchema>;
+
+// --- My Listings tab types ---
+
+export type MatchedUserInfo = {
+  id: string;
+  display_name: string;
+  avatar_url: string | null;
+};
+
+export type MyListingWithMatch = ListingRow & {
+  match_id: string | null;
+  matched_user: MatchedUserInfo | null;
+  conversation_id: string | null;
+};
+
+export const LISTING_TABS = ['active', 'matched', 'history'] as const;
+export type ListingTab = (typeof LISTING_TABS)[number];
