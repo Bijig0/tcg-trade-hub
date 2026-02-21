@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/context/AuthProvider';
 import { meetupKeys } from '../../queryKeys';
 import type { MeetupRow, ShopRow, UserRow } from '@tcg-trade-hub/database';
 
@@ -27,11 +26,13 @@ type UseMeetupsResult = {
  * location details. Returns meetups split into upcoming and past.
  */
 const useMeetups = () => {
-  const { user } = useAuth();
-
   return useQuery<UseMeetupsResult, Error>({
     queryKey: meetupKeys.all,
     queryFn: async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
@@ -124,7 +125,6 @@ const useMeetups = () => {
 
       return { upcoming, past };
     },
-    enabled: !!user,
   });
 };
 

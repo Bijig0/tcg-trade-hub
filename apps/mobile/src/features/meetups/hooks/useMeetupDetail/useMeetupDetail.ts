@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/context/AuthProvider';
 import { meetupKeys } from '../../queryKeys';
 import type {
   MeetupRow,
@@ -28,11 +27,13 @@ export type MeetupDetail = MeetupRow & {
  * conversation for the match.
  */
 const useMeetupDetail = (meetupId: string) => {
-  const { user } = useAuth();
-
   return useQuery<MeetupDetail, Error>({
     queryKey: meetupKeys.detail(meetupId),
     queryFn: async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) throw new Error('Not authenticated');
 
       const { data: meetup, error } = await supabase
@@ -115,7 +116,7 @@ const useMeetupDetail = (meetupId: string) => {
         is_user_a: isUserA,
       };
     },
-    enabled: !!meetupId && !!user,
+    enabled: !!meetupId,
   });
 };
 
