@@ -1,5 +1,6 @@
 import 'expo-crypto';
 import '../src/global.css';
+import '@/lib/iconInterop';
 
 import React from 'react';
 import { Slot, useRouter, useSegments, ErrorBoundary } from 'expo-router';
