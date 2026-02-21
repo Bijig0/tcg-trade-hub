@@ -38,13 +38,23 @@ const useMeetups = () => {
         .from('meetups')
         .select(
           `
-          *,
-          match:matches!match_id (
+          id,
+          match_id,
+          proposal_message_id,
+          shop_id,
+          location_name,
+          proposed_time,
+          status,
+          user_a_completed,
+          user_b_completed,
+          created_at,
+          updated_at,
+          match:matches (
             id,
             user_a_id,
             user_b_id
           ),
-          shop:shops!shop_id (
+          shop:shops (
             id,
             name,
             address
@@ -54,13 +64,15 @@ const useMeetups = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      if (!data) return { upcoming: [], past: [] };
+      if (!data || data.length === 0) return { upcoming: [], past: [] };
 
       // Filter meetups where current user is participant and resolve other user
       const userMeetups = data.filter((meetup: Record<string, unknown>) => {
         const match = meetup.match as { user_a_id: string; user_b_id: string } | null;
         return match && (match.user_a_id === user.id || match.user_b_id === user.id);
       });
+
+      if (userMeetups.length === 0) return { upcoming: [], past: [] };
 
       // Collect other user IDs to batch-fetch their profiles
       const otherUserIds = userMeetups.map((meetup: Record<string, unknown>) => {

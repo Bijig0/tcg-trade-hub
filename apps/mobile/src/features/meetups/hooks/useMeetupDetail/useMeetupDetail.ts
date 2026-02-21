@@ -39,12 +39,38 @@ const useMeetupDetail = (meetupId: string) => {
         .from('meetups')
         .select(
           `
-          *,
-          match:matches!match_id (
-            *
+          id,
+          match_id,
+          proposal_message_id,
+          shop_id,
+          location_name,
+          proposed_time,
+          status,
+          user_a_completed,
+          user_b_completed,
+          created_at,
+          updated_at,
+          match:matches (
+            id,
+            user_a_id,
+            user_b_id,
+            listing_a_id,
+            listing_b_id,
+            status,
+            created_at,
+            updated_at
           ),
-          shop:shops!shop_id (
-            *
+          shop:shops (
+            id,
+            name,
+            address,
+            hours,
+            website,
+            phone,
+            supported_tcgs,
+            verified,
+            created_at,
+            updated_at
           )
         `,
         )
