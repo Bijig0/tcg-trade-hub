@@ -4,10 +4,10 @@ import { listingKeys } from '../../queryKeys';
 import type { ListingRow } from '@tcg-trade-hub/database';
 
 /**
- * Hook that fetches the current user's listings ordered by created_at desc.
+ * Hook that fetches all of the current user's listings ordered by created_at desc.
  *
- * Only returns listings with an 'active' status. Uses the authenticated
- * user's ID from Supabase auth to filter results.
+ * Returns every status (active, matched, completed, expired) so the screen
+ * can group active listings by type and show a history section.
  */
 const useMyListings = () => {
   return useQuery<ListingRow[], Error>({
@@ -23,7 +23,6 @@ const useMyListings = () => {
         .from('listings')
         .select('*')
         .eq('user_id', user.id)
-        .in('status', ['active', 'matched'])
         .order('created_at', { ascending: false });
 
       if (error) throw error;

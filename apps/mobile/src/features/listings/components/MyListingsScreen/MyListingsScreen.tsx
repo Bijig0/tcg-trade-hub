@@ -1,13 +1,21 @@
-import React, { useCallback } from 'react';
-import { View, Text, Image, Pressable, FlatList, Alert, type ListRenderItemInfo } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { View, Text, Image, Pressable, SectionList, Alert, type SectionListRenderItemInfo } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Plus, Trash2, Clock, ArrowRight } from 'lucide-react-native';
+import { Plus, Trash2, Clock, ArrowRight, ChevronDown, ChevronRight } from 'lucide-react-native';
 import Badge from '@/components/ui/Badge/Badge';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import useMyListings from '../../hooks/useMyListings/useMyListings';
 import useDeleteListing from '../../hooks/useDeleteListing/useDeleteListing';
-import type { ListingRow } from '@tcg-trade-hub/database';
+import type { ListingRow, ListingStatus } from '@tcg-trade-hub/database';
+
+type ListingSection = {
+  title: string;
+  key: string;
+  data: ListingRow[];
+  isHistory?: boolean;
+  historyCount?: number;
+};
 
 const LISTING_TYPE_CONFIG = {
   wts: { label: 'WTS', variant: 'default' as const },
@@ -15,11 +23,17 @@ const LISTING_TYPE_CONFIG = {
   wtt: { label: 'WTT', variant: 'outline' as const },
 } as const;
 
-const STATUS_CONFIG = {
-  active: { label: 'Active', variant: 'default' as const },
-  matched: { label: 'Matched', variant: 'secondary' as const },
-  completed: { label: 'Completed', variant: 'outline' as const },
-  expired: { label: 'Expired', variant: 'destructive' as const },
+const STATUS_CONFIG: Record<ListingStatus, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
+  active: { label: 'Active', variant: 'default' },
+  matched: { label: 'Matched', variant: 'secondary' },
+  completed: { label: 'Completed', variant: 'outline' },
+  expired: { label: 'Removed', variant: 'destructive' },
+};
+
+const SECTION_HEADERS = {
+  wts: 'Want to Sell',
+  wtb: 'Want to Buy',
+  wtt: 'Want to Trade',
 } as const;
 
 const LISTING_TYPE_DESCRIPTIONS = [
@@ -28,18 +42,21 @@ const LISTING_TYPE_DESCRIPTIONS = [
   { type: 'WTT', label: 'Want to Trade', description: 'Find trade partners nearby' },
 ] as const;
 
+const ACTIVE_STATUSES = new Set<ListingStatus>(['active', 'matched']);
+const HISTORY_STATUSES = new Set<ListingStatus>(['completed', 'expired']);
+
 /**
  * Main listings screen and app landing page.
  *
- * When no listings exist, shows a welcoming empty state that explains
- * the three listing types (WTS, WTB, WTT) and prompts the user to
- * create their first listing. When listings exist, shows the user's
- * active listings in a FlatList with FAB for creating more.
+ * Groups active/matched listings by type (WTS, WTB, WTT) with section headers.
+ * Shows a collapsible History section at the bottom for completed/expired listings.
+ * Matched listings are highlighted with a colored left border.
  */
 const MyListingsScreen = () => {
   const router = useRouter();
   const { data: listings, isLoading, refetch, isRefetching } = useMyListings();
   const deleteListing = useDeleteListing();
+  const [historyExpanded, setHistoryExpanded] = useState(false);
 
   const handleCreatePress = () => {
     router.push('/(tabs)/(listings)/new');
@@ -63,6 +80,35 @@ const MyListingsScreen = () => {
     [deleteListing],
   );
 
+  const sections = useMemo(() => {
+    const allListings = listings ?? [];
+
+    const active = allListings.filter((l) => ACTIVE_STATUSES.has(l.status));
+    const history = allListings.filter((l) => HISTORY_STATUSES.has(l.status));
+
+    const wts = active.filter((l) => l.type === 'wts');
+    const wtb = active.filter((l) => l.type === 'wtb');
+    const wtt = active.filter((l) => l.type === 'wtt');
+
+    const result: ListingSection[] = [];
+
+    if (wts.length > 0) result.push({ title: SECTION_HEADERS.wts, key: 'wts', data: wts });
+    if (wtb.length > 0) result.push({ title: SECTION_HEADERS.wtb, key: 'wtb', data: wtb });
+    if (wtt.length > 0) result.push({ title: SECTION_HEADERS.wtt, key: 'wtt', data: wtt });
+
+    if (history.length > 0) {
+      result.push({
+        title: 'History',
+        key: 'history',
+        data: historyExpanded ? history : [],
+        isHistory: true,
+        historyCount: history.length,
+      });
+    }
+
+    return result;
+  }, [listings, historyExpanded]);
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString(undefined, {
@@ -72,14 +118,18 @@ const MyListingsScreen = () => {
     });
   };
 
-  const renderItem = ({ item }: ListRenderItemInfo<ListingRow>) => {
+  const renderItem = ({ item, section }: SectionListRenderItemInfo<ListingRow, ListingSection>) => {
     const typeConfig = LISTING_TYPE_CONFIG[item.type];
     const statusConfig = STATUS_CONFIG[item.status];
+    const isMatched = item.status === 'matched';
+    const isHistory = section.isHistory === true;
 
     return (
       <Pressable
         onPress={() => router.push(`/(tabs)/(listings)/listing/${item.id}`)}
-        className="mx-4 mb-3 flex-row rounded-xl border border-border bg-card p-3 active:bg-accent"
+        className={`mx-4 mb-3 flex-row rounded-xl border border-border bg-card p-3 active:bg-accent ${
+          isMatched ? 'border-l-4 border-l-primary' : ''
+        } ${isHistory ? 'opacity-60' : ''}`}
       >
         <Image
           source={{ uri: item.card_image_url }}
@@ -90,11 +140,14 @@ const MyListingsScreen = () => {
         <View className="ml-3 flex-1 justify-between">
           <View>
             <View className="flex-row items-center gap-2">
-              <Badge variant={typeConfig.variant}>{typeConfig.label}</Badge>
+              {!isHistory && <Badge variant={typeConfig.variant}>{typeConfig.label}</Badge>}
               <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
             </View>
 
-            <Text className="mt-1 text-base font-semibold text-card-foreground" numberOfLines={1}>
+            <Text
+              className={`mt-1 text-base font-semibold ${isHistory ? 'text-muted-foreground' : 'text-card-foreground'}`}
+              numberOfLines={1}
+            >
               {item.card_name}
             </Text>
 
@@ -113,14 +166,49 @@ const MyListingsScreen = () => {
           </View>
         </View>
 
-        <Pressable
-          onPress={() => handleDeletePress(item)}
-          className="ml-2 items-center justify-center px-1"
-          hitSlop={8}
-        >
-          <Trash2 size={18} className="text-destructive" />
-        </Pressable>
+        {!isHistory && (
+          <Pressable
+            onPress={() => handleDeletePress(item)}
+            className="ml-2 items-center justify-center px-1"
+            hitSlop={8}
+          >
+            <Trash2 size={18} className="text-destructive" />
+          </Pressable>
+        )}
       </Pressable>
+    );
+  };
+
+  const renderSectionHeader = ({ section }: { section: ListingSection }) => {
+    if (section.isHistory) {
+      return (
+        <Pressable
+          onPress={() => setHistoryExpanded((prev) => !prev)}
+          className="mx-4 mb-2 mt-6 flex-row items-center justify-between rounded-lg bg-muted/50 px-3 py-2.5"
+        >
+          <View className="flex-row items-center gap-2">
+            <Text className="text-base font-semibold text-muted-foreground">
+              {section.title}
+            </Text>
+            <View className="rounded-full bg-muted px-2 py-0.5">
+              <Text className="text-xs font-medium text-muted-foreground">
+                {section.historyCount}
+              </Text>
+            </View>
+          </View>
+          {historyExpanded ? (
+            <ChevronDown size={18} className="text-muted-foreground" />
+          ) : (
+            <ChevronRight size={18} className="text-muted-foreground" />
+          )}
+        </Pressable>
+      );
+    }
+
+    return (
+      <View className="bg-background px-4 pb-2 pt-5">
+        <Text className="text-base font-semibold text-foreground">{section.title}</Text>
+      </View>
     );
   };
 
@@ -148,7 +236,10 @@ const MyListingsScreen = () => {
     );
   }
 
-  if (!listings || listings.length === 0) {
+  const allListings = listings ?? [];
+  const hasActiveListings = allListings.some((l) => ACTIVE_STATUSES.has(l.status));
+
+  if (allListings.length === 0) {
     return (
       <SafeAreaView className="flex-1 bg-background" edges={['top']}>
         <View className="flex-1 px-6 pt-12">
@@ -189,13 +280,23 @@ const MyListingsScreen = () => {
         <Text className="text-xl font-bold text-foreground">My Listings</Text>
       </View>
 
-      <FlatList
-        data={listings}
+      {!hasActiveListings && (
+        <View className="mx-4 mt-4 rounded-lg border border-dashed border-border bg-muted/30 p-4">
+          <Text className="text-center text-sm text-muted-foreground">
+            No active listings. Tap + to create one.
+          </Text>
+        </View>
+      )}
+
+      <SectionList
+        sections={sections}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
         refreshing={isRefetching}
         onRefresh={refetch}
-        contentContainerClassName="pt-3 pb-24"
+        contentContainerClassName="pb-24"
+        stickySectionHeadersEnabled={false}
       />
 
       <Pressable
