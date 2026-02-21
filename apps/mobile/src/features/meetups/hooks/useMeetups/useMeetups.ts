@@ -30,8 +30,9 @@ const useMeetups = () => {
     queryKey: meetupKeys.all,
     queryFn: async () => {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
 
       if (!user) throw new Error('Not authenticated');
 

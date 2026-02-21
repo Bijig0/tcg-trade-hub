@@ -25,8 +25,9 @@ const useCreateBulkListings = () => {
   return useMutation<ListingRow[], Error, BulkListingInput>({
     mutationFn: async ({ type, selectedCards, wantedCards }) => {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
 
       if (!user) throw new Error('User not authenticated');
 
