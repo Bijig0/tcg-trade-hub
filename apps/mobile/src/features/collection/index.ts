@@ -19,3 +19,5 @@ export { default as useRefreshPrices } from './hooks/useRefreshPrices/useRefresh
 export { default as parseCsvCollection } from './utils/parseCsvCollection/parseCsvCollection';
 
 export { collectionKeys } from './queryKeys';
+
+export type { AddCollectionItem } from './schemas';

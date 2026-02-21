@@ -6,6 +6,7 @@ import {
   ScrollView,
   Pressable,
   TextInput,
+  Switch,
   Alert,
   ActivityIndicator,
 } from 'react-native';
@@ -19,6 +20,7 @@ import Badge from '@/components/ui/Badge/Badge';
 import { useListingFormStore } from '@/stores/listingFormStore/listingFormStore';
 import useCreateListing from '../../hooks/useCreateListing/useCreateListing';
 import CardSearchInput from '../CardSearchInput/CardSearchInput';
+import CollectionCardPicker from '../CollectionCardPicker/CollectionCardPicker';
 import type { TcgType, ListingType, CardCondition, NormalizedCard } from '@tcg-trade-hub/database';
 
 const TOTAL_STEPS = 8;
@@ -67,7 +69,7 @@ const CreateListingFlow = () => {
       '', // 0 unused
       'Listing Type',
       'Select TCG',
-      'Find Card',
+      store.type === 'wtb' ? 'Find Card' : 'Select Card',
       'Condition',
       shouldShowPriceStep ? 'Price' : 'Photos',
       shouldShowPriceStep ? 'Photos' : 'Notes',
@@ -134,6 +136,11 @@ const CreateListingFlow = () => {
 
     setIsPublishing(true);
 
+    const shouldAddToCollection =
+      store.addToCollection &&
+      !store.cardFromCollection &&
+      (store.type === 'wts' || store.type === 'wtt');
+
     createListing.mutate(
       {
         type: store.type,
@@ -149,6 +156,7 @@ const CreateListingFlow = () => {
         asking_price: store.askingPrice ? parseFloat(store.askingPrice) : null,
         description: store.description || null,
         photos: store.photos,
+        addToCollection: shouldAddToCollection,
       },
       {
         onSuccess: () => {
@@ -166,8 +174,15 @@ const CreateListingFlow = () => {
     );
   };
 
-  const handleCardSelect = (card: NormalizedCard) => {
+  const handleCardSelect = (card: NormalizedCard, fromCollection = false, condition?: CardCondition) => {
     store.setCard(card);
+    store.setCardFromCollection(fromCollection);
+    if (fromCollection && condition) {
+      store.setCondition(condition);
+    }
+    if (!fromCollection) {
+      store.setAddToCollection(true);
+    }
   };
 
   const handlePickPhoto = async () => {
@@ -251,16 +266,23 @@ const CreateListingFlow = () => {
           </View>
         );
 
-      // Step 3: Card Search
+      // Step 3: Card Selection (collection-first for WTS/WTT, search for WTB)
       case 3:
         return (
           <View className="gap-4">
-            <Text className="text-base text-muted-foreground">
-              Search for the card you want to list.
-            </Text>
-            <CardSearchInput tcg={store.tcg} onSelect={handleCardSelect} />
+            {store.type === 'wtb' ? (
+              <>
+                <Text className="text-base text-muted-foreground">
+                  Search for the card you want to buy.
+                </Text>
+                <CardSearchInput tcg={store.tcg} onSelect={handleCardSelect} />
+              </>
+            ) : (
+              <CollectionCardPicker tcg={store.tcg} onSelect={handleCardSelect} />
+            )}
+
             {store.card && (
-              <View className="mt-4 flex-row items-center gap-3 rounded-xl border border-primary bg-primary/5 p-3">
+              <View className="mt-2 flex-row items-center gap-3 rounded-xl border border-primary bg-primary/5 p-3">
                 <Image
                   source={{ uri: store.card.imageUrl }}
                   className="h-20 w-14 rounded-lg bg-muted"
@@ -282,6 +304,20 @@ const CreateListingFlow = () => {
                 <Check size={20} className="text-primary" />
               </View>
             )}
+
+            {store.card &&
+              !store.cardFromCollection &&
+              (store.type === 'wts' || store.type === 'wtt') && (
+                <View className="flex-row items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
+                  <Text className="flex-1 text-sm text-foreground">
+                    Add this card to my collection
+                  </Text>
+                  <Switch
+                    value={store.addToCollection}
+                    onValueChange={store.setAddToCollection}
+                  />
+                </View>
+              )}
           </View>
         );
 

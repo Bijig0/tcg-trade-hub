@@ -4,6 +4,7 @@ export { default as CreateListingFlow } from './components/CreateListingFlow/Cre
 
 // Components
 export { default as CardSearchInput } from './components/CardSearchInput/CardSearchInput';
+export { default as CollectionCardPicker } from './components/CollectionCardPicker/CollectionCardPicker';
 
 // Hooks
 export { default as useMyListings } from './hooks/useMyListings/useMyListings';
