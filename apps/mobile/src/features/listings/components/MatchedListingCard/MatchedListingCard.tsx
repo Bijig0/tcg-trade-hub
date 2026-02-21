@@ -3,14 +3,9 @@ import { View, Text, Image, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Clock, MessageCircle } from 'lucide-react-native';
 import Badge from '@/components/ui/Badge/Badge';
+import ListingTypeBadge from '../ListingTypeBadge/ListingTypeBadge';
 import formatListingDate from '../../utils/formatListingDate/formatListingDate';
 import type { MyListingWithMatch } from '../../schemas';
-
-const LISTING_TYPE_CONFIG = {
-  wts: { label: 'WTS', variant: 'default' as const },
-  wtb: { label: 'WTB', variant: 'secondary' as const },
-  wtt: { label: 'WTT', variant: 'outline' as const },
-} as const;
 
 type MatchedListingCardProps = {
   listing: MyListingWithMatch;
@@ -23,7 +18,6 @@ type MatchedListingCardProps = {
  */
 const MatchedListingCard = ({ listing }: MatchedListingCardProps) => {
   const router = useRouter();
-  const typeConfig = LISTING_TYPE_CONFIG[listing.type];
 
   const handleViewChat = () => {
     if (listing.conversation_id) {
@@ -45,7 +39,7 @@ const MatchedListingCard = ({ listing }: MatchedListingCardProps) => {
       <View className="ml-3 flex-1 justify-between">
         <View>
           <View className="flex-row items-center gap-2">
-            <Badge variant={typeConfig.variant}>{typeConfig.label}</Badge>
+            <ListingTypeBadge type={listing.type} />
             <Badge variant="secondary">Matched</Badge>
           </View>
 

@@ -2,15 +2,9 @@ import React from 'react';
 import { View, Text, Image, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Trash2, Clock } from 'lucide-react-native';
-import Badge from '@/components/ui/Badge/Badge';
+import ListingTypeBadge from '../ListingTypeBadge/ListingTypeBadge';
 import formatListingDate from '../../utils/formatListingDate/formatListingDate';
 import type { MyListingWithMatch } from '../../schemas';
-
-const LISTING_TYPE_CONFIG = {
-  wts: { label: 'WTS', variant: 'default' as const },
-  wtb: { label: 'WTB', variant: 'secondary' as const },
-  wtt: { label: 'WTT', variant: 'outline' as const },
-} as const;
 
 type ActiveListingCardProps = {
   listing: MyListingWithMatch;
@@ -24,7 +18,6 @@ type ActiveListingCardProps = {
  */
 const ActiveListingCard = ({ listing, onDelete }: ActiveListingCardProps) => {
   const router = useRouter();
-  const typeConfig = LISTING_TYPE_CONFIG[listing.type];
 
   return (
     <Pressable
@@ -39,7 +32,7 @@ const ActiveListingCard = ({ listing, onDelete }: ActiveListingCardProps) => {
 
       <View className="ml-3 flex-1 justify-between">
         <View>
-          <Badge variant={typeConfig.variant}>{typeConfig.label}</Badge>
+          <ListingTypeBadge type={listing.type} />
 
           <Text
             className="mt-1 text-base font-semibold text-card-foreground"

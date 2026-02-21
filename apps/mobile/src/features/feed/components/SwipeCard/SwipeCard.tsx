@@ -2,16 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, Image, Dimensions, ScrollView } from 'react-native';
 import { cn } from '@/lib/cn';
 import Badge from '@/components/ui/Badge/Badge';
+import { ListingTypeBadge } from '@/features/listings';
 import type { ListingWithDistance } from '../../schemas';
 import formatDistance from '../../utils/formatDistance/formatDistance';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-const LISTING_TYPE_CONFIG = {
-  wts: { label: 'WTS', color: 'bg-emerald-600' },
-  wtb: { label: 'WTB', color: 'bg-blue-600' },
-  wtt: { label: 'WTT', color: 'bg-amber-600' },
-} as const;
 
 const CONDITION_LABELS: Record<string, string> = {
   nm: 'Near Mint',
@@ -36,7 +31,6 @@ export type SwipeCardProps = {
  */
 const SwipeCard = ({ listing, className }: SwipeCardProps) => {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
-  const typeConfig = LISTING_TYPE_CONFIG[listing.type];
 
   const allPhotos = listing.photos.length > 0
     ? listing.photos
@@ -90,9 +84,7 @@ const SwipeCard = ({ listing, className }: SwipeCardProps) => {
         )}
 
         {/* Type badge overlay */}
-        <View className={cn('absolute left-3 top-3 rounded-full px-3 py-1.5', typeConfig.color)}>
-          <Text className="text-sm font-bold text-white">{typeConfig.label}</Text>
-        </View>
+        <ListingTypeBadge type={listing.type} className="absolute left-3 top-3 px-3 py-1.5" />
       </View>
 
       {/* Card info */}

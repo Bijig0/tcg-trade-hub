@@ -8,17 +8,12 @@ import Badge from '@/components/ui/Badge/Badge';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Button from '@/components/ui/Button/Button';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
+import { ListingTypeBadge } from '@/features/listings';
 import useListingDetail from '../../hooks/useListingDetail/useListingDetail';
 import useRecordSwipe from '../../hooks/useRecordSwipe/useRecordSwipe';
 import formatDistance from '../../utils/formatDistance/formatDistance';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-const LISTING_TYPE_CONFIG = {
-  wts: { label: 'Want to Sell', badgeVariant: 'default' as const },
-  wtb: { label: 'Want to Buy', badgeVariant: 'secondary' as const },
-  wtt: { label: 'Want to Trade', badgeVariant: 'outline' as const },
-} as const;
 
 const CONDITION_LABELS: Record<string, string> = {
   nm: 'Near Mint',
@@ -85,7 +80,6 @@ const ListingDetailScreen = () => {
     );
   }
 
-  const typeConfig = LISTING_TYPE_CONFIG[listing.type];
   const allPhotos = listing.photos.length > 0 ? listing.photos : [listing.card_image_url];
 
   return (
@@ -134,7 +128,7 @@ const ListingDetailScreen = () => {
         {/* Card details */}
         <View className="px-4 pt-4">
           <View className="flex-row items-center gap-2">
-            <Badge variant={typeConfig.badgeVariant}>{typeConfig.label}</Badge>
+            <ListingTypeBadge type={listing.type} long />
             <Badge variant="outline">
               {CONDITION_LABELS[listing.condition] ?? listing.condition}
             </Badge>

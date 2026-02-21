@@ -3,6 +3,7 @@ export { default as MyListingsScreen } from './components/MyListingsScreen/MyLis
 export { default as CreateListingFlow } from './components/CreateListingFlow/CreateListingFlow';
 
 // Components
+export { default as ListingTypeBadge } from './components/ListingTypeBadge/ListingTypeBadge';
 export { default as CardSearchInput } from './components/CardSearchInput/CardSearchInput';
 export { default as CollectionCardPicker } from './components/CollectionCardPicker/CollectionCardPicker';
 export { default as TypeSelectStep } from './components/TypeSelectStep/TypeSelectStep';

@@ -4,14 +4,9 @@ import { useRouter } from 'expo-router';
 import { Star } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import Badge from '@/components/ui/Badge/Badge';
+import { ListingTypeBadge } from '@/features/listings';
 import type { ListingWithDistance } from '../../schemas';
 import formatDistance from '../../utils/formatDistance/formatDistance';
-
-const LISTING_TYPE_CONFIG = {
-  wts: { label: 'WTS', variant: 'default' as const },
-  wtb: { label: 'WTB', variant: 'secondary' as const },
-  wtt: { label: 'WTT', variant: 'outline' as const },
-} as const;
 
 const CONDITION_LABELS: Record<string, string> = {
   nm: 'NM',
@@ -35,8 +30,6 @@ export type ListingCardProps = {
  */
 const ListingCard = ({ listing, className }: ListingCardProps) => {
   const router = useRouter();
-  const typeConfig = LISTING_TYPE_CONFIG[listing.type];
-
   const handlePress = () => {
     router.push(`/(tabs)/(listings)/listing/${listing.id}`);
   };
@@ -58,7 +51,7 @@ const ListingCard = ({ listing, className }: ListingCardProps) => {
       <View className="ml-3 flex-1 justify-between">
         <View>
           <View className="flex-row items-center gap-2">
-            <Badge variant={typeConfig.variant}>{typeConfig.label}</Badge>
+            <ListingTypeBadge type={listing.type} />
             <Badge variant="outline">{CONDITION_LABELS[listing.condition] ?? listing.condition}</Badge>
           </View>
 

@@ -4,15 +4,10 @@ import { useRouter } from 'expo-router';
 import { Clock } from 'lucide-react-native';
 import Badge from '@/components/ui/Badge/Badge';
 import type { BadgeVariant } from '@/components/ui/Badge/Badge';
+import ListingTypeBadge from '../ListingTypeBadge/ListingTypeBadge';
 import formatListingDate from '../../utils/formatListingDate/formatListingDate';
 import type { MyListingWithMatch } from '../../schemas';
 import type { ListingStatus } from '@tcg-trade-hub/database';
-
-const LISTING_TYPE_CONFIG = {
-  wts: { label: 'WTS', variant: 'default' as const },
-  wtb: { label: 'WTB', variant: 'secondary' as const },
-  wtt: { label: 'WTT', variant: 'outline' as const },
-} as const;
 
 const STATUS_BADGE_CONFIG: Record<
   Extract<ListingStatus, 'completed' | 'expired'>,
@@ -33,7 +28,6 @@ type HistoryListingCardProps = {
  */
 const HistoryListingCard = ({ listing }: HistoryListingCardProps) => {
   const router = useRouter();
-  const typeConfig = LISTING_TYPE_CONFIG[listing.type];
   const statusConfig =
     STATUS_BADGE_CONFIG[listing.status as 'completed' | 'expired'];
 
@@ -51,7 +45,7 @@ const HistoryListingCard = ({ listing }: HistoryListingCardProps) => {
       <View className="ml-3 flex-1 justify-between">
         <View>
           <View className="flex-row items-center gap-2">
-            <Badge variant={typeConfig.variant}>{typeConfig.label}</Badge>
+            <ListingTypeBadge type={listing.type} />
             {statusConfig && (
               <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
             )}
