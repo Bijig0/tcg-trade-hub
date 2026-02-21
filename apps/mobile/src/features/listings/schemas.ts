@@ -31,6 +31,7 @@ export const CreateListingFormSchema = z.object({
     .optional(),
   description: z.string().max(500, 'Description must be 500 characters or less').nullable().optional(),
   photos: z.array(z.string()).max(6, 'Maximum 6 photos').default([]),
+  addToCollection: z.boolean().default(false),
 });
 
 export type CreateListingForm = z.infer<typeof CreateListingFormSchema>;

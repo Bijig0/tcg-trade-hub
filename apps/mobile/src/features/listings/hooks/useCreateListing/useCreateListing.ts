@@ -3,6 +3,7 @@ import { randomUUID } from 'expo-crypto';
 import { supabase } from '@/lib/supabase';
 import { listingKeys } from '../../queryKeys';
 import { feedKeys } from '../../../feed/queryKeys';
+import { collectionKeys } from '../../../collection/queryKeys';
 import type { CreateListingForm } from '../../schemas';
 import type { ListingRow } from '@tcg-trade-hub/database';
 
@@ -76,11 +77,42 @@ const useCreateListing = () => {
 
       if (error) throw error;
 
+      // Auto-add to collection when WTS/WTT uses external search
+      if (form.addToCollection && (form.type === 'wts' || form.type === 'wtt')) {
+        try {
+          await supabase
+            .from('collection_items')
+            .upsert(
+              {
+                user_id: user.id,
+                tcg: form.tcg,
+                external_id: form.card_external_id,
+                card_name: form.card_name,
+                set_name: form.card_set,
+                set_code: '',
+                card_number: form.card_number,
+                image_url: form.card_image_url,
+                rarity: form.card_rarity ?? null,
+                condition: form.condition,
+                quantity: 1,
+                is_wishlist: false,
+                is_sealed: false,
+                market_price: form.card_market_price ?? null,
+              },
+              { onConflict: 'user_id,external_id,condition,is_wishlist' },
+            );
+        } catch {
+          // Non-blocking: collection add failure shouldn't prevent listing success
+        }
+      }
+
       return data as ListingRow;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: listingKeys.myListings() });
       queryClient.invalidateQueries({ queryKey: feedKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: collectionKeys.myCollection() });
+      queryClient.invalidateQueries({ queryKey: collectionKeys.portfolioValue() });
     },
   });
 };

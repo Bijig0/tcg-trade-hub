@@ -11,6 +11,8 @@ type ListingFormState = {
   askingPrice: string;
   photos: string[];
   description: string;
+  addToCollection: boolean;
+  cardFromCollection: boolean;
   setStep: (step: number) => void;
   setType: (type: ListingType) => void;
   setTcg: (tcg: TcgType) => void;
@@ -20,6 +22,8 @@ type ListingFormState = {
   addPhoto: (uri: string) => void;
   removePhoto: (index: number) => void;
   setDescription: (desc: string) => void;
+  setAddToCollection: (val: boolean) => void;
+  setCardFromCollection: (val: boolean) => void;
   reset: () => void;
 };
 
@@ -32,6 +36,8 @@ const INITIAL_STATE = {
   askingPrice: '',
   photos: [] as string[],
   description: '',
+  addToCollection: true,
+  cardFromCollection: false,
 };
 
 export const useListingFormStore = create<ListingFormState>()(
@@ -46,6 +52,8 @@ export const useListingFormStore = create<ListingFormState>()(
     addPhoto: (uri) => set((s) => { s.photos.push(uri); }),
     removePhoto: (index) => set((s) => { s.photos.splice(index, 1); }),
     setDescription: (desc) => set((s) => { s.description = desc; }),
+    setAddToCollection: (val) => set((s) => { s.addToCollection = val; }),
+    setCardFromCollection: (val) => set((s) => { s.cardFromCollection = val; }),
     reset: () => set(() => ({ ...INITIAL_STATE })),
   })),
 );
