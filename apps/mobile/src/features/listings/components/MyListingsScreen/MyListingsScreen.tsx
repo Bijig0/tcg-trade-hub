@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, FlatList, Pressable, Alert } from 'react-native';
+import { View, Text, SectionList, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Plus, ArrowRight, Package, Handshake, Archive } from 'lucide-react-native';
@@ -12,6 +12,7 @@ import ActiveListingCard from '../ActiveListingCard/ActiveListingCard';
 import MatchedListingCard from '../MatchedListingCard/MatchedListingCard';
 import HistoryListingCard from '../HistoryListingCard/HistoryListingCard';
 import type { MyListingWithMatch, ListingTab } from '../../schemas';
+import type { ListingType } from '@tcg-trade-hub/database';
 import type { SegmentedFilterItem } from '@/components/ui/SegmentedFilter/SegmentedFilter';
 
 const LISTING_TYPE_DESCRIPTIONS = [
@@ -19,6 +20,35 @@ const LISTING_TYPE_DESCRIPTIONS = [
   { type: 'WTB', label: 'Want to Buy', description: 'Post cards you\'re looking for' },
   { type: 'WTT', label: 'Want to Trade', description: 'Find trade partners nearby' },
 ] as const;
+
+const TYPE_SECTION_HEADERS: Record<ListingType, string> = {
+  wts: 'Want to Sell',
+  wtb: 'Want to Buy',
+  wtt: 'Want to Trade',
+};
+
+/** Order in which type sections appear */
+const TYPE_ORDER: ListingType[] = ['wts', 'wtb', 'wtt'];
+
+type TypeSection = {
+  title: string;
+  type: ListingType;
+  data: MyListingWithMatch[];
+};
+
+/**
+ * Groups a flat listing array into sections by listing type.
+ * Only includes sections that have at least one listing.
+ */
+const groupByType = (items: MyListingWithMatch[]): TypeSection[] => {
+  const byType: Record<ListingType, MyListingWithMatch[]> = { wts: [], wtb: [], wtt: [] };
+  for (const item of items) {
+    byType[item.type].push(item);
+  }
+  return TYPE_ORDER
+    .filter((t) => byType[t].length > 0)
+    .map((t) => ({ title: TYPE_SECTION_HEADERS[t], type: t, data: byType[t] }));
+};
 
 const EMPTY_STATE_CONFIG: Record<ListingTab, { icon: typeof Package; title: string; subtitle: string }> = {
   active: {
@@ -88,6 +118,19 @@ const MyListingsScreen = () => {
   );
 
   const currentData = groups[activeTab];
+
+  const sections = useMemo(() => groupByType(currentData), [currentData]);
+
+  const renderSectionHeader = useCallback(
+    ({ section }: { section: TypeSection }) => (
+      <View className="bg-background px-4 pb-2 pt-4">
+        <Text className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          {section.title}
+        </Text>
+      </View>
+    ),
+    [],
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: MyListingWithMatch }) => {
@@ -201,15 +244,17 @@ const MyListingsScreen = () => {
         onValueChange={setActiveTab}
       />
 
-      <FlatList
-        data={currentData}
+      <SectionList
+        sections={sections}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
         ListEmptyComponent={renderEmptyState}
         refreshing={isRefetching}
         onRefresh={refetch}
-        contentContainerClassName="pb-24 pt-3"
-        contentContainerStyle={currentData.length === 0 ? { flex: 1 } : undefined}
+        contentContainerClassName="pb-24"
+        contentContainerStyle={sections.length === 0 ? { flex: 1 } : undefined}
+        stickySectionHeadersEnabled={false}
       />
 
       <Pressable
