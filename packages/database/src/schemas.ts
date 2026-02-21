@@ -132,6 +132,7 @@ export const ListingRowSchema = z.object({
   asking_price: z.number().nullable(),
   description: z.string().nullable(),
   photos: z.array(z.string()),
+  trade_wants: z.unknown().nullable(),
   status: ListingStatusSchema,
   created_at: z.string(),
   updated_at: z.string(),
@@ -148,6 +149,7 @@ export const ListingInsertSchema = ListingRowSchema.omit({
   photos: z.array(z.string()).default([]),
   card_rarity: z.string().nullable().optional(),
   card_market_price: z.number().nullable().optional(),
+  trade_wants: z.unknown().nullable().optional(),
 });
 
 export const SwipeRowSchema = z.object({

@@ -6,7 +6,6 @@ import {
   ScrollView,
   Pressable,
   TextInput,
-  Switch,
   Alert,
   ActivityIndicator,
 } from 'react-native';
@@ -19,22 +18,20 @@ import Button from '@/components/ui/Button/Button';
 import Badge from '@/components/ui/Badge/Badge';
 import { useListingFormStore } from '@/stores/listingFormStore/listingFormStore';
 import useCreateListing from '../../hooks/useCreateListing/useCreateListing';
+import useCreateBulkListings from '../../hooks/useCreateBulkListings/useCreateBulkListings';
 import CardSearchInput from '../CardSearchInput/CardSearchInput';
-import CollectionCardPicker from '../CollectionCardPicker/CollectionCardPicker';
-import type { TcgType, ListingType, CardCondition, NormalizedCard } from '@tcg-trade-hub/database';
-
-const TOTAL_STEPS = 8;
+import TypeSelectStep from '../TypeSelectStep/TypeSelectStep';
+import MultiCardSelector from '../MultiCardSelector/MultiCardSelector';
+import BulkPricingStep from '../BulkPricingStep/BulkPricingStep';
+import WantedCardPicker from '../WantedCardPicker/WantedCardPicker';
+import WtsConfirmStep from '../WtsConfirmStep/WtsConfirmStep';
+import WttConfirmStep from '../WttConfirmStep/WttConfirmStep';
+import type { TcgType, CardCondition, NormalizedCard } from '@tcg-trade-hub/database';
 
 const TCG_OPTIONS: { label: string; value: TcgType }[] = [
   { label: 'Pokemon', value: 'pokemon' },
   { label: 'Magic: The Gathering', value: 'mtg' },
   { label: 'Yu-Gi-Oh!', value: 'yugioh' },
-];
-
-const TYPE_OPTIONS: { label: string; value: ListingType; description: string }[] = [
-  { label: 'Want to Sell', value: 'wts', description: 'List a card you want to sell' },
-  { label: 'Want to Buy', value: 'wtb', description: 'Looking for a specific card to buy' },
-  { label: 'Want to Trade', value: 'wtt', description: 'Trade cards with other collectors' },
 ];
 
 const CONDITION_OPTIONS: { label: string; value: CardCondition; description: string }[] = [
@@ -45,82 +42,134 @@ const CONDITION_OPTIONS: { label: string; value: CardCondition; description: str
   { label: 'Damaged (DMG)', value: 'dmg', description: 'Major damage, creases, or tears' },
 ];
 
+const WTB_TOTAL_STEPS = 7;
+const WTS_TOTAL_STEPS = 4;
+const WTT_TOTAL_STEPS = 4;
+
 /**
- * Multi-step create listing form.
+ * Multi-step create listing form with branching per listing type.
  *
- * 8 steps: Type -> TCG -> Card Search -> Condition -> Price (conditional,
- * WTS only) -> Photos -> Notes -> Review & Publish.
- *
- * Uses useListingFormStore for state persistence across steps. Step indicator
- * at top with back/next navigation.
+ * - WTS (4 steps): Type -> Multi-select from collection -> Bulk pricing -> Confirm & publish
+ * - WTT (4 steps): Type -> Multi-select to offer -> Search wanted cards -> Confirm & publish
+ * - WTB (7 steps): Type -> TCG -> Card search -> Condition -> Photos -> Notes -> Review & publish
  */
 const CreateListingFlow = () => {
   const router = useRouter();
   const store = useListingFormStore();
   const createListing = useCreateListing();
+  const createBulkListings = useCreateBulkListings();
   const [isPublishing, setIsPublishing] = useState(false);
 
-  // Calculate the effective step (skip price step for non-WTS)
-  const shouldShowPriceStep = store.type === 'wts';
-  const effectiveStep = store.step;
-
-  const getStepLabel = (step: number): string => {
-    const labels = [
-      '', // 0 unused
-      'Listing Type',
-      'Select TCG',
-      store.type === 'wtb' ? 'Find Card' : 'Select Card',
-      'Condition',
-      shouldShowPriceStep ? 'Price' : 'Photos',
-      shouldShowPriceStep ? 'Photos' : 'Notes',
-      shouldShowPriceStep ? 'Notes' : 'Review',
-      'Review',
-    ];
-    return labels[step] ?? '';
+  const getTotalSteps = (): number => {
+    switch (store.type) {
+      case 'wts': return WTS_TOTAL_STEPS;
+      case 'wtt': return WTT_TOTAL_STEPS;
+      case 'wtb': return WTB_TOTAL_STEPS;
+      default: return WTS_TOTAL_STEPS; // default before selection
+    }
   };
 
+  const totalSteps = getTotalSteps();
+
+  const getStepLabel = (step: number): string => {
+    if (step === 1) return 'Listing Type';
+
+    switch (store.type) {
+      case 'wts':
+        return ['', '', 'Select Cards', 'Set Prices', 'Review'][step] ?? '';
+      case 'wtt':
+        return ['', '', 'Select Cards', 'Wanted Cards', 'Review'][step] ?? '';
+      case 'wtb':
+        return ['', '', 'Select TCG', 'Find Card', 'Condition', 'Photos', 'Notes', 'Review'][step] ?? '';
+      default:
+        return '';
+    }
+  };
+
+  // --- WTB helpers (preserved from original) ---
+
+  const handleCardSelect = (card: NormalizedCard, fromCollection = false, condition?: CardCondition) => {
+    store.setCard(card);
+    store.setCardFromCollection(fromCollection);
+    if (fromCollection && condition) {
+      store.setCondition(condition);
+    }
+    if (!fromCollection) {
+      store.setAddToCollection(true);
+    }
+  };
+
+  const handlePickPhoto = async () => {
+    if (store.photos.length >= 6) {
+      Alert.alert('Limit Reached', 'Maximum 6 photos per listing');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+      allowsMultipleSelection: true,
+      selectionLimit: 6 - store.photos.length,
+    });
+
+    if (!result.canceled) {
+      for (const asset of result.assets) {
+        store.addPhoto(asset.uri);
+      }
+    }
+  };
+
+  // --- canProceed by type ---
+
   const canProceed = (): boolean => {
-    switch (effectiveStep) {
-      case 1:
-        return store.type !== null;
-      case 2:
-        return store.tcg !== null;
-      case 3:
-        return store.card !== null;
-      case 4:
-        return store.condition !== null;
-      case 5:
-        return shouldShowPriceStep ? store.askingPrice.length > 0 : true;
-      case 6:
-        return true;
-      case 7:
-        return true;
-      case 8:
-        return true;
+    if (store.step === 1) return store.type !== null;
+
+    switch (store.type) {
+      case 'wts':
+        switch (store.step) {
+          case 2: return store.selectedCards.length > 0;
+          case 3: return store.selectedCards.every((sc) => sc.askingPrice.length > 0);
+          case 4: return true;
+          default: return false;
+        }
+      case 'wtt':
+        switch (store.step) {
+          case 2: return store.selectedCards.length > 0;
+          case 3: return store.wantedCards.length > 0;
+          case 4: return true;
+          default: return false;
+        }
+      case 'wtb':
+        switch (store.step) {
+          case 2: return store.tcg !== null;
+          case 3: return store.card !== null;
+          case 4: return store.condition !== null;
+          case 5: return true; // photos optional
+          case 6: return true; // notes optional
+          case 7: return true;
+          default: return false;
+        }
       default:
         return false;
     }
   };
 
   const handleNext = () => {
-    if (effectiveStep < TOTAL_STEPS) {
-      // Skip price step for non-WTS listings
-      const nextStep = effectiveStep + 1;
-      if (nextStep === 5 && !shouldShowPriceStep) {
-        store.setStep(6);
-      } else {
-        store.setStep(nextStep);
-      }
+    if (store.step < totalSteps) {
+      store.setStep(store.step + 1);
     }
   };
 
   const handleBack = () => {
-    if (effectiveStep > 1) {
-      const prevStep = effectiveStep - 1;
-      if (prevStep === 5 && !shouldShowPriceStep) {
-        store.setStep(4);
+    if (store.step > 1) {
+      // When going back from step 2 to step 1, clear flow-specific state
+      if (store.step === 2) {
+        const currentType = store.type;
+        store.reset();
+        // Keep type selected so user sees which they picked
+        if (currentType) store.setType(currentType);
       } else {
-        store.setStep(prevStep);
+        store.setStep(store.step - 1);
       }
     } else {
       store.reset();
@@ -128,7 +177,9 @@ const CreateListingFlow = () => {
     }
   };
 
-  const handlePublish = async () => {
+  // --- Publish handlers ---
+
+  const handlePublishWtb = async () => {
     if (!store.type || !store.tcg || !store.card || !store.condition) {
       Alert.alert('Error', 'Please complete all required fields');
       return;
@@ -174,70 +225,106 @@ const CreateListingFlow = () => {
     );
   };
 
-  const handleCardSelect = (card: NormalizedCard, fromCollection = false, condition?: CardCondition) => {
-    store.setCard(card);
-    store.setCardFromCollection(fromCollection);
-    if (fromCollection && condition) {
-      store.setCondition(condition);
-    }
-    if (!fromCollection) {
-      store.setAddToCollection(true);
-    }
-  };
-
-  const handlePickPhoto = async () => {
-    if (store.photos.length >= 6) {
-      Alert.alert('Limit Reached', 'Maximum 6 photos per listing');
+  const handlePublishBulk = async () => {
+    if (store.selectedCards.length === 0) {
+      Alert.alert('Error', 'No cards selected');
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-      allowsMultipleSelection: true,
-      selectionLimit: 6 - store.photos.length,
-    });
+    setIsPublishing(true);
 
-    if (!result.canceled) {
-      for (const asset of result.assets) {
-        store.addPhoto(asset.uri);
-      }
+    createBulkListings.mutate(
+      {
+        type: store.type as 'wts' | 'wtt',
+        selectedCards: store.selectedCards,
+        wantedCards: store.type === 'wtt' ? store.wantedCards : undefined,
+      },
+      {
+        onSuccess: (listings) => {
+          store.reset();
+          router.back();
+          Alert.alert(
+            'Success',
+            `${listings.length} listing${listings.length !== 1 ? 's' : ''} published!`,
+          );
+        },
+        onError: (error) => {
+          Alert.alert('Error', error.message);
+        },
+        onSettled: () => {
+          setIsPublishing(false);
+        },
+      },
+    );
+  };
+
+  const handlePublish = () => {
+    if (store.type === 'wtb') {
+      handlePublishWtb();
+    } else {
+      handlePublishBulk();
     }
   };
 
-  const renderStepContent = () => {
-    switch (effectiveStep) {
-      // Step 1: Type
-      case 1:
-        return (
-          <View className="gap-3">
-            <Text className="mb-2 text-base text-muted-foreground">
-              What do you want to do?
-            </Text>
-            {TYPE_OPTIONS.map((opt) => (
-              <Pressable
-                key={opt.value}
-                onPress={() => store.setType(opt.value)}
-                className={cn(
-                  'rounded-xl border p-4',
-                  store.type === opt.value
-                    ? 'border-primary bg-primary/10'
-                    : 'border-border bg-card',
-                )}
-              >
-                <Text className="text-base font-semibold text-foreground">{opt.label}</Text>
-                <Text className="mt-1 text-sm text-muted-foreground">{opt.description}</Text>
-                {store.type === opt.value && (
-                  <View className="absolute right-3 top-3">
-                    <Check size={20} className="text-primary" />
-                  </View>
-                )}
-              </Pressable>
-            ))}
-          </View>
-        );
+  // --- Render step content by type ---
 
-      // Step 2: TCG
+  const renderWtsStep = () => {
+    switch (store.step) {
+      case 2:
+        return (
+          <MultiCardSelector
+            selectedCards={store.selectedCards}
+            onToggle={store.toggleSelectedCard}
+          />
+        );
+      case 3:
+        return (
+          <BulkPricingStep
+            selectedCards={store.selectedCards}
+            onUpdatePrice={store.updateSelectedCardPrice}
+            onSetAllToMarket={store.setAllPricesToMarket}
+          />
+        );
+      case 4:
+        return <WtsConfirmStep selectedCards={store.selectedCards} />;
+      default:
+        return null;
+    }
+  };
+
+  const renderWttStep = () => {
+    switch (store.step) {
+      case 2:
+        return (
+          <MultiCardSelector
+            selectedCards={store.selectedCards}
+            onToggle={store.toggleSelectedCard}
+          />
+        );
+      case 3:
+        return (
+          <WantedCardPicker
+            selectedCards={store.selectedCards}
+            wantedCards={store.wantedCards}
+            onAddWanted={store.addWantedCard}
+            onRemoveWanted={store.removeWantedCard}
+          />
+        );
+      case 4:
+        return (
+          <WttConfirmStep
+            selectedCards={store.selectedCards}
+            wantedCards={store.wantedCards}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  const renderWtbStep = () => {
+    switch (store.step) {
+      // Step 2: TCG Selection
       case 2:
         return (
           <View className="gap-3">
@@ -266,20 +353,14 @@ const CreateListingFlow = () => {
           </View>
         );
 
-      // Step 3: Card Selection (collection-first for WTS/WTT, search for WTB)
+      // Step 3: Card Search
       case 3:
         return (
           <View className="gap-4">
-            {store.type === 'wtb' ? (
-              <>
-                <Text className="text-base text-muted-foreground">
-                  Search for the card you want to buy.
-                </Text>
-                <CardSearchInput tcg={store.tcg} onSelect={handleCardSelect} />
-              </>
-            ) : (
-              <CollectionCardPicker tcg={store.tcg} onSelect={handleCardSelect} />
-            )}
+            <Text className="text-base text-muted-foreground">
+              Search for the card you want to buy.
+            </Text>
+            <CardSearchInput tcg={store.tcg} onSelect={handleCardSelect} />
 
             {store.card && (
               <View className="mt-2 flex-row items-center gap-3 rounded-xl border border-primary bg-primary/5 p-3">
@@ -304,20 +385,6 @@ const CreateListingFlow = () => {
                 <Check size={20} className="text-primary" />
               </View>
             )}
-
-            {store.card &&
-              !store.cardFromCollection &&
-              (store.type === 'wts' || store.type === 'wtt') && (
-                <View className="flex-row items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
-                  <Text className="flex-1 text-sm text-foreground">
-                    Add this card to my collection
-                  </Text>
-                  <Switch
-                    value={store.addToCollection}
-                    onValueChange={store.setAddToCollection}
-                  />
-                </View>
-              )}
           </View>
         );
 
@@ -326,7 +393,7 @@ const CreateListingFlow = () => {
         return (
           <View className="gap-3">
             <Text className="mb-2 text-base text-muted-foreground">
-              What condition is the card in?
+              What condition are you looking for?
             </Text>
             {CONDITION_OPTIONS.map((opt) => (
               <Pressable
@@ -351,34 +418,8 @@ const CreateListingFlow = () => {
           </View>
         );
 
-      // Step 5: Price (WTS only)
+      // Step 5: Photos
       case 5:
-        return (
-          <View className="gap-4">
-            <Text className="text-base text-muted-foreground">
-              Set your asking price.
-            </Text>
-            <View className="flex-row items-center gap-2">
-              <Text className="text-2xl font-bold text-foreground">$</Text>
-              <TextInput
-                value={store.askingPrice}
-                onChangeText={store.setAskingPrice}
-                keyboardType="decimal-pad"
-                placeholder="0.00"
-                className="flex-1 rounded-lg border border-input bg-background px-4 py-3 text-2xl font-semibold text-foreground"
-                placeholderTextColor="#a1a1aa"
-              />
-            </View>
-            {store.card?.marketPrice != null && (
-              <Text className="text-sm text-muted-foreground">
-                Market price: ${store.card.marketPrice.toFixed(2)}
-              </Text>
-            )}
-          </View>
-        );
-
-      // Step 6: Photos
-      case 6:
         return (
           <View className="gap-4">
             <Text className="text-base text-muted-foreground">
@@ -414,8 +455,8 @@ const CreateListingFlow = () => {
           </View>
         );
 
-      // Step 7: Notes
-      case 7:
+      // Step 6: Notes
+      case 6:
         return (
           <View className="gap-4">
             <Text className="text-base text-muted-foreground">
@@ -424,7 +465,7 @@ const CreateListingFlow = () => {
             <TextInput
               value={store.description}
               onChangeText={store.setDescription}
-              placeholder="e.g., Fresh pull, never played. Open to offers..."
+              placeholder="e.g., Looking for NM only, willing to pay above market..."
               multiline
               numberOfLines={5}
               maxLength={500}
@@ -438,8 +479,8 @@ const CreateListingFlow = () => {
           </View>
         );
 
-      // Step 8: Review
-      case 8:
+      // Step 7: Review
+      case 7:
         return (
           <View className="gap-4">
             <Text className="mb-2 text-base font-medium text-foreground">
@@ -468,11 +509,6 @@ const CreateListingFlow = () => {
                       <Badge variant="outline">{store.condition.toUpperCase()}</Badge>
                     )}
                   </View>
-                  {store.askingPrice && (
-                    <Text className="mt-1 text-base font-semibold text-foreground">
-                      ${parseFloat(store.askingPrice).toFixed(2)}
-                    </Text>
-                  )}
                 </View>
               </View>
             )}
@@ -511,6 +547,30 @@ const CreateListingFlow = () => {
     }
   };
 
+  const renderStepContent = () => {
+    if (store.step === 1) {
+      return (
+        <TypeSelectStep
+          selectedType={store.type}
+          onSelect={(type) => {
+            // On type change, clear flow-specific state
+            if (store.type && store.type !== type) {
+              store.reset();
+            }
+            store.setType(type);
+          }}
+        />
+      );
+    }
+
+    switch (store.type) {
+      case 'wts': return renderWtsStep();
+      case 'wtt': return renderWttStep();
+      case 'wtb': return renderWtbStep();
+      default: return null;
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       {/* Header */}
@@ -520,22 +580,22 @@ const CreateListingFlow = () => {
         </Pressable>
         <View className="flex-1">
           <Text className="text-lg font-semibold text-foreground">
-            {getStepLabel(effectiveStep)}
+            {getStepLabel(store.step)}
           </Text>
           <Text className="text-xs text-muted-foreground">
-            Step {effectiveStep} of {TOTAL_STEPS}
+            Step {store.step} of {totalSteps}
           </Text>
         </View>
       </View>
 
       {/* Step indicator */}
       <View className="flex-row gap-1 px-4 py-3">
-        {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+        {Array.from({ length: totalSteps }).map((_, i) => (
           <View
             key={`step-${i}`}
             className={cn(
               'h-1 flex-1 rounded-full',
-              i + 1 <= effectiveStep ? 'bg-primary' : 'bg-muted',
+              i + 1 <= store.step ? 'bg-primary' : 'bg-muted',
             )}
           />
         ))}
@@ -552,7 +612,7 @@ const CreateListingFlow = () => {
 
       {/* Bottom navigation */}
       <View className="border-t border-border bg-background px-4 pb-6 pt-3">
-        {effectiveStep === TOTAL_STEPS ? (
+        {store.step === totalSteps && store.type ? (
           <Button
             size="lg"
             onPress={handlePublish}
@@ -563,7 +623,9 @@ const CreateListingFlow = () => {
               <ActivityIndicator color="white" />
             ) : (
               <Text className="text-base font-semibold text-primary-foreground">
-                Publish Listing
+                {store.type === 'wtb'
+                  ? 'Publish Listing'
+                  : `Publish ${store.selectedCards.length} Listing${store.selectedCards.length !== 1 ? 's' : ''}`}
               </Text>
             )}
           </Button>

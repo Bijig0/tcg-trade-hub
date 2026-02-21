@@ -145,6 +145,7 @@ export type Database = {
           asking_price: number | null;
           description: string | null;
           photos: string[];
+          trade_wants: Json | null;
           status: ListingStatus;
           created_at: string;
           updated_at: string;
@@ -165,6 +166,7 @@ export type Database = {
           asking_price?: number | null;
           description?: string | null;
           photos?: string[];
+          trade_wants?: Json | null;
           status?: ListingStatus;
           created_at?: string;
           updated_at?: string;
@@ -185,6 +187,7 @@ export type Database = {
           asking_price?: number | null;
           description?: string | null;
           photos?: string[];
+          trade_wants?: Json | null;
           status?: ListingStatus;
           created_at?: string;
           updated_at?: string;
