@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,19 +14,29 @@ import useDeleteListing from '../../hooks/useDeleteListing/useDeleteListing';
 import MyBundleSummary from '../MyBundleSummary/MyBundleSummary';
 import ReceivedOfferCard from '../ReceivedOfferCard/ReceivedOfferCard';
 import ShopMarker from '../ShopMarker/ShopMarker';
+import OfferDetailSheet from '../OfferDetailSheet/OfferDetailSheet';
+import CardDetailSheet from '../CardDetailSheet/CardDetailSheet';
+import type { CardDetailSheetItem } from '../CardDetailSheet/CardDetailSheet';
 import type { OfferWithItems } from '../../schemas';
+import type { OfferItemRow, ListingItemRow } from '@tcg-trade-hub/database';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 /**
  * Owner-facing listing detail screen with map and bottom sheet
- * showing received offers.
+ * showing received offers. Supports stacked sheets for offer detail
+ * and card detail views.
  */
 const MyListingDetailScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const flatListRef = useRef<BottomSheetFlatListMethods>(null);
+  const offerDetailRef = useRef<BottomSheet>(null);
+  const cardDetailRef = useRef<BottomSheet>(null);
+
+  const [selectedOffer, setSelectedOffer] = useState<OfferWithItems | null>(null);
+  const [selectedCard, setSelectedCard] = useState<CardDetailSheetItem | null>(null);
 
   const { data: listing, isLoading: isListingLoading } = useListingDetail(id ?? '');
   const { data: offerData, isLoading: isOffersLoading } = useListingOffers(id ?? '');
@@ -69,6 +79,50 @@ const MyListingDetailScreen = () => {
     },
     [id, respondToOffer],
   );
+
+  // --- Stacked sheet handlers ---
+
+  const handleOfferPress = useCallback((offer: OfferWithItems) => {
+    setSelectedOffer(offer);
+    offerDetailRef.current?.expand();
+  }, []);
+
+  const handleOfferDetailClose = useCallback(() => {
+    setSelectedOffer(null);
+  }, []);
+
+  const handleOfferCardPress = useCallback((item: OfferItemRow) => {
+    setSelectedCard({
+      card_name: item.card_name,
+      card_image_url: item.card_image_url,
+      card_external_id: item.card_external_id,
+      tcg: item.tcg,
+      card_set: item.card_set,
+      card_number: item.card_number,
+      condition: item.condition,
+      market_price: item.market_price,
+    });
+    cardDetailRef.current?.expand();
+  }, []);
+
+  const handleListingCardPress = useCallback((item: ListingItemRow) => {
+    setSelectedCard({
+      card_name: item.card_name,
+      card_image_url: item.card_image_url,
+      card_external_id: item.card_external_id,
+      tcg: item.tcg,
+      card_set: item.card_set,
+      card_number: item.card_number,
+      condition: item.condition,
+      market_price: item.market_price,
+      card_rarity: item.card_rarity,
+    });
+    cardDetailRef.current?.expand();
+  }, []);
+
+  const handleCardDetailClose = useCallback(() => {
+    setSelectedCard(null);
+  }, []);
 
   // Map region from shops
   const initialRegion = useMemo(() => {
@@ -130,6 +184,7 @@ const MyListingDetailScreen = () => {
       onAccept={handleAccept}
       onDecline={handleDecline}
       isResponding={respondToOffer.isPending}
+      onPress={handleOfferPress}
     />
   );
 
@@ -179,7 +234,7 @@ const MyListingDetailScreen = () => {
         </View>
       </SafeAreaView>
 
-      {/* Bottom sheet */}
+      {/* Main bottom sheet — offers list */}
       <BottomSheet
         ref={bottomSheetRef}
         index={1}
@@ -198,7 +253,7 @@ const MyListingDetailScreen = () => {
             contentContainerStyle={{ paddingBottom: 20 }}
             ListHeaderComponent={
               <>
-                <MyBundleSummary listing={listing} />
+                <MyBundleSummary listing={listing} onCardPress={handleListingCardPress} />
                 <View className="border-t border-border px-4 pb-2 pt-3">
                   <Text className="text-sm font-semibold text-muted-foreground">
                     {offerCount} Offer{offerCount !== 1 ? 's' : ''}
@@ -209,7 +264,7 @@ const MyListingDetailScreen = () => {
           />
         ) : (
           <BottomSheetScrollView>
-            <MyBundleSummary listing={listing} />
+            <MyBundleSummary listing={listing} onCardPress={handleListingCardPress} />
             <View className="border-t border-border px-4 pb-2 pt-3">
               {isOffersLoading ? (
                 <Skeleton className="h-5 w-32 rounded" />
@@ -235,6 +290,24 @@ const MyListingDetailScreen = () => {
           </BottomSheetScrollView>
         )}
       </BottomSheet>
+
+      {/* Stacked: Offer detail sheet */}
+      <OfferDetailSheet
+        ref={offerDetailRef}
+        offer={selectedOffer}
+        onClose={handleOfferDetailClose}
+        onAccept={handleAccept}
+        onDecline={handleDecline}
+        isResponding={respondToOffer.isPending}
+        onCardPress={handleOfferCardPress}
+      />
+
+      {/* Stacked: Card detail sheet */}
+      <CardDetailSheet
+        ref={cardDetailRef}
+        item={selectedCard}
+        onClose={handleCardDetailClose}
+      />
     </View>
   );
 };
