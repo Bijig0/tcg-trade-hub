@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Layers, MessageCircle, Calendar, User } from 'lucide-react-native';
+import { Compass, Layers, MessageCircle, Calendar, User } from 'lucide-react-native';
 import { useTheme } from '@/context/ThemeProvider';
 
 const TabsLayout = () => {
@@ -14,6 +14,13 @@ const TabsLayout = () => {
         tabBarStyle: { backgroundColor: tabBar.backgroundColor },
       }}
     >
+      <Tabs.Screen
+        name="(discover)"
+        options={{
+          title: 'Discover',
+          tabBarIcon: ({ color, size }) => <Compass size={size} color={color} />,
+        }}
+      />
       <Tabs.Screen
         name="(listings)"
         options={{
