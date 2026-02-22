@@ -76,7 +76,7 @@ const buildDemoData = (listing: ListingWithDistance | undefined): RelevantListin
       updated_at: new Date(Date.now() - i * 3600000).toISOString(),
       owner: {
         id: `demo-user-${i}`,
-        display_name: traderNames[i],
+        display_name: traderNames[i] ?? `Trader ${i + 1}`,
         avatar_url: null,
         rating_score: 3.5 + Math.round(Math.random() * 15) / 10,
         total_trades: 5 + Math.floor(Math.random() * 80),
