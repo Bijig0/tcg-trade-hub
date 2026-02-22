@@ -1,15 +1,11 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, FlatList, ScrollView, Pressable, Image, Alert, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
-import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
 import { Search, X } from 'lucide-react-native';
 import useMyCollection from '../../hooks/useMyCollection/useMyCollection';
 import useMySealedProducts from '../../hooks/useMySealedProducts/useMySealedProducts';
 import usePortfolioValue from '../../hooks/usePortfolioValue/usePortfolioValue';
 import useRemoveCollectionItem from '../../hooks/useRemoveCollectionItem/useRemoveCollectionItem';
-import useAddCollectionItem from '../../hooks/useAddCollectionItem/useAddCollectionItem';
-import parseCsvCollection from '../../utils/parseCsvCollection/parseCsvCollection';
 import groupCollectionItems from '../../utils/groupCollectionItems/groupCollectionItems';
 import CollectionCardGroup from '../CollectionCardGroup/CollectionCardGroup';
 import Button from '@/components/ui/Button/Button';
@@ -42,7 +38,6 @@ const CollectionScreen: React.FC = () => {
   const { data: sealed } = useMySealedProducts();
   const portfolio = usePortfolioValue();
   const removeItem = useRemoveCollectionItem();
-  const addItem = useAddCollectionItem();
 
   const [activeTab, setActiveTab] = useState<Tab>('cards');
   const [filterTcg, setFilterTcg] = useState<FilterTcg>('all');
@@ -77,52 +72,9 @@ const CollectionScreen: React.FC = () => {
     ]);
   }, [removeItem]);
 
-  const handleCsvImport = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({ type: 'text/csv' });
-      if (result.canceled || !result.assets?.[0]) return;
-
-      const fileUri = result.assets[0].uri;
-      const csvText = await FileSystem.readAsStringAsync(fileUri);
-      const parsed = parseCsvCollection(csvText);
-
-      if (parsed.length === 0) {
-        Alert.alert('Import Failed', 'No valid card data found in the CSV file.');
-        return;
-      }
-
-      Alert.alert(
-        'Import Collection',
-        `Found ${parsed.length} cards. Import as Pokemon cards?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Import',
-            onPress: () => {
-              for (const card of parsed) {
-                addItem.mutate({
-                  tcg: 'pokemon',
-                  external_id: `csv-${card.card_name}-${card.set_name}`,
-                  card_name: card.card_name,
-                  set_name: card.set_name,
-                  set_code: '',
-                  card_number: card.card_number,
-                  image_url: '',
-                  condition: card.condition,
-                  quantity: card.quantity,
-                  is_wishlist: false,
-                  is_sealed: false,
-                });
-              }
-              Alert.alert('Success', `Imported ${parsed.length} cards.`);
-            },
-          },
-        ],
-      );
-    } catch {
-      Alert.alert('Error', 'Failed to read the CSV file.');
-    }
-  };
+  const handleCsvImport = useCallback(() => {
+    router.push('/(tabs)/(listings)/csv-import');
+  }, [router]);
 
   const handleAddPress = useCallback(() => {
     if (activeTab === 'sealed') {
