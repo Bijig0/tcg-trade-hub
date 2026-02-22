@@ -145,6 +145,12 @@ DECLARE
   u5_l1 uuid := 'b2000005-0000-0000-0000-000000000001';
   u5_l2 uuid := 'b2000005-0000-0000-0000-000000000002';
 
+  -- Offer UUIDs (needed by matches)
+  offer_1 uuid := 'c1000001-0000-0000-0000-000000000001';
+  offer_2 uuid := 'c1000001-0000-0000-0000-000000000002';
+  offer_3 uuid := 'c1000001-0000-0000-0000-000000000003';
+  offer_4 uuid := 'c1000001-0000-0000-0000-000000000004';
+
   -- Match UUIDs
   match_1 uuid := 'd1000001-0000-0000-0000-000000000001';
   match_2 uuid := 'd1000001-0000-0000-0000-000000000002';
@@ -239,55 +245,99 @@ BEGIN
   WHERE id = me;
 
   -- =========================================================================
-  -- LISTINGS
+  -- LISTINGS (bundle schema: title, cash_amount, total_value)
   -- =========================================================================
 
   -- Current user's listings
-  INSERT INTO public.listings (id, user_id, type, tcg, card_name, card_set, card_number, card_external_id, card_image_url, card_rarity, card_market_price, condition, asking_price, description, status, created_at)
+  INSERT INTO public.listings (id, user_id, type, tcg, title, cash_amount, total_value, description, status, created_at)
   VALUES
-    (my_l1, me, 'wts', 'pokemon', 'Charizard VMAX',   'Darkness Ablaze',  '020/189', 'swsh3-20',  'https://images.pokemontcg.io/swsh3/20_hires.png',  'VMAX',             45.00, 'nm', 42.00, 'Perfect condition, sleeved immediately after pulling.',                   'active',  now() - interval '6 days'),
-    (my_l2, me, 'wtb', 'yugioh', 'Dark Magician',     'Legend of Blue Eyes', 'LOB-005', 'LOB-005', '',                                                   'Ultra Rare',       25.00, 'lp', 20.00, 'Looking for the original LOB art. LP or better.',                        'active',  now() - interval '5 days'),
-    (my_l3, me, 'wtt', 'mtg',    'Force of Will',     'Alliances',         '42',      'ALL-42',   '',                                                   'Uncommon',         85.00, 'lp', NULL,  'Trading for dual lands or other Legacy staples.',                        'active',  now() - interval '4 days'),
-    (my_l4, me, 'wts', 'pokemon', 'Pikachu VMAX',     'Vivid Voltage',     '044/185', 'swsh4-44', 'https://images.pokemontcg.io/swsh4/44_hires.png',   'VMAX',             18.50, 'nm', 16.00, 'Rainbow chonky boy. Mint condition.',                                    'matched', now() - interval '12 days')
+    (my_l1, me, 'wts', 'pokemon', 'Charizard VMAX',         42.00, 87.00,  'Perfect condition, sleeved immediately after pulling.',                   'active',  now() - interval '6 days'),
+    (my_l2, me, 'wtb', 'yugioh',  'Dark Magician',          20.00, 45.00,  'Looking for the original LOB art. LP or better.',                        'active',  now() - interval '5 days'),
+    (my_l3, me, 'wtt', 'mtg',     'Force of Will',           0.00, 85.00,  'Trading for dual lands or other Legacy staples.',                        'active',  now() - interval '4 days'),
+    (my_l4, me, 'wts', 'pokemon', 'Pikachu VMAX',           16.00, 34.50,  'Rainbow chonky boy. Mint condition.',                                    'matched', now() - interval '12 days')
   ON CONFLICT (id) DO NOTHING;
 
   -- Fake user listings (appear in feed for swiping)
-  INSERT INTO public.listings (id, user_id, type, tcg, card_name, card_set, card_number, card_external_id, card_image_url, card_rarity, card_market_price, condition, asking_price, description, status, created_at)
+  INSERT INTO public.listings (id, user_id, type, tcg, title, cash_amount, total_value, description, status, created_at)
   VALUES
     -- Alex Chen - Pokemon collector
-    (u1_l1, u1, 'wts', 'pokemon', 'Umbreon VMAX Alt Art',  'Evolving Skies',    '215/203', 'swsh7-215', 'https://images.pokemontcg.io/swsh7/215_hires.png', 'Secret Rare',       180.00, 'nm', 170.00, 'Pristine alt art Umbreon. Centering is excellent.',            'active',  now() - interval '3 days'),
-    (u1_l2, u1, 'wtb', 'pokemon', 'Charizard ex SAR',      'Obsidian Flames',   '234/197', 'sv3-234',   'https://images.pokemontcg.io/sv3/234_hires.png',   'Special Art Rare',   95.00, 'nm', 80.00, 'Need this for my Charizard collection. NM only please.',       'active',  now() - interval '2 days'),
+    (u1_l1, u1, 'wts', 'pokemon', 'Umbreon VMAX Alt Art',  170.00, 350.00, 'Pristine alt art Umbreon. Centering is excellent.',            'active',  now() - interval '3 days'),
+    (u1_l2, u1, 'wtb', 'pokemon', 'Charizard ex SAR',       80.00, 175.00, 'Need this for my Charizard collection. NM only please.',       'active',  now() - interval '2 days'),
 
     -- Sarah Mitchell - MTG player
-    (u2_l1, u2, 'wts', 'mtg',     'Ragavan, Nimble Pilferer', 'Modern Horizons 2', '138',  'MH2-138',  '',                                                   'Mythic Rare',       55.00, 'nm', 50.00, 'Pack fresh Modern staple. Can meet at Good Games.',            'active',  now() - interval '4 days'),
-    (u2_l2, u2, 'wtt', 'mtg',     'The One Ring',             'Tales of Middle-earth', '246', 'LTR-246', '',                                                  'Mythic Rare',       65.00, 'nm', NULL,  'Trading for Modern or Legacy staples. Prefer in-person.',      'active',  now() - interval '1 day'),
+    (u2_l1, u2, 'wts', 'mtg',     'Ragavan, Nimble Pilferer', 50.00, 105.00, 'Pack fresh Modern staple. Can meet at Good Games.',            'active',  now() - interval '4 days'),
+    (u2_l2, u2, 'wtt', 'mtg',     'The One Ring',              0.00,  65.00, 'Trading for Modern or Legacy staples. Prefer in-person.',      'active',  now() - interval '1 day'),
 
     -- James Wilson - YuGiOh fan
-    (u3_l1, u3, 'wts', 'yugioh',  'Blue-Eyes White Dragon',   'Legend of Blue Eyes', 'LOB-001', 'LOB-001', '',                                                'Ultra Rare',        40.00, 'lp', 35.00, 'Classic BEWD from LOB. Light play, no creases.',               'active',  now() - interval '8 days'),
-    (u3_l2, u3, 'wtt', 'yugioh',  'Ash Blossom & Joyous Spring', 'Maximum Crisis', 'MACR-036', 'MACR-036', '',                                               'Secret Rare',       22.00, 'nm', NULL,  'Trading for other hand traps or meta staples.',                'active',  now() - interval '6 days'),
+    (u3_l1, u3, 'wts', 'yugioh',  'Blue-Eyes White Dragon',   35.00,  75.00, 'Classic BEWD from LOB. Light play, no creases.',               'active',  now() - interval '8 days'),
+    (u3_l2, u3, 'wtt', 'yugioh',  'Ash Blossom & Joyous Spring', 0.00, 22.00, 'Trading for other hand traps or meta staples.',                'active',  now() - interval '6 days'),
 
     -- Emma Rodriguez - Multi-TCG
-    (u4_l1, u4, 'wts', 'pokemon', 'Mew VMAX Alt Art',         'Fusion Strike',     '268/264', 'swsh8-268', 'https://images.pokemontcg.io/swsh8/268_hires.png', 'Secret Rare',      55.00, 'nm', 50.00, 'Beautiful alt art, freshly pulled. Sleeved and top-loaded.',   'active',  now() - interval '2 days'),
-    (u4_l2, u4, 'wts', 'mtg',     'Sheoldred, the Apocalypse', 'Dominaria United', '107',     'DMU-107',  '',                                                  'Mythic Rare',      75.00, 'nm', 70.00, 'Standard powerhouse. Can meet anywhere in Melbourne.',         'active',  now() - interval '5 days'),
+    (u4_l1, u4, 'wts', 'pokemon', 'Mew VMAX Alt Art',       50.00, 105.00, 'Beautiful alt art, freshly pulled. Sleeved and top-loaded.',   'active',  now() - interval '2 days'),
+    (u4_l2, u4, 'wts', 'mtg',     'Sheoldred, the Apocalypse', 70.00, 145.00, 'Standard powerhouse. Can meet anywhere in Melbourne.',         'active',  now() - interval '5 days'),
 
     -- Liam O'Brien - Casual Pokemon
-    (u5_l1, u5, 'wts', 'pokemon', 'Gengar VMAX Alt Art',      'Fusion Strike',     '271/264', 'swsh8-271', 'https://images.pokemontcg.io/swsh8/271_hires.png', 'Secret Rare',      28.00, 'nm', 25.00, 'Alt art Gengar. Prefer local trade at a card shop.',           'active',  now() - interval '1 day'),
-    (u5_l2, u5, 'wtb', 'pokemon', 'Pikachu VMAX Rainbow',     'Vivid Voltage',     '188/185', 'swsh4-188', 'https://images.pokemontcg.io/swsh4/188_hires.png', 'Secret Rare',     200.00, 'nm', 180.00, 'Chasing the rainbow Pikachu! Please help.',                   'active',  now() - interval '3 days')
+    (u5_l1, u5, 'wts', 'pokemon', 'Gengar VMAX Alt Art',    25.00,  53.00, 'Alt art Gengar. Prefer local trade at a card shop.',           'active',  now() - interval '1 day'),
+    (u5_l2, u5, 'wtb', 'pokemon', 'Pikachu VMAX Rainbow',  180.00, 380.00, 'Chasing the rainbow Pikachu! Please help.',                   'active',  now() - interval '3 days')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- =========================================================================
+  -- LISTING ITEMS (one per listing, with card details and images)
+  -- =========================================================================
+
+  INSERT INTO public.listing_items (listing_id, card_name, card_image_url, card_external_id, tcg, card_set, card_number, card_rarity, condition, market_price, asking_price, quantity)
+  VALUES
+    -- Current user
+    (my_l1, 'Charizard VMAX',   'https://images.pokemontcg.io/swsh3/20_hires.png',                                                'swsh3-20',  'pokemon', 'Darkness Ablaze',    '020/189', 'VMAX',             'nm', 45.00,  42.00, 1),
+    (my_l2, 'Dark Magician',    'https://images.ygoprodeck.com/images/cards_small/46986414.jpg',                                    'LOB-005',   'yugioh',  'Legend of Blue Eyes', 'LOB-005', 'Ultra Rare',       'lp', 25.00,  20.00, 1),
+    (my_l3, 'Force of Will',    'https://cards.scryfall.io/normal/front/c/9/c9c7cf66-5a68-4834-98ea-47a25e46f4ed.jpg',              'ALL-42',    'mtg',     'Alliances',           '42',      'Uncommon',         'lp', 85.00,  NULL,  1),
+    (my_l4, 'Pikachu VMAX',     'https://images.pokemontcg.io/swsh4/44_hires.png',                                                 'swsh4-44',  'pokemon', 'Vivid Voltage',       '044/185', 'VMAX',             'nm', 18.50,  16.00, 1),
+
+    -- Alex Chen
+    (u1_l1, 'Umbreon VMAX Alt Art', 'https://images.pokemontcg.io/swsh7/215_hires.png',                                            'swsh7-215', 'pokemon', 'Evolving Skies',      '215/203', 'Secret Rare',      'nm', 180.00, 170.00, 1),
+    (u1_l2, 'Charizard ex SAR',     'https://images.pokemontcg.io/sv3/234_hires.png',                                              'sv3-234',   'pokemon', 'Obsidian Flames',     '234/197', 'Special Art Rare', 'nm', 95.00,  80.00,  1),
+
+    -- Sarah Mitchell
+    (u2_l1, 'Ragavan, Nimble Pilferer', 'https://cards.scryfall.io/normal/front/a/9/a9738cda-adb1-47fb-9f4c-ecd930228c4d.jpg',     'MH2-138',   'mtg',     'Modern Horizons 2',   '138',     'Mythic Rare',      'nm', 55.00,  50.00,  1),
+    (u2_l2, 'The One Ring',             'https://cards.scryfall.io/normal/front/d/5/d5806e68-1054-458e-866d-1f2470f682b2.jpg',      'LTR-246',   'mtg',     'Tales of Middle-earth','246',     'Mythic Rare',      'nm', 65.00,  NULL,   1),
+
+    -- James Wilson
+    (u3_l1, 'Blue-Eyes White Dragon',      'https://images.ygoprodeck.com/images/cards_small/89631139.jpg',                         'LOB-001',   'yugioh',  'Legend of Blue Eyes',  'LOB-001', 'Ultra Rare',       'lp', 40.00,  35.00, 1),
+    (u3_l2, 'Ash Blossom & Joyous Spring', 'https://images.ygoprodeck.com/images/cards_small/14558127.jpg',                        'MACR-036',  'yugioh',  'Maximum Crisis',       'MACR-036','Secret Rare',      'nm', 22.00,  NULL,  1),
+
+    -- Emma Rodriguez
+    (u4_l1, 'Mew VMAX Alt Art',         'https://images.pokemontcg.io/swsh8/268_hires.png',                                        'swsh8-268', 'pokemon', 'Fusion Strike',        '268/264', 'Secret Rare',      'nm', 55.00,  50.00, 1),
+    (u4_l2, 'Sheoldred, the Apocalypse','https://cards.scryfall.io/normal/front/d/6/d67be074-cdd4-41d9-ac89-0a0456c4e4b2.jpg',     'DMU-107',   'mtg',     'Dominaria United',     '107',     'Mythic Rare',      'nm', 75.00,  70.00, 1),
+
+    -- Liam O'Brien
+    (u5_l1, 'Gengar VMAX Alt Art',   'https://images.pokemontcg.io/swsh8/271_hires.png',                                           'swsh8-271', 'pokemon', 'Fusion Strike',        '271/264', 'Secret Rare',      'nm', 28.00,  25.00,  1),
+    (u5_l2, 'Pikachu VMAX Rainbow',  'https://images.pokemontcg.io/swsh4/188_hires.png',                                           'swsh4-188', 'pokemon', 'Vivid Voltage',        '188/185', 'Secret Rare',      'nm', 200.00, 180.00, 1)
+  ON CONFLICT DO NOTHING;
+
+  -- =========================================================================
+  -- OFFERS (needed by matches in the bundle schema)
+  -- =========================================================================
+  INSERT INTO public.offers (id, listing_id, offerer_id, status, cash_amount, message, created_at)
+  VALUES
+    (offer_1, my_l1, u1,  'accepted',  80.00, 'I have the Charizard ex SAR you want! Straight swap?',  now() - interval '5 days'),
+    (offer_2, my_l3, u2,  'accepted',   0.00, 'Will trade my One Ring for your Force of Will.',        now() - interval '3 days'),
+    (offer_3, my_l2, u3,  'accepted',  35.00, 'I have a LOB Dark Magician for you!',                   now() - interval '14 days'),
+    (offer_4, my_l4, u4,  'accepted',  50.00, 'Interested in your Pikachu VMAX.',                      now() - interval '10 days')
   ON CONFLICT (id) DO NOTHING;
 
   -- =========================================================================
   -- MATCHES (4 matches involving current user)
   -- =========================================================================
-  INSERT INTO public.matches (id, user_a_id, user_b_id, listing_a_id, listing_b_id, status, created_at)
+  INSERT INTO public.matches (id, user_a_id, user_b_id, listing_id, offer_id, status, created_at)
   VALUES
     -- Active: me + Alex (Pokemon trade)
-    (match_1, me, u1, my_l1, u1_l2, 'active',    now() - interval '5 days'),
+    (match_1, me, u1, my_l1, offer_1, 'active',    now() - interval '5 days'),
     -- Active: me + Sarah (MTG trade)
-    (match_2, me, u2, my_l3, u2_l2, 'active',    now() - interval '3 days'),
+    (match_2, me, u2, my_l3, offer_2, 'active',    now() - interval '3 days'),
     -- Completed: me + James (YuGiOh trade)
-    (match_3, me, u3, my_l2, u3_l1, 'completed', now() - interval '14 days'),
+    (match_3, me, u3, my_l2, offer_3, 'completed', now() - interval '14 days'),
     -- Completed: me + Emma (Pokemon trade)
-    (match_4, me, u4, my_l4, u4_l1, 'completed', now() - interval '10 days')
+    (match_4, me, u4, my_l4, offer_4, 'completed', now() - interval '10 days')
   ON CONFLICT (id) DO NOTHING;
 
   -- =========================================================================
@@ -377,16 +427,16 @@ BEGIN
     (me, 'pokemon', 'sv3-234',   'Charizard ex SAR',      'Obsidian Flames',  'sv3',   '234/197', 'https://images.pokemontcg.io/sv3/234_hires.png',   'Special Art Rare','nm', 1, false, 95.00,  NULL,  NULL,  false, NULL, NULL),
     (me, 'pokemon', 'swsh4-44',  'Pikachu VMAX',          'Vivid Voltage',    'swsh4', '044/185', 'https://images.pokemontcg.io/swsh4/44_hires.png',  'VMAX',            'lp', 1, false, 18.50,  NULL,  NULL,  false, NULL, NULL),
     (me, 'pokemon', 'swsh8-268', 'Mew VMAX Alt Art',      'Fusion Strike',    'swsh8', '268/264', 'https://images.pokemontcg.io/swsh8/268_hires.png', 'Secret Rare',     'nm', 1, false, 55.00,  'cgc', '9.5', false, NULL, NULL),
-    (me, 'mtg',     'MH2-138',   'Ragavan, Nimble Pilferer','Modern Horizons 2','MH2',  '138',    '',                                                  'Mythic Rare',     'nm', 2, false, 55.00,  NULL,  NULL,  false, NULL, NULL),
-    (me, 'mtg',     'ALL-42',    'Force of Will',          'Alliances',        'ALL',   '42',     '',                                                  'Uncommon',        'lp', 1, false, 85.00,  NULL,  NULL,  false, NULL, NULL),
-    (me, 'yugioh',  'LOB-005',   'Dark Magician',          'Legend of Blue Eyes','LOB',  '005',    '',                                                  'Ultra Rare',      'mp', 1, false, 25.00,  NULL,  NULL,  false, NULL, NULL)
+    (me, 'mtg',     'MH2-138',   'Ragavan, Nimble Pilferer','Modern Horizons 2','MH2',  '138',    'https://cards.scryfall.io/normal/front/a/9/a9738cda-adb1-47fb-9f4c-ecd930228c4d.jpg', 'Mythic Rare', 'nm', 2, false, 55.00,  NULL,  NULL,  false, NULL, NULL),
+    (me, 'mtg',     'ALL-42',    'Force of Will',          'Alliances',        'ALL',   '42',     'https://cards.scryfall.io/normal/front/c/9/c9c7cf66-5a68-4834-98ea-47a25e46f4ed.jpg', 'Uncommon', 'lp', 1, false, 85.00,  NULL,  NULL,  false, NULL, NULL),
+    (me, 'yugioh',  'LOB-005',   'Dark Magician',          'Legend of Blue Eyes','LOB',  '005',    'https://images.ygoprodeck.com/images/cards_small/46986414.jpg', 'Ultra Rare', 'mp', 1, false, 25.00,  NULL,  NULL,  false, NULL, NULL)
   ON CONFLICT (user_id, external_id, condition, is_wishlist) DO NOTHING;
 
   -- Wishlist items (is_wishlist=true)
   INSERT INTO public.collection_items (user_id, tcg, external_id, card_name, set_name, set_code, card_number, image_url, rarity, condition, quantity, is_wishlist, market_price, is_sealed, product_type, purchase_price)
   VALUES
     (me, 'pokemon', 'swsh4-188', 'Pikachu VMAX Rainbow',  'Vivid Voltage',    'swsh4', '188/185', 'https://images.pokemontcg.io/swsh4/188_hires.png', 'Secret Rare', 'nm', 1, true, 200.00, false, NULL, NULL),
-    (me, 'mtg',     'LTR-246',   'The One Ring',           'Tales of Middle-earth','LTR','246',    '',                                                  'Mythic Rare', 'nm', 1, true, 65.00,  false, NULL, NULL)
+    (me, 'mtg',     'LTR-246',   'The One Ring',           'Tales of Middle-earth','LTR','246',    'https://cards.scryfall.io/normal/front/d/5/d5806e68-1054-458e-866d-1f2470f682b2.jpg', 'Mythic Rare', 'nm', 1, true, 65.00,  false, NULL, NULL)
   ON CONFLICT (user_id, external_id, condition, is_wishlist) DO NOTHING;
 
   -- Sealed products (is_sealed=true)
