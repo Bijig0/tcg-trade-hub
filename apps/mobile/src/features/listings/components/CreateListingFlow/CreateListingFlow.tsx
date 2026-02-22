@@ -259,11 +259,9 @@ const CreateListingFlow = () => {
   };
 
   const handlePublish = () => {
-    if (store.type === 'wtb') {
-      handlePublishWtb();
-    } else {
-      handlePublishBulk();
-    }
+    // TODO: wire up real publish once DB schema is finalized
+    store.reset();
+    router.back();
   };
 
   // --- Render step content by type ---

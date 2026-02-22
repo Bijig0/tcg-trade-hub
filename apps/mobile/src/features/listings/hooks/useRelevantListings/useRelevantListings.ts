@@ -41,8 +41,10 @@ const buildDemoData = (listing: ListingWithDistance | undefined): RelevantListin
     { name: 'Palkia VSTAR', set: 'Astral Radiance', number: '195', price: 22.00, rarity: 'Ultra Rare' },
   ];
 
-  const conditions: Array<'nm' | 'lp' | 'mp'> = ['nm', 'lp', 'mp'];
-  const complementType = listing?.type === 'wts' ? 'wtb' : listing?.type === 'wtb' ? 'wts' : 'wtt';
+  const conditions: CardCondition[] = ['nm', 'lp', 'mp'];
+  const complementType: ListingType = listing?.type === 'wts' ? 'wtb' : listing?.type === 'wtb' ? 'wts' : 'wtt';
+  const tcg: TcgType = (listing?.tcg as TcgType) ?? 'pokemon';
+  const status: ListingStatus = 'active';
 
   const listings: RelevantListing[] = pokemonCards.map((card, i) => {
     // Scatter traders in a ~5km radius around SF center
@@ -56,7 +58,7 @@ const buildDemoData = (listing: ListingWithDistance | undefined): RelevantListin
       id: `demo-${i}`,
       user_id: `demo-user-${i}`,
       type: complementType,
-      tcg: 'pokemon' as const,
+      tcg,
       card_name: card.name,
       card_set: card.set,
       card_number: card.number,
@@ -64,12 +66,12 @@ const buildDemoData = (listing: ListingWithDistance | undefined): RelevantListin
       card_image_url: `https://images.pokemontcg.io/swsh45/${String(i + 1).padStart(3, '0')}_hires.png`,
       card_rarity: card.rarity,
       card_market_price: card.price,
-      condition: conditions[i % conditions.length],
+      condition: conditions[i % conditions.length] ?? 'nm',
       asking_price: card.price,
       description: null,
       photos: [],
       trade_wants: null,
-      status: 'active' as const,
+      status,
       created_at: new Date(Date.now() - i * 3600000).toISOString(),
       updated_at: new Date(Date.now() - i * 3600000).toISOString(),
       owner: {
