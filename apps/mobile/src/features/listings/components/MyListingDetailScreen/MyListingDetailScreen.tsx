@@ -3,7 +3,7 @@ import { View, Text, Pressable, ActivityIndicator, Dimensions } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import MapView, { Region } from 'react-native-maps';
-import BottomSheet, { BottomSheetFlatList, type BottomSheetFlatListMethods } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetFlatList, BottomSheetView, type BottomSheetFlatListMethods } from '@gorhom/bottom-sheet';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react-native';
 
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
@@ -221,37 +221,40 @@ const MyListingDetailScreen = () => {
         ref={bottomSheetRef}
         index={1}
         snapPoints={snapPoints}
+        enableDynamicSizing={false}
         enablePanDownToClose={false}
-        backgroundStyle={{ borderRadius: 20 }}
+        backgroundStyle={{ borderRadius: 20, backgroundColor: '#0f0f13' }}
         handleIndicatorStyle={{ backgroundColor: '#a1a1aa', width: 40 }}
       >
-        {/* Card summary (always visible) */}
-        <MyCardSummary listing={listing} />
+        <BottomSheetView>
+          {/* Card summary (always visible) */}
+          <MyCardSummary listing={listing} />
 
-        {/* Section header */}
-        <View className="border-t border-border px-4 pb-2 pt-3">
-          {isRelevantLoading ? (
-            <Skeleton className="h-5 w-32 rounded" />
-          ) : (
-            <Text className="text-sm font-semibold text-muted-foreground">
-              {count > 0 ? `${count} ${sectionLabel}` : `No ${sectionLabel.toLowerCase()} found`}
-            </Text>
-          )}
-        </View>
+          {/* Section header */}
+          <View className="border-t border-border px-4 pb-2 pt-3">
+            {isRelevantLoading ? (
+              <Skeleton className="h-5 w-32 rounded" />
+            ) : (
+              <Text className="text-sm font-semibold text-muted-foreground">
+                {count > 0 ? `${count} ${sectionLabel}` : `No ${sectionLabel.toLowerCase()} found`}
+              </Text>
+            )}
+          </View>
+        </BottomSheetView>
 
         {/* Scrollable list of relevant listings */}
         {isRelevantLoading ? (
-          <View className="gap-3 px-4">
+          <BottomSheetView style={{ gap: 12, paddingHorizontal: 16 }}>
             {Array.from({ length: 3 }).map((_, i) => (
               <Skeleton key={`skel-${i}`} className="h-28 w-full rounded-xl" />
             ))}
-          </View>
+          </BottomSheetView>
         ) : count === 0 ? (
-          <View className="flex-1 items-center justify-center px-4 py-8">
+          <BottomSheetView style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
             <Text className="text-center text-sm text-muted-foreground">
               No matching listings found nearby. Try expanding your search radius in settings.
             </Text>
-          </View>
+          </BottomSheetView>
         ) : (
           <BottomSheetFlatList
             ref={flatListRef}
