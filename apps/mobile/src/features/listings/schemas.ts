@@ -115,3 +115,34 @@ export type MyListingWithMatch = ListingRow & {
 
 export const LISTING_TABS = ['active', 'matched', 'history'] as const;
 export type ListingTab = (typeof LISTING_TABS)[number];
+
+// --- Relevant listings (owner detail page) ---
+
+/** Owner info for a relevant listing, with jittered coordinates for privacy */
+export type RelevantListingOwner = {
+  id: string;
+  display_name: string;
+  avatar_url: string | null;
+  rating_score: number;
+  total_trades: number;
+  approximate_lat: number;
+  approximate_lng: number;
+};
+
+/** A listing returned by get-relevant-listings, enriched with owner + scoring */
+export type RelevantListing = ListingRow & {
+  owner: RelevantListingOwner;
+  relevance_score: number;
+  distance_km: number;
+};
+
+/** A nearby game store returned by get-relevant-listings */
+export type RelevantShop = {
+  id: string;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  supported_tcgs: string[];
+  verified: boolean;
+};
