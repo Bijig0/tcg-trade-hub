@@ -120,14 +120,14 @@ const BulkPricingStep = ({
 
             {/* Price input + match market button */}
             <View className="flex-row items-center gap-2">
-              <View className="flex-1 flex-row items-center rounded-lg border border-input bg-background px-3">
+              <View className="flex-1 flex-row items-center rounded-lg border border-input bg-background px-3 py-2.5">
                 <DollarSign size={16} className="text-muted-foreground" />
                 <TextInput
                   value={sc.askingPrice}
                   onChangeText={(val) => onUpdatePrice(sc.card.externalId, val)}
                   keyboardType="decimal-pad"
                   placeholder="0.00"
-                  className="flex-1 py-2.5 text-base text-foreground"
+                  className="flex-1 text-base text-foreground"
                   placeholderTextColor="#a1a1aa"
                 />
               </View>

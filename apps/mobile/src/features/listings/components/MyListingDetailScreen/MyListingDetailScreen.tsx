@@ -37,7 +37,7 @@ const MyListingDetailScreen = () => {
   const flatListRef = useRef<BottomSheetFlatListMethods>(null);
 
   const { data: listing, isLoading: isListingLoading } = useListingDetail(id ?? '');
-  const { data: relevantData, isLoading: isRelevantLoading } = useRelevantListings(id ?? '');
+  const { data: relevantData, isLoading: isRelevantLoading } = useRelevantListings(id ?? '', listing);
   const initiateContact = useInitiateContact();
   const deleteListing = useDeleteListing();
 
