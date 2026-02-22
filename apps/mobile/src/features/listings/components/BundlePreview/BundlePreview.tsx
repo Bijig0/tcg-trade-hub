@@ -21,8 +21,9 @@ const SIZE_CLASSES = {
  */
 const BundlePreview = ({ items, size = 'md', className }: BundlePreviewProps) => {
   const sizeConfig = SIZE_CLASSES[size];
-  const displayItems = items.slice(0, 4);
-  const remaining = items.length - 4;
+  const safeItems = items ?? [];
+  const displayItems = safeItems.slice(0, 4);
+  const remaining = safeItems.length - 4;
 
   return (
     <View className={cn('flex-row items-center', sizeConfig.gap, className)}>
