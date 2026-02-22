@@ -21,11 +21,14 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('users')
       .select('*')
       .eq('id', userId)
       .maybeSingle();
+    if (error) {
+      throw error;
+    }
     setProfile(data);
   };
 
@@ -36,25 +39,60 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        setSession(newSession);
-        if (newSession?.user.id) {
-          try {
-            await fetchProfile(newSession.user.id);
-          } catch (error) {
-            console.error('Failed to fetch profile:', error);
-          }
-        } else {
+    let isMounted = true;
+
+    const applySessionState = async (newSession: Session | null) => {
+      if (!isMounted) return;
+
+      setSession(newSession);
+
+      if (!newSession?.user.id) {
+        setProfile(null);
+        return;
+      }
+
+      try {
+        await fetchProfile(newSession.user.id);
+      } catch (error) {
+        console.error('Failed to fetch profile:', error);
+        if (isMounted) {
           setProfile(null);
         }
-        if (event === 'INITIAL_SESSION') {
+      }
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+      // Avoid awaiting Supabase queries inside this callback; it can stall auth init on cold start.
+      if (event === 'INITIAL_SESSION') {
+        return;
+      }
+      void applySessionState(newSession);
+    });
+
+    void (async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          throw error;
+        }
+        await applySessionState(data.session);
+      } catch (error) {
+        console.error('Failed to initialize auth session:', error);
+        if (isMounted) {
+          setSession(null);
+          setProfile(null);
+        }
+      } finally {
+        if (isMounted) {
           setIsLoading(false);
         }
-      },
-    );
+      }
+    })();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
