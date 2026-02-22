@@ -23,10 +23,29 @@ export type PriceData = {
 };
 
 /**
+ * A single date/price data point for charting.
+ */
+export type PricePoint = {
+  date: string; // ISO date string (YYYY-MM-DD)
+  price: number;
+};
+
+/**
+ * Price history over a time range, with summary stats.
+ */
+export type PriceHistory = {
+  points: PricePoint[];
+  high: number;
+  low: number;
+  changePercent: number;
+};
+
+/**
  * Extended card detail with prices, art, and gameplay info.
  */
 export type CardDetail = NormalizedCard & {
   prices: PriceData | null;
+  priceHistory: PriceHistory | null;
   artist: string | null;
   types: string[];
   hp: string | null;

@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, TextInput, Pressable } from 'react-native';
-import { DollarSign } from 'lucide-react-native';
+import { DollarSign, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react-native';
 import Badge from '@/components/ui/Badge/Badge';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
+import PriceChart from '@/components/PriceChart/PriceChart';
+import OfferInfoBanner from '../OfferInfoBanner/OfferInfoBanner';
+import CardPricingDetailScreen from '../CardPricingDetailScreen/CardPricingDetailScreen';
 import useCardPriceData from '../../hooks/useCardPriceData/useCardPriceData';
 import type { SelectedCard } from '../../schemas';
+import type { CardDetail } from '@/services/cardData/types';
 
 type BulkPricingStepProps = {
   selectedCards: SelectedCard[];
@@ -13,10 +17,11 @@ type BulkPricingStepProps = {
 };
 
 /**
- * Step 3 for WTS — eBay-style pricing grid.
+ * Step 3 for WTS — eBay-style pricing grid with mini price charts.
  *
- * Shows each selected card with market data (low/mid/high/market) and a
- * price input. "Match market" per card and "Match all to market" bulk button.
+ * Shows each selected card with market data (low/mid/high/market), a mini
+ * price chart, and a price input. Cards are tappable for full detail view.
+ * Includes "Open to all offers" info banner.
  */
 const BulkPricingStep = ({
   selectedCards,
@@ -25,12 +30,27 @@ const BulkPricingStep = ({
 }: BulkPricingStepProps) => {
   const externalIds = selectedCards.map((sc) => sc.card.externalId);
   const { priceMap, isLoading } = useCardPriceData(externalIds);
+  const [viewingCard, setViewingCard] = useState<{
+    detail: CardDetail;
+    condition: string;
+  } | null>(null);
 
   // Calculate total asking price
   const totalAsking = selectedCards.reduce((sum, sc) => {
     const price = parseFloat(sc.askingPrice);
     return sum + (isNaN(price) ? 0 : price);
   }, 0);
+
+  // If viewing a card detail, render the detail screen inline
+  if (viewingCard) {
+    return (
+      <CardPricingDetailScreen
+        detail={viewingCard.detail}
+        condition={viewingCard.condition}
+        onBack={() => setViewingCard(null)}
+      />
+    );
+  }
 
   return (
     <View className="gap-4">
@@ -50,6 +70,9 @@ const BulkPricingStep = ({
         </Pressable>
       </View>
 
+      {/* Offer info banner */}
+      <OfferInfoBanner />
+
       {/* Card pricing rows */}
       {selectedCards.map((sc) => {
         const detail = priceMap.get(sc.card.externalId);
@@ -59,12 +82,27 @@ const BulkPricingStep = ({
             ? Object.values(detail.prices.variants)[0]
             : null);
 
+        const priceHistory = detail?.priceHistory ?? null;
+        const changePercent = priceHistory?.changePercent ?? 0;
+        const isPositive = changePercent >= 0;
+
+        const handleCardPress = () => {
+          if (detail) {
+            setViewingCard({ detail, condition: sc.condition });
+          }
+        };
+
         return (
           <View
             key={sc.card.externalId}
             className="gap-2 rounded-xl border border-border bg-card p-3"
           >
-            <View className="flex-row items-center gap-3">
+            {/* Tappable card info header */}
+            <Pressable
+              onPress={handleCardPress}
+              className="flex-row items-center gap-3"
+              disabled={!detail}
+            >
               <Image
                 source={{ uri: sc.card.imageUrl }}
                 className="h-16 w-11 rounded-lg bg-muted"
@@ -79,7 +117,17 @@ const BulkPricingStep = ({
                 </Text>
                 <Badge variant="outline">{sc.condition.toUpperCase()}</Badge>
               </View>
-            </View>
+              {detail && (
+                <ChevronRight size={16} className="text-muted-foreground" />
+              )}
+            </Pressable>
+
+            {/* Mini price chart (3M default) */}
+            {!isLoading && priceHistory && priceHistory.points.length >= 2 && (
+              <View className="overflow-hidden rounded-lg">
+                <PriceChart priceHistory={priceHistory} height={80} />
+              </View>
+            )}
 
             {/* Market data row */}
             {isLoading ? (
@@ -90,27 +138,45 @@ const BulkPricingStep = ({
                 <Skeleton className="h-4 w-16 rounded" />
               </View>
             ) : defaultVariant ? (
-              <View className="flex-row flex-wrap gap-x-3 gap-y-1">
-                {defaultVariant.low != null && (
-                  <Text className="text-xs text-muted-foreground">
-                    Low: ${defaultVariant.low.toFixed(2)}
-                  </Text>
-                )}
-                {defaultVariant.mid != null && (
-                  <Text className="text-xs text-muted-foreground">
-                    Mid: ${defaultVariant.mid.toFixed(2)}
-                  </Text>
-                )}
-                {defaultVariant.high != null && (
-                  <Text className="text-xs text-muted-foreground">
-                    High: ${defaultVariant.high.toFixed(2)}
-                  </Text>
-                )}
-                {defaultVariant.market != null && (
-                  <Text className="text-xs font-medium text-foreground">
-                    Market: ${defaultVariant.market.toFixed(2)}
-                  </Text>
-                )}
+              <View className="gap-1">
+                <View className="flex-row flex-wrap gap-x-3 gap-y-1">
+                  {defaultVariant.low != null && (
+                    <Text className="text-xs text-muted-foreground">
+                      Low: ${defaultVariant.low.toFixed(2)}
+                    </Text>
+                  )}
+                  {defaultVariant.mid != null && (
+                    <Text className="text-xs text-muted-foreground">
+                      Mid: ${defaultVariant.mid.toFixed(2)}
+                    </Text>
+                  )}
+                  {defaultVariant.high != null && (
+                    <Text className="text-xs text-muted-foreground">
+                      High: ${defaultVariant.high.toFixed(2)}
+                    </Text>
+                  )}
+                </View>
+                <View className="flex-row items-center gap-1.5">
+                  {defaultVariant.market != null && (
+                    <Text className="text-xs font-medium text-foreground">
+                      Market: ${defaultVariant.market.toFixed(2)}
+                    </Text>
+                  )}
+                  {priceHistory && changePercent !== 0 && (
+                    <View className="flex-row items-center gap-0.5">
+                      {isPositive ? (
+                        <TrendingUp size={12} color="#22c55e" />
+                      ) : (
+                        <TrendingDown size={12} color="#ef4444" />
+                      )}
+                      <Text
+                        className={`text-xs font-medium ${isPositive ? 'text-green-500' : 'text-red-500'}`}
+                      >
+                        {isPositive ? '+' : ''}{changePercent.toFixed(2)}%
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </View>
             ) : sc.card.marketPrice != null ? (
               <Text className="text-xs font-medium text-foreground">

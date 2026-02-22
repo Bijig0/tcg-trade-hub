@@ -1,5 +1,6 @@
 import type { NormalizedCard } from '@tcg-trade-hub/database';
 import type { CardDetail, SetInfo } from './types';
+import generateMockPriceHistory from './generateMockPriceHistory/generateMockPriceHistory';
 
 /** Hardcoded Pokemon cards for development/demo purposes. */
 export const MOCK_POKEMON_CARDS: NormalizedCard[] = [
@@ -290,25 +291,28 @@ export const getMockCardDetail = (externalId: string): CardDetail | null => {
   const card = allCards.find((c) => c.externalId === externalId);
   if (!card) return null;
 
+  const mp = card.marketPrice ?? 0;
+
   return {
     ...card,
     largeImageUrl: card.imageUrl.replace('_small', '').replace('.png', '_hires.png'),
     artist: 'Mock Artist',
     types: card.tcg === 'pokemon' ? ['Fire'] : [],
     hp: card.tcg === 'pokemon' ? '330' : null,
+    priceHistory: mp > 0 ? generateMockPriceHistory(mp) : null,
     prices: {
       variants: {
         normal: {
-          low: (card.marketPrice ?? 0) * 0.8,
+          low: mp * 0.8,
           mid: card.marketPrice,
-          high: (card.marketPrice ?? 0) * 1.3,
+          high: mp * 1.3,
           market: card.marketPrice,
         },
         holofoil: {
-          low: (card.marketPrice ?? 0) * 1.1,
-          mid: (card.marketPrice ?? 0) * 1.4,
-          high: (card.marketPrice ?? 0) * 2.0,
-          market: (card.marketPrice ?? 0) * 1.4,
+          low: mp * 1.1,
+          mid: mp * 1.4,
+          high: mp * 2.0,
+          market: mp * 1.4,
         },
       },
       averageSellPrice: card.marketPrice,
