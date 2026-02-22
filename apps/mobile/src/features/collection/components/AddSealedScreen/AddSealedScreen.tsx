@@ -47,6 +47,7 @@ const AddSealedScreen: React.FC = () => {
         product_type: productType as SealedProductType,
         purchase_price: price && !isNaN(price) ? price : null,
         market_price: null,
+        is_wishlist: false,
       },
       { onSuccess: () => router.back() },
     );

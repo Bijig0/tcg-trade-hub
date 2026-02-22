@@ -24,6 +24,9 @@ export const AddCollectionItemSchema = z.object({
   is_sealed: z.boolean().default(false),
   product_type: SealedProductTypeSchema.nullable().optional(),
   purchase_price: z.number().nullable().optional(),
+  photos: z.array(z.string()).optional(),
+  notes: z.string().nullable().optional(),
+  acquired_at: z.string().nullable().optional(),
 });
 
 export type AddCollectionItem = z.infer<typeof AddCollectionItemSchema>;

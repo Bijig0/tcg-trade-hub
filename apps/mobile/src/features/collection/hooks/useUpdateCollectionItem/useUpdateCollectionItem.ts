@@ -5,10 +5,10 @@ import type { CollectionItemUpdate } from '@tcg-trade-hub/database';
 
 type UpdatePayload = {
   id: string;
-  updates: Pick<CollectionItemUpdate, 'condition' | 'quantity' | 'grading_company' | 'grading_score' | 'purchase_price'>;
+  updates: Pick<CollectionItemUpdate, 'condition' | 'quantity' | 'grading_company' | 'grading_score' | 'purchase_price' | 'photos' | 'notes' | 'acquired_at' | 'image_url'>;
 };
 
-/** Updates a collection item's condition, grading, quantity, or purchase price */
+/** Updates a collection item's fields including condition, grading, photos, notes, and acquisition info */
 const useUpdateCollectionItem = () => {
   const queryClient = useQueryClient();
 

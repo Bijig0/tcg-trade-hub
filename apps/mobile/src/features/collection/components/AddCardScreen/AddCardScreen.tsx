@@ -79,6 +79,8 @@ const AddCardScreen: React.FC = () => {
       market_price: selectedCard.marketPrice,
       grading_company: isGraded && gradingCompany ? (gradingCompany as GradingCompany) : null,
       grading_score: isGraded && gradingScore ? gradingScore : null,
+      is_wishlist: isWishlist,
+      is_sealed: false,
     };
 
     if (isWishlist) {
