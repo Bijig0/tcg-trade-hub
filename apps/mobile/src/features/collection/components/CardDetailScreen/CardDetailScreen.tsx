@@ -223,7 +223,7 @@ const CardDetailScreen: React.FC = () => {
         <View className="mb-4">
           <PriceChart
             priceHistory={cardDetail.priceHistory}
-            currentPrice={currentMarketPrice}
+            variantName={activeVariant}
           />
         </View>
       ) : null}
