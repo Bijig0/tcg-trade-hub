@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
-import { Star } from 'lucide-react-native';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { Star, ChevronRight } from 'lucide-react-native';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Button from '@/components/ui/Button/Button';
 import BundlePreview from '../BundlePreview/BundlePreview';
@@ -13,13 +13,14 @@ type ReceivedOfferCardProps = {
   onAccept: (offerId: string) => void;
   onDecline: (offerId: string) => void;
   isResponding: boolean;
+  onPress?: (offer: OfferWithItems) => void;
 };
 
 /**
  * Card showing a received offer with offerer info, bundle preview,
  * cash amount, and accept/decline buttons.
  */
-const ReceivedOfferCard = ({ offer, onAccept, onDecline, isResponding }: ReceivedOfferCardProps) => {
+const ReceivedOfferCard = ({ offer, onAccept, onDecline, isResponding, onPress }: ReceivedOfferCardProps) => {
   const totalItemValue = offer.items.reduce(
     (sum, item) => sum + (item.market_price ?? 0),
     0,
@@ -31,7 +32,11 @@ const ReceivedOfferCard = ({ offer, onAccept, onDecline, isResponding }: Receive
   const previewItems = offer.items as unknown as ListingItemRow[];
 
   return (
-    <View className="mx-4 mb-3 rounded-xl border border-border bg-card p-3">
+    <Pressable
+      onPress={onPress ? () => onPress(offer) : undefined}
+      disabled={!onPress}
+      className="mx-4 mb-3 rounded-xl border border-border bg-card p-3 active:bg-accent"
+    >
       {/* Offerer info */}
       <View className="flex-row items-center gap-2">
         <Avatar
@@ -51,6 +56,7 @@ const ReceivedOfferCard = ({ offer, onAccept, onDecline, isResponding }: Receive
           </View>
         </View>
         <OfferStatusBadge status={offer.status} />
+        {onPress ? <ChevronRight size={14} className="ml-1 text-muted-foreground" /> : null}
       </View>
 
       {/* Offer content */}
@@ -105,7 +111,7 @@ const ReceivedOfferCard = ({ offer, onAccept, onDecline, isResponding }: Receive
           </Button>
         </View>
       )}
-    </View>
+    </Pressable>
   );
 };
 
