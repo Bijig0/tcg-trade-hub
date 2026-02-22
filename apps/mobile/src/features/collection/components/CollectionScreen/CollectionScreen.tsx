@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, Pressable, Image, Alert } from 'react-native';
+import React, { useState, useCallback, useMemo } from 'react';
+import { View, Text, FlatList, Pressable, Image, Alert, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
+import { Search, X } from 'lucide-react-native';
 import useMyCollection from '../../hooks/useMyCollection/useMyCollection';
-import useMyWishlist from '../../hooks/useMyWishlist/useMyWishlist';
 import useMySealedProducts from '../../hooks/useMySealedProducts/useMySealedProducts';
 import usePortfolioValue from '../../hooks/usePortfolioValue/usePortfolioValue';
 import useRemoveCollectionItem from '../../hooks/useRemoveCollectionItem/useRemoveCollectionItem';
@@ -27,18 +27,16 @@ import type {
 } from '@tcg-trade-hub/database';
 
 type FilterTcg = TcgType | 'all';
-type Tab = 'cards' | 'wishlist' | 'sealed';
+type Tab = 'cards' | 'sealed';
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'cards', label: 'Cards' },
-  { key: 'wishlist', label: 'Wishlist' },
   { key: 'sealed', label: 'Sealed' },
 ];
 
 const CollectionScreen: React.FC = () => {
   const router = useRouter();
   const { data: collection } = useMyCollection();
-  const { data: wishlist } = useMyWishlist();
   const { data: sealed } = useMySealedProducts();
   const portfolio = usePortfolioValue();
   const removeItem = useRemoveCollectionItem();
@@ -46,17 +44,24 @@ const CollectionScreen: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<Tab>('cards');
   const [filterTcg, setFilterTcg] = useState<FilterTcg>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const currentItems = activeTab === 'cards'
-    ? collection
-    : activeTab === 'wishlist'
-      ? wishlist
-      : sealed;
+  const currentItems = activeTab === 'cards' ? collection : sealed;
 
-  const filteredItems = (currentItems ?? []).filter((item) => {
-    if (filterTcg !== 'all' && item.tcg !== filterTcg) return false;
-    return true;
-  });
+  const filteredItems = useMemo(() => {
+    const items = currentItems ?? [];
+    const lowerQuery = searchQuery.toLowerCase().trim();
+
+    return items.filter((item) => {
+      if (filterTcg !== 'all' && item.tcg !== filterTcg) return false;
+      if (lowerQuery.length > 0) {
+        const matchesName = item.card_name.toLowerCase().includes(lowerQuery);
+        const matchesSet = item.set_name?.toLowerCase().includes(lowerQuery) ?? false;
+        if (!matchesName && !matchesSet) return false;
+      }
+      return true;
+    });
+  }, [currentItems, filterTcg, searchQuery]);
 
   const handleRemove = useCallback((itemId: string) => {
     Alert.alert('Remove', 'Remove this item?', [
@@ -114,8 +119,7 @@ const CollectionScreen: React.FC = () => {
     if (activeTab === 'sealed') {
       router.push('/(tabs)/(listings)/add-sealed');
     } else {
-      const mode = activeTab === 'wishlist' ? 'wishlist' : 'collection';
-      router.push(`/(tabs)/(listings)/add-card?mode=${mode}`);
+      router.push('/(tabs)/(listings)/add-card?mode=collection');
     }
   }, [activeTab, router]);
 
@@ -180,16 +184,10 @@ const CollectionScreen: React.FC = () => {
   };
 
   const addLabel = activeTab === 'sealed' ? '+ Add Sealed' : '+ Add Card';
-  const emptyTitle = activeTab === 'cards'
-    ? 'No cards yet'
-    : activeTab === 'wishlist'
-      ? 'Wishlist is empty'
-      : 'No sealed products';
+  const emptyTitle = activeTab === 'cards' ? 'No cards yet' : 'No sealed products';
   const emptyDesc = activeTab === 'cards'
     ? 'Add cards to track your collection and market value.'
-    : activeTab === 'wishlist'
-      ? 'Add cards you want to find matching listings.'
-      : 'Track your sealed products and their value.';
+    : 'Track your sealed products and their value.';
 
   return (
     <View className="flex-1 bg-background">
@@ -209,7 +207,26 @@ const CollectionScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* Segmented Control: Cards / Wishlist / Sealed */}
+      {/* Search Bar */}
+      <View className="mb-3 flex-row items-center rounded-lg border border-input bg-background px-3 py-2">
+        <Search size={16} className="text-muted-foreground" />
+        <TextInput
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search by name or set..."
+          className="ml-2 flex-1 text-sm text-foreground"
+          placeholderTextColor="#a1a1aa"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {searchQuery.length > 0 && (
+          <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+            <X size={16} className="text-muted-foreground" />
+          </Pressable>
+        )}
+      </View>
+
+      {/* Segmented Control: Cards / Sealed */}
       <View className="mb-3 flex-row rounded-lg bg-muted p-1">
         {TABS.map((tab) => (
           <Pressable
