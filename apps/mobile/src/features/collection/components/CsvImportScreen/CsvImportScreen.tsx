@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TextInput, ScrollView, Pressable, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, ClipboardPaste, Trash2 } from 'lucide-react-native';
-import * as Clipboard from 'expo-clipboard';
+import { ArrowLeft, Trash2 } from 'lucide-react-native';
 import parseCsvCollection from '../../utils/parseCsvCollection/parseCsvCollection';
 import useAddCollectionItem from '../../hooks/useAddCollectionItem/useAddCollectionItem';
 import Button from '@/components/ui/Button/Button';
@@ -16,17 +15,6 @@ const CsvImportScreen: React.FC = () => {
   const addItem = useAddCollectionItem();
   const [csvText, setCsvText] = useState('');
   const [isImporting, setIsImporting] = useState(false);
-
-  const handlePasteFromClipboard = useCallback(async () => {
-    try {
-      const text = await Clipboard.getStringAsync();
-      if (text) {
-        setCsvText(text);
-      }
-    } catch {
-      Alert.alert('Error', 'Failed to read from clipboard.');
-    }
-  }, []);
 
   const handleClear = useCallback(() => {
     setCsvText('');
@@ -112,15 +100,8 @@ const CsvImportScreen: React.FC = () => {
         </View>
 
         {/* Action buttons */}
-        <View className="mb-3 flex-row gap-2">
-          <Pressable
-            onPress={handlePasteFromClipboard}
-            className="flex-row items-center rounded-lg bg-card px-3 py-2"
-          >
-            <ClipboardPaste size={14} color="#22d3ee" />
-            <Text className="ml-1.5 text-sm text-cyan-400">Paste from Clipboard</Text>
-          </Pressable>
-          {csvText.length > 0 && (
+        {csvText.length > 0 && (
+          <View className="mb-3 flex-row">
             <Pressable
               onPress={handleClear}
               className="flex-row items-center rounded-lg bg-card px-3 py-2"
@@ -128,8 +109,8 @@ const CsvImportScreen: React.FC = () => {
               <Trash2 size={14} color="#f87171" />
               <Text className="ml-1.5 text-sm text-red-400">Clear</Text>
             </Pressable>
-          )}
-        </View>
+          </View>
+        )}
 
         {/* CSV Text Input */}
         <ScrollView className="mb-3 flex-1 rounded-xl border border-input bg-card" keyboardShouldPersistTaps="always">
