@@ -1,17 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { listingKeys } from '../../queryKeys';
-import type { ListingRow } from '@tcg-trade-hub/database';
-import type { MyListingWithMatch, MatchedUserInfo } from '../../schemas';
+import type { ListingRow, ListingItemRow } from '@tcg-trade-hub/database';
+import type { MyListingWithOffers, MatchedUserInfo } from '../../schemas';
 
 /**
- * Hook that fetches all of the current user's listings ordered by created_at desc,
- * enriched with match and matched-user data for listings with status 'matched'.
+ * Hook that fetches all of the current user's listings with items and offer counts,
+ * enriched with match data for listings with status 'matched'.
  *
- * Returns `MyListingWithMatch[]` so the screen can group by tab (active/matched/history).
+ * Returns `MyListingWithOffers[]` so the screen can group by tab (active/matched/history).
  */
 const useMyListings = () => {
-  return useQuery<MyListingWithMatch[], Error>({
+  return useQuery<MyListingWithOffers[], Error>({
     queryKey: listingKeys.myListings(),
     queryFn: async () => {
       const {
@@ -32,54 +32,76 @@ const useMyListings = () => {
 
       const allListings = (listings ?? []) as ListingRow[];
 
-      // 2. Identify matched listings — skip enrichment if none
+      if (allListings.length === 0) return [];
+
+      // 2. Fetch all listing items for user's listings
+      const listingIds = allListings.map((l) => l.id);
+      const { data: allItems, error: itemsError } = await supabase
+        .from('listing_items')
+        .select('*')
+        .in('listing_id', listingIds);
+
+      if (itemsError) throw itemsError;
+
+      const itemsByListing = new Map<string, ListingItemRow[]>();
+      for (const item of (allItems ?? []) as ListingItemRow[]) {
+        const existing = itemsByListing.get(item.listing_id) ?? [];
+        existing.push(item);
+        itemsByListing.set(item.listing_id, existing);
+      }
+
+      // 3. Count offers per listing
+      const { data: offerCounts, error: offerCountError } = await supabase
+        .from('offers')
+        .select('listing_id')
+        .in('listing_id', listingIds)
+        .eq('status', 'pending');
+
+      if (offerCountError) throw offerCountError;
+
+      const offerCountMap = new Map<string, number>();
+      for (const oc of (offerCounts ?? []) as { listing_id: string }[]) {
+        offerCountMap.set(oc.listing_id, (offerCountMap.get(oc.listing_id) ?? 0) + 1);
+      }
+
+      // 4. Identify matched listings — skip match enrichment if none
       const matchedListings = allListings.filter((l) => l.status === 'matched');
 
       if (matchedListings.length === 0) {
         return allListings.map((l) => ({
           ...l,
+          items: itemsByListing.get(l.id) ?? [],
+          offer_count: offerCountMap.get(l.id) ?? 0,
           match_id: null,
           matched_user: null,
           conversation_id: null,
         }));
       }
 
-      // 3. Fetch matches where the user is either party
+      // 5. Fetch matches where listing_id matches
       const matchedIds = matchedListings.map((l) => l.id);
       const { data: matches, error: matchesError } = await supabase
         .from('matches')
         .select('*')
-        .or(
-          matchedIds.map((id) => `listing_a_id.eq.${id}`).join(',') +
-            ',' +
-            matchedIds.map((id) => `listing_b_id.eq.${id}`).join(','),
-        );
+        .in('listing_id', matchedIds);
 
       if (matchesError) throw matchesError;
 
-      // 4. Build a map: listing_id → match row
+      // 6. Build match map
       const matchByListingId = new Map<
         string,
         { match_id: string; other_user_id: string }
       >();
 
       for (const match of matches ?? []) {
-        // Determine which listing belongs to the current user
-        if (matchedIds.includes(match.listing_a_id)) {
-          matchByListingId.set(match.listing_a_id, {
-            match_id: match.id,
-            other_user_id: match.user_b_id,
-          });
-        }
-        if (matchedIds.includes(match.listing_b_id)) {
-          matchByListingId.set(match.listing_b_id, {
-            match_id: match.id,
-            other_user_id: match.user_a_id,
-          });
-        }
+        const otherUserId = match.user_a_id === user.id ? match.user_b_id : match.user_a_id;
+        matchByListingId.set(match.listing_id, {
+          match_id: match.id,
+          other_user_id: otherUserId,
+        });
       }
 
-      // 5. Batch-fetch other users' profiles
+      // 7. Batch-fetch other users' profiles
       const otherUserIds = [
         ...new Set([...matchByListingId.values()].map((v) => v.other_user_id)),
       ];
@@ -103,7 +125,7 @@ const useMyListings = () => {
         }
       }
 
-      // 6. Fetch conversations linked to these matches
+      // 8. Fetch conversations linked to these matches
       const matchIds = [...new Set([...matchByListingId.values()].map((v) => v.match_id))];
       const conversationMap = new Map<string, string>();
 
@@ -120,24 +142,17 @@ const useMyListings = () => {
         }
       }
 
-      // 7. Merge enrichment data onto listings
+      // 9. Merge enrichment data onto listings
       return allListings.map((listing) => {
         const matchInfo = matchByListingId.get(listing.id);
 
-        if (!matchInfo) {
-          return {
-            ...listing,
-            match_id: null,
-            matched_user: null,
-            conversation_id: null,
-          };
-        }
-
         return {
           ...listing,
-          match_id: matchInfo.match_id,
-          matched_user: userMap.get(matchInfo.other_user_id) ?? null,
-          conversation_id: conversationMap.get(matchInfo.match_id) ?? null,
+          items: itemsByListing.get(listing.id) ?? [],
+          offer_count: offerCountMap.get(listing.id) ?? 0,
+          match_id: matchInfo?.match_id ?? null,
+          matched_user: matchInfo ? (userMap.get(matchInfo.other_user_id) ?? null) : null,
+          conversation_id: matchInfo ? (conversationMap.get(matchInfo.match_id) ?? null) : null,
         };
       });
     },

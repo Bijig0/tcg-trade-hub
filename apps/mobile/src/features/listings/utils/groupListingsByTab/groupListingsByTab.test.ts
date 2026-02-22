@@ -1,34 +1,29 @@
 import { describe, it, expect } from 'vitest';
 import groupListingsByTab from './groupListingsByTab';
-import type { MyListingWithMatch } from '../../schemas';
+import type { MyListingWithOffers } from '../../schemas';
 
 const makeListing = (
-  overrides: Partial<MyListingWithMatch> & { status: MyListingWithMatch['status'] },
-): MyListingWithMatch =>
+  overrides: Partial<MyListingWithOffers> & { status: MyListingWithOffers['status'] },
+): MyListingWithOffers =>
   ({
     id: `listing-${Math.random().toString(36).slice(2, 8)}`,
     user_id: 'user-1',
     type: 'wts',
     tcg: 'pokemon',
-    card_name: 'Test Card',
-    card_set: 'Base Set',
-    card_number: '1',
-    card_external_id: 'ext-1',
-    card_image_url: 'https://example.com/card.png',
-    card_rarity: null,
-    card_market_price: null,
-    condition: 'near_mint',
-    asking_price: 10,
+    title: 'Test Bundle',
+    cash_amount: 10,
+    total_value: 15,
     description: null,
     photos: [],
-    trade_wants: null,
     created_at: '2026-01-15T12:00:00Z',
     updated_at: '2026-01-15T12:00:00Z',
+    items: [],
+    offer_count: 0,
     match_id: null,
     matched_user: null,
     conversation_id: null,
     ...overrides,
-  }) as MyListingWithMatch;
+  }) as MyListingWithOffers;
 
 describe('groupListingsByTab', () => {
   it('should return empty groups for an empty array', () => {
@@ -100,10 +95,10 @@ describe('groupListingsByTab', () => {
   });
 
   it('should preserve listing order within each group', () => {
-    const first = makeListing({ status: 'active', card_name: 'First' });
-    const second = makeListing({ status: 'active', card_name: 'Second' });
+    const first = makeListing({ status: 'active', title: 'First Bundle' });
+    const second = makeListing({ status: 'active', title: 'Second Bundle' });
     const result = groupListingsByTab([first, second]);
-    expect(result.groups.active[0]!.card_name).toBe('First');
-    expect(result.groups.active[1]!.card_name).toBe('Second');
+    expect(result.groups.active[0]!.title).toBe('First Bundle');
+    expect(result.groups.active[1]!.title).toBe('Second Bundle');
   });
 });

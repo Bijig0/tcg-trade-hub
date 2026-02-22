@@ -1,19 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, Image, Dimensions, ScrollView } from 'react-native';
+import React from 'react';
+import { View, Text, Image } from 'react-native';
 import { cn } from '@/lib/cn';
-import Badge from '@/components/ui/Badge/Badge';
 import { ListingTypeBadge } from '@/features/listings';
+import BundlePreview from '@/features/listings/components/BundlePreview/BundlePreview';
 import type { ListingWithDistance } from '../../schemas';
 import formatDistance from '../../utils/formatDistance/formatDistance';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-const CONDITION_LABELS: Record<string, string> = {
-  nm: 'Near Mint',
-  lp: 'Lightly Played',
-  mp: 'Moderately Played',
-  hp: 'Heavily Played',
-  dmg: 'Damaged',
+const TCG_LABELS: Record<string, string> = {
+  pokemon: 'Pokemon',
+  mtg: 'Magic: The Gathering',
+  yugioh: 'Yu-Gi-Oh!',
 };
 
 export type SwipeCardProps = {
@@ -22,24 +18,11 @@ export type SwipeCardProps = {
 };
 
 /**
- * Full-screen card for the swipe view.
- *
- * Shows: card_image_url as large image, card_name, card_set, condition badge,
- * listing type badge (WTS/WTB/WTT with colors), asking_price if WTS,
- * distance. Includes a horizontal photo gallery with dots indicator when
- * multiple photos exist.
+ * Full-screen card for the swipe view showing bundle preview.
  */
 const SwipeCard = ({ listing, className }: SwipeCardProps) => {
-  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
-
-  const allPhotos = listing.photos.length > 0
-    ? listing.photos
-    : [listing.card_image_url];
-
-  const handleScroll = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
-    const index = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-    setActivePhotoIndex(index);
-  };
+  const firstItem = listing.items[0];
+  const heroImage = firstItem?.card_image_url ?? '';
 
   return (
     <View
@@ -48,67 +31,46 @@ const SwipeCard = ({ listing, className }: SwipeCardProps) => {
         className,
       )}
     >
-      {/* Photo gallery */}
-      <View className="relative">
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onMomentumScrollEnd={handleScroll}
-          className="h-[60%]"
-        >
-          {allPhotos.map((uri, index) => (
-            <Image
-              key={`photo-${index}`}
-              source={{ uri }}
-              className="bg-muted"
-              style={{ width: SCREEN_WIDTH - 32, height: '100%' }}
-              resizeMode="contain"
-            />
-          ))}
-        </ScrollView>
-
-        {/* Photo dots indicator */}
-        {allPhotos.length > 1 && (
-          <View className="absolute bottom-3 left-0 right-0 flex-row items-center justify-center gap-1.5">
-            {allPhotos.map((_, index) => (
-              <View
-                key={`dot-${index}`}
-                className={cn(
-                  'h-2 w-2 rounded-full',
-                  index === activePhotoIndex ? 'bg-primary' : 'bg-white/50',
-                )}
-              />
-            ))}
-          </View>
-        )}
-
-        {/* Type badge overlay */}
-        <ListingTypeBadge type={listing.type} className="absolute left-3 top-3 px-3 py-1.5" />
-      </View>
+      {/* Hero image from first item */}
+      {heroImage ? (
+        <View className="relative h-[55%]">
+          <Image
+            source={{ uri: heroImage }}
+            className="h-full w-full bg-muted"
+            resizeMode="contain"
+          />
+          <ListingTypeBadge type={listing.type} className="absolute left-3 top-3 px-3 py-1.5" />
+        </View>
+      ) : (
+        <View className="h-[55%] items-center justify-center bg-muted">
+          <Text className="text-muted-foreground">No image</Text>
+        </View>
+      )}
 
       {/* Card info */}
       <View className="flex-1 p-4">
+        {/* Bundle thumbnail row */}
+        {listing.items.length > 1 && (
+          <BundlePreview items={listing.items} size="sm" className="mb-3" />
+        )}
+
         <Text className="text-2xl font-bold text-card-foreground" numberOfLines={2}>
-          {listing.card_name}
+          {listing.title}
         </Text>
 
         <Text className="mt-1 text-sm text-muted-foreground">
-          {listing.card_set}
+          {TCG_LABELS[listing.tcg] ?? listing.tcg} &middot; {listing.items.length} card{listing.items.length !== 1 ? 's' : ''}
         </Text>
 
         <View className="mt-3 flex-row items-center gap-2">
-          <Badge variant="outline">
-            {CONDITION_LABELS[listing.condition] ?? listing.condition}
-          </Badge>
           <Text className="text-xs text-muted-foreground">
             {formatDistance(listing.distance_km)}
           </Text>
         </View>
 
-        {listing.type === 'wts' && listing.asking_price != null && (
+        {listing.cash_amount > 0 && (
           <Text className="mt-3 text-xl font-bold text-foreground">
-            ${listing.asking_price.toFixed(2)}
+            ${listing.cash_amount.toFixed(2)}
           </Text>
         )}
 

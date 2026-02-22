@@ -1,12 +1,13 @@
 import React from 'react';
-import { View, Text, Image, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Clock } from 'lucide-react-native';
 import Badge from '@/components/ui/Badge/Badge';
 import type { BadgeVariant } from '@/components/ui/Badge/Badge';
 import ListingTypeBadge from '../ListingTypeBadge/ListingTypeBadge';
+import BundlePreview from '../BundlePreview/BundlePreview';
 import formatListingDate from '../../utils/formatListingDate/formatListingDate';
-import type { MyListingWithMatch } from '../../schemas';
+import type { MyListingWithOffers } from '../../schemas';
 import type { ListingStatus } from '@tcg-trade-hub/database';
 
 const STATUS_BADGE_CONFIG: Record<
@@ -18,13 +19,13 @@ const STATUS_BADGE_CONFIG: Record<
 };
 
 type HistoryListingCardProps = {
-  listing: MyListingWithMatch;
+  listing: MyListingWithOffers;
 };
 
 /**
  * Card component for listings in the History tab.
  *
- * Dimmed appearance, shows type + status badges, no delete button.
+ * Dimmed appearance, shows type + status badges, bundle preview, no delete button.
  */
 const HistoryListingCard = ({ listing }: HistoryListingCardProps) => {
   const router = useRouter();
@@ -36,11 +37,7 @@ const HistoryListingCard = ({ listing }: HistoryListingCardProps) => {
       onPress={() => router.push(`/(tabs)/(listings)/listing/${listing.id}`)}
       className="mx-4 mb-3 flex-row rounded-xl border border-border bg-card p-3 opacity-60 active:bg-accent"
     >
-      <Image
-        source={{ uri: listing.card_image_url }}
-        className="h-20 w-14 rounded-lg bg-muted"
-        resizeMode="cover"
-      />
+      <BundlePreview items={listing.items} size="md" />
 
       <View className="ml-3 flex-1 justify-between">
         <View>
@@ -55,12 +52,12 @@ const HistoryListingCard = ({ listing }: HistoryListingCardProps) => {
             className="mt-1 text-base font-semibold text-muted-foreground"
             numberOfLines={1}
           >
-            {listing.card_name}
+            {listing.title}
           </Text>
 
-          {listing.asking_price != null && (
+          {listing.cash_amount > 0 && (
             <Text className="text-sm text-muted-foreground">
-              ${listing.asking_price.toFixed(2)}
+              ${listing.cash_amount.toFixed(2)}
             </Text>
           )}
         </View>

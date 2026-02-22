@@ -4,6 +4,7 @@ import {
   ListingTypeSchema,
   CardConditionSchema,
   ListingRowSchema,
+  ListingItemRowSchema,
 } from '@tcg-trade-hub/database';
 
 export const FeedSortSchema = z.enum(['relevance', 'distance', 'price', 'newest']);
@@ -30,6 +31,8 @@ export type ListingOwner = z.infer<typeof ListingOwnerSchema>;
 export const ListingWithDistanceSchema = ListingRowSchema.extend({
   distance_km: z.number(),
   owner: ListingOwnerSchema,
+  items: z.array(ListingItemRowSchema),
+  offer_count: z.number().default(0),
 });
 
 export type ListingWithDistance = z.infer<typeof ListingWithDistanceSchema>;

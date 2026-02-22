@@ -1,19 +1,24 @@
 import React from 'react';
-import { View, Text, Image, ScrollView, Pressable, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, Image, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, Star, Heart, User } from 'lucide-react-native';
+import { ArrowLeft, Star, Send, User } from 'lucide-react-native';
 
 import Badge from '@/components/ui/Badge/Badge';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Button from '@/components/ui/Button/Button';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import { ListingTypeBadge } from '@/features/listings';
+import BundlePreview from '@/features/listings/components/BundlePreview/BundlePreview';
 import useListingDetail from '../../hooks/useListingDetail/useListingDetail';
 import useRecordSwipe from '../../hooks/useRecordSwipe/useRecordSwipe';
 import formatDistance from '../../utils/formatDistance/formatDistance';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const TCG_LABELS: Record<string, string> = {
+  pokemon: 'Pokemon',
+  mtg: 'Magic: The Gathering',
+  yugioh: 'Yu-Gi-Oh!',
+};
 
 const CONDITION_LABELS: Record<string, string> = {
   nm: 'Near Mint',
@@ -24,11 +29,10 @@ const CONDITION_LABELS: Record<string, string> = {
 };
 
 /**
- * Full listing detail screen.
+ * Full listing detail screen for bundle-based listings.
  *
- * Shows all card info, all photos in a horizontal ScrollView, description,
- * owner profile snippet (avatar, name, rating, trade count), and an
- * "Interested" button that records a like swipe. Links to owner's profile.
+ * Shows bundle preview, all items with their details, description,
+ * owner profile snippet, and a "Make Offer" button.
  */
 const ListingDetailScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -36,8 +40,9 @@ const ListingDetailScreen = () => {
   const { data: listing, isLoading, error } = useListingDetail(id ?? '');
   const recordSwipe = useRecordSwipe();
 
-  const handleInterested = () => {
+  const handleMakeOffer = () => {
     if (!listing) return;
+    // Record a like swipe for now; the offer sheet will be built in Phase 5
     recordSwipe.mutate(
       { listingId: listing.id, direction: 'like' },
       {
@@ -80,8 +85,6 @@ const ListingDetailScreen = () => {
     );
   }
 
-  const allPhotos = listing.photos.length > 0 ? listing.photos : [listing.card_image_url];
-
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       {/* Navigation header */}
@@ -90,73 +93,42 @@ const ListingDetailScreen = () => {
           <ArrowLeft size={24} className="text-foreground" />
         </Pressable>
         <Text className="flex-1 text-lg font-semibold text-foreground" numberOfLines={1}>
-          {listing.card_name}
+          {listing.title}
         </Text>
       </View>
 
       <ScrollView className="flex-1" contentContainerClassName="pb-8">
-        {/* Photo gallery */}
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          className="bg-muted"
-        >
-          {allPhotos.map((uri, index) => (
-            <Image
-              key={`detail-photo-${index}`}
-              source={{ uri }}
-              style={{ width: SCREEN_WIDTH, height: 320 }}
-              resizeMode="contain"
-              className="bg-muted"
-            />
-          ))}
-        </ScrollView>
+        {/* Bundle preview header */}
+        <View className="items-center bg-muted px-4 py-6">
+          <BundlePreview items={listing.items} size="lg" />
+        </View>
 
-        {/* Photo count indicator */}
-        {allPhotos.length > 1 && (
-          <View className="flex-row items-center justify-center gap-1.5 py-2">
-            {allPhotos.map((_, index) => (
-              <View
-                key={`indicator-${index}`}
-                className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40"
-              />
-            ))}
-          </View>
-        )}
-
-        {/* Card details */}
+        {/* Listing details */}
         <View className="px-4 pt-4">
           <View className="flex-row items-center gap-2">
             <ListingTypeBadge type={listing.type} long />
-            <Badge variant="outline">
-              {CONDITION_LABELS[listing.condition] ?? listing.condition}
-            </Badge>
+            <Text className="text-xs text-muted-foreground">
+              {listing.items.length} card{listing.items.length !== 1 ? 's' : ''}
+            </Text>
           </View>
 
           <Text className="mt-3 text-2xl font-bold text-foreground">
-            {listing.card_name}
+            {listing.title}
           </Text>
 
           <Text className="mt-1 text-sm text-muted-foreground">
-            {listing.card_set} &middot; #{listing.card_number}
+            {TCG_LABELS[listing.tcg] ?? listing.tcg}
           </Text>
 
-          {listing.card_rarity && (
-            <Text className="mt-1 text-xs text-muted-foreground">
-              Rarity: {listing.card_rarity}
-            </Text>
-          )}
-
           {/* Price section */}
-          {listing.type === 'wts' && listing.asking_price != null && (
+          {listing.cash_amount > 0 && (
             <View className="mt-4 flex-row items-baseline gap-2">
               <Text className="text-2xl font-bold text-foreground">
-                ${listing.asking_price.toFixed(2)}
+                ${listing.cash_amount.toFixed(2)}
               </Text>
-              {listing.card_market_price != null && (
+              {listing.total_value > 0 && (
                 <Text className="text-sm text-muted-foreground">
-                  Market: ${listing.card_market_price.toFixed(2)}
+                  Total value: ${listing.total_value.toFixed(2)}
                 </Text>
               )}
             </View>
@@ -176,6 +148,64 @@ const ListingDetailScreen = () => {
               <Text className="text-sm leading-5 text-muted-foreground">
                 {listing.description}
               </Text>
+            </View>
+          )}
+
+          {/* Items list */}
+          {listing.items.length > 0 && (
+            <View className="mt-6">
+              <Text className="mb-3 text-sm font-medium text-foreground">
+                Cards in this bundle
+              </Text>
+              <View className="gap-3">
+                {listing.items.map((item, index) => (
+                  <View
+                    key={item.id ?? `item-${index}`}
+                    className="flex-row rounded-xl border border-border bg-card p-3"
+                  >
+                    <Image
+                      source={{ uri: item.card_image_url }}
+                      className="h-20 w-14 rounded-lg bg-muted"
+                      resizeMode="cover"
+                    />
+                    <View className="ml-3 flex-1 justify-between">
+                      <View>
+                        <Text className="text-base font-semibold text-card-foreground" numberOfLines={1}>
+                          {item.card_name}
+                        </Text>
+                        {item.card_set && (
+                          <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+                            {item.card_set}
+                            {item.card_number ? ` #${item.card_number}` : ''}
+                          </Text>
+                        )}
+                        {item.card_rarity && (
+                          <Text className="mt-0.5 text-xs text-muted-foreground">
+                            {item.card_rarity}
+                          </Text>
+                        )}
+                      </View>
+                      <View className="mt-1 flex-row items-center gap-2">
+                        {item.condition && (
+                          <Badge variant="outline">
+                            {CONDITION_LABELS[item.condition] ?? item.condition}
+                          </Badge>
+                        )}
+                        {item.asking_price != null && item.asking_price > 0 && (
+                          <Text className="text-sm font-semibold text-foreground">
+                            ${item.asking_price.toFixed(2)}
+                          </Text>
+                        )}
+                        {item.market_price != null && item.market_price > 0 && (
+                          <Text className="text-xs text-muted-foreground">
+                            Mkt: ${item.market_price.toFixed(2)}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
             </View>
           )}
 
@@ -221,7 +251,7 @@ const ListingDetailScreen = () => {
       <View className="border-t border-border bg-background px-4 pb-6 pt-3">
         <Button
           size="lg"
-          onPress={handleInterested}
+          onPress={handleMakeOffer}
           disabled={recordSwipe.isPending}
           className="w-full"
         >
@@ -229,9 +259,9 @@ const ListingDetailScreen = () => {
             <ActivityIndicator color="white" />
           ) : (
             <View className="flex-row items-center gap-2">
-              <Heart size={18} color="white" />
+              <Send size={18} color="white" />
               <Text className="text-base font-semibold text-primary-foreground">
-                I'm Interested
+                Make Offer
               </Text>
             </View>
           )}

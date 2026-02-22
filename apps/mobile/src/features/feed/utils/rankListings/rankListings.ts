@@ -11,24 +11,12 @@ type RankedListing = {
 };
 
 const WEIGHTS = {
-  complementMatch: 5,
   tcgMatch: 2,
   proximity: 2,
   recency: 1,
 } as const;
 
 const RECENCY_DECAY_DAYS = 7;
-const computeComplementScore = (
-  listing: ListingRow,
-  userListings: ListingRow[],
-): number => {
-  const isComplement = userListings.some((ul) => {
-    if (listing.type === 'wts' && ul.type === 'wtb' && ul.card_name === listing.card_name) return true;
-    if (listing.type === 'wtb' && ul.type === 'wts' && ul.card_name === listing.card_name) return true;
-    return false;
-  });
-  return isComplement ? WEIGHTS.complementMatch : 0;
-};
 
 const computeTcgMatchScore = (
   listing: ListingRow,
@@ -55,10 +43,13 @@ const computeRecencyScore = (createdAt: string): number => {
 
 /**
  * Ranks listings by weighted score:
- * - Direct complement match (5): user WTB <-> listing WTS for same card
  * - TCG match (2): listing TCG matches user's active listing TCGs
  * - Proximity (2): inverse distance, closer = higher
  * - Recency (1): newer listings score higher, decays over 7 days
+ *
+ * Note: complement matching (card-level overlap) has been removed
+ * since listings are now bundles. Real scoring happens in the
+ * get-feed Edge Function.
  */
 const rankListings = (
   listings: ListingRow[],
@@ -67,15 +58,12 @@ const rankListings = (
   maxRadiusKm = 25,
 ): RankedListing[] => {
   const ranked = listings.map((listing) => {
-    const complementScore = computeComplementScore(listing, userListings);
     const tcgScore = computeTcgMatchScore(listing, userListings);
-
-    // Use a default distance for listings without owner location data
     const distanceKm = maxRadiusKm / 2;
     const proximityScore = computeProximityScore(distanceKm, maxRadiusKm);
     const recencyScore = computeRecencyScore(listing.created_at);
 
-    const score = complementScore + tcgScore + proximityScore + recencyScore;
+    const score = tcgScore + proximityScore + recencyScore;
 
     return { listing, score };
   });

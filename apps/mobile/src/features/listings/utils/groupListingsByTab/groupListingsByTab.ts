@@ -1,7 +1,7 @@
-import type { MyListingWithMatch, ListingTab } from '../../schemas';
+import type { MyListingWithOffers, ListingTab } from '../../schemas';
 
 export type GroupedListings = {
-  groups: Record<ListingTab, MyListingWithMatch[]>;
+  groups: Record<ListingTab, MyListingWithOffers[]>;
   counts: Record<ListingTab, number>;
 };
 
@@ -12,8 +12,8 @@ export type GroupedListings = {
  * - `matched`: status === 'matched'
  * - `history`: status === 'completed' or 'expired'
  */
-const groupListingsByTab = (listings: MyListingWithMatch[]): GroupedListings => {
-  const groups: Record<ListingTab, MyListingWithMatch[]> = {
+const groupListingsByTab = (listings: MyListingWithOffers[]): GroupedListings => {
+  const groups: Record<ListingTab, MyListingWithOffers[]> = {
     active: [],
     matched: [],
     history: [],
