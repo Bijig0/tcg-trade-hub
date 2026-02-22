@@ -111,6 +111,28 @@ VALUES
   );
 
 -- =============================================================================
+-- DEV AUTH USER (needed before seed data references it)
+-- =============================================================================
+
+INSERT INTO auth.users (
+  id, instance_id, aud, role, email, encrypted_password,
+  email_confirmed_at, created_at, updated_at,
+  confirmation_token, recovery_token,
+  raw_app_meta_data, raw_user_meta_data
+)
+SELECT
+  gen_random_uuid(), '00000000-0000-0000-0000-000000000000',
+  'authenticated', 'authenticated',
+  'bradysuryasie@gmail.com',
+  crypt('password123', gen_salt('bf')),
+  now(), now(), now(), '', '',
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{"display_name":"Brady"}'::jsonb
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'bradysuryasie@gmail.com'
+);
+
+-- =============================================================================
 -- FULL SEED DATA: Users, Listings, Matches, Conversations, Messages,
 --                 Meetups, Ratings, Collection Items
 -- =============================================================================
@@ -234,7 +256,11 @@ BEGIN
     (u5, 'liam.obrien@example.com',    'Liam O''Brien',   NULL, ST_SetSRID(ST_MakePoint(145.1260, -37.7840), 4326), 15, ARRAY['pokemon']::public.tcg_type[],                   3.80,  3)
   ON CONFLICT (id) DO NOTHING;
 
-  -- Update the current dev user with location + preferences (safe even if already set)
+  -- Ensure the dev user exists in public.users, then update with location + preferences
+  INSERT INTO public.users (id, email, display_name)
+  VALUES (me, 'bradysuryasie@gmail.com', 'Brady')
+  ON CONFLICT (id) DO NOTHING;
+
   UPDATE public.users
   SET
     location = ST_SetSRID(ST_MakePoint(144.9632, -37.8142), 4326),

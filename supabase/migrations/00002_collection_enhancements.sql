@@ -11,9 +11,8 @@ ALTER TABLE public.collection_items
   ADD COLUMN product_type TEXT DEFAULT NULL,
   ADD COLUMN purchase_price NUMERIC DEFAULT NULL;
 
--- Drop old unique constraint and create new one including is_wishlist
-ALTER TABLE public.collection_items
-  DROP CONSTRAINT IF EXISTS idx_collection_items_user_card;
+-- Drop old unique index and create new one including is_wishlist
+DROP INDEX IF EXISTS idx_collection_items_user_card;
 
 CREATE UNIQUE INDEX idx_collection_items_user_card
   ON public.collection_items(user_id, external_id, condition, is_wishlist);
