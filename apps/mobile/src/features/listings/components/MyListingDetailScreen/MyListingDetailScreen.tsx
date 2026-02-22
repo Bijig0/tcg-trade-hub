@@ -2,33 +2,25 @@ import React, { useCallback, useMemo, useRef } from 'react';
 import { View, Text, Pressable, ActivityIndicator, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import MapView, { Region } from 'react-native-maps';
+import MapView from 'react-native-maps';
 import BottomSheet, { BottomSheetFlatList, BottomSheetScrollView, type BottomSheetFlatListMethods } from '@gorhom/bottom-sheet';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react-native';
 
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import useListingDetail from '@/features/feed/hooks/useListingDetail/useListingDetail';
-import useRelevantListings from '../../hooks/useRelevantListings/useRelevantListings';
-import useInitiateContact from '../../hooks/useInitiateContact/useInitiateContact';
+import useListingOffers from '../../hooks/useListingOffers/useListingOffers';
+import useRespondToOffer from '../../hooks/useRespondToOffer/useRespondToOffer';
 import useDeleteListing from '../../hooks/useDeleteListing/useDeleteListing';
-import MyCardSummary from '../MyCardSummary/MyCardSummary';
-import RelevantListingCard from '../RelevantListingCard/RelevantListingCard';
-import TraderMarker from '../TraderMarker/TraderMarker';
+import MyBundleSummary from '../MyBundleSummary/MyBundleSummary';
+import ReceivedOfferCard from '../ReceivedOfferCard/ReceivedOfferCard';
 import ShopMarker from '../ShopMarker/ShopMarker';
-import type { RelevantListing } from '../../schemas';
+import type { OfferWithItems } from '../../schemas';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const SECTION_LABELS: Record<string, string> = {
-  wts: 'Nearby Buyers',
-  wtb: 'Nearby Sellers',
-  wtt: 'Trade Partners',
-};
-
 /**
- * Owner-facing listing detail screen with full-screen map and
- * Airbnb-style draggable bottom sheet showing relevant nearby
- * traders and game stores.
+ * Owner-facing listing detail screen with map and bottom sheet
+ * showing received offers.
  */
 const MyListingDetailScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -37,8 +29,8 @@ const MyListingDetailScreen = () => {
   const flatListRef = useRef<BottomSheetFlatListMethods>(null);
 
   const { data: listing, isLoading: isListingLoading } = useListingDetail(id ?? '');
-  const { data: relevantData, isLoading: isRelevantLoading } = useRelevantListings(id ?? '', listing);
-  const initiateContact = useInitiateContact();
+  const { data: offerData, isLoading: isOffersLoading } = useListingOffers(id ?? '');
+  const respondToOffer = useRespondToOffer();
   const deleteListing = useDeleteListing();
 
   const snapPoints = useMemo(() => ['20%', '55%', '92%'], []);
@@ -54,52 +46,38 @@ const MyListingDetailScreen = () => {
     });
   }, [id, deleteListing, router]);
 
-  const handleContact = useCallback(
-    (theirListingId: string) => {
+  const handleAccept = useCallback(
+    (offerId: string) => {
       if (!id) return;
-      initiateContact.mutate({
-        myListingId: id,
-        theirListingId,
+      respondToOffer.mutate({
+        offerId,
+        listingId: id,
+        action: 'accepted',
       });
     },
-    [id, initiateContact],
+    [id, respondToOffer],
   );
 
-  const handleMarkerPress = useCallback(
-    (relevantListing: RelevantListing) => {
-      // Expand bottom sheet and scroll to the listing
-      bottomSheetRef.current?.snapToIndex(2);
-      const index = relevantData?.listings.findIndex((l) => l.id === relevantListing.id) ?? -1;
-      if (index >= 0) {
-        // Small delay to allow sheet animation to complete
-        setTimeout(() => {
-          flatListRef.current?.scrollToIndex({ index, animated: true });
-        }, 300);
-      }
+  const handleDecline = useCallback(
+    (offerId: string) => {
+      if (!id) return;
+      respondToOffer.mutate({
+        offerId,
+        listingId: id,
+        action: 'declined',
+      });
     },
-    [relevantData],
+    [id, respondToOffer],
   );
 
-  // Compute initial map region from markers
-  const initialRegion = useMemo<Region>(() => {
-    const markers = relevantData?.listings
-      .filter((l) => l.owner.approximate_lat !== 0 || l.owner.approximate_lng !== 0)
-      .map((l) => ({
-        lat: l.owner.approximate_lat,
-        lng: l.owner.approximate_lng,
-      })) ?? [];
-
-    const shopMarkers = relevantData?.shops
+  // Map region from shops
+  const initialRegion = useMemo(() => {
+    const shops = offerData?.shops ?? [];
+    const shopPoints = shops
       .filter((s) => s.lat !== 0 || s.lng !== 0)
-      .map((s) => ({
-        lat: s.lat,
-        lng: s.lng,
-      })) ?? [];
+      .map((s) => ({ lat: s.lat, lng: s.lng }));
 
-    const allPoints = [...markers, ...shopMarkers];
-
-    if (allPoints.length === 0) {
-      // Default to a reasonable center (will be overridden by user location in production)
+    if (shopPoints.length === 0) {
       return {
         latitude: 37.7749,
         longitude: -122.4194,
@@ -108,25 +86,19 @@ const MyListingDetailScreen = () => {
       };
     }
 
-    const lats = allPoints.map((p) => p.lat);
-    const lngs = allPoints.map((p) => p.lng);
-    const minLat = Math.min(...lats);
-    const maxLat = Math.max(...lats);
-    const minLng = Math.min(...lngs);
-    const maxLng = Math.max(...lngs);
-
-    const latDelta = Math.max((maxLat - minLat) * 1.5, 0.02);
-    const lngDelta = Math.max((maxLng - minLng) * 1.5, 0.02);
+    const lats = shopPoints.map((p) => p.lat);
+    const lngs = shopPoints.map((p) => p.lng);
+    const latDelta = Math.max((Math.max(...lats) - Math.min(...lats)) * 1.5, 0.02);
+    const lngDelta = Math.max((Math.max(...lngs) - Math.min(...lngs)) * 1.5, 0.02);
 
     return {
-      latitude: (minLat + maxLat) / 2,
-      longitude: (minLng + maxLng) / 2,
+      latitude: (Math.min(...lats) + Math.max(...lats)) / 2,
+      longitude: (Math.min(...lngs) + Math.max(...lngs)) / 2,
       latitudeDelta: latDelta,
       longitudeDelta: lngDelta,
     };
-  }, [relevantData]);
+  }, [offerData]);
 
-  // Loading state
   if (isListingLoading) {
     return (
       <SafeAreaView className="flex-1 bg-background">
@@ -148,42 +120,33 @@ const MyListingDetailScreen = () => {
     );
   }
 
-  const relevantListings = relevantData?.listings ?? [];
-  const shops = relevantData?.shops ?? [];
-  const sectionLabel = SECTION_LABELS[listing.type] ?? 'Nearby Traders';
-  const count = relevantListings.length;
+  const offers = offerData?.offers ?? [];
+  const shops = offerData?.shops ?? [];
+  const offerCount = offers.length;
 
-  const renderRelevantItem = ({ item }: { item: RelevantListing }) => (
-    <RelevantListingCard
-      listing={item}
-      ownerListingType={listing.type}
-      onContact={handleContact}
-      isContacting={initiateContact.isPending}
+  const renderOfferItem = ({ item }: { item: OfferWithItems }) => (
+    <ReceivedOfferCard
+      offer={item}
+      onAccept={handleAccept}
+      onDecline={handleDecline}
+      isResponding={respondToOffer.isPending}
     />
   );
 
   return (
     <View className="flex-1 bg-background">
-      {/* Map fills the viewport */}
       <MapView
         style={{ width: SCREEN_WIDTH, flex: 1 }}
         initialRegion={initialRegion}
         showsUserLocation
         showsMyLocationButton={false}
       >
-        {relevantListings.map((rl) => (
-          <TraderMarker
-            key={`trader-${rl.id}`}
-            listing={rl}
-            onPress={handleMarkerPress}
-          />
-        ))}
         {shops.map((shop) => (
           <ShopMarker key={`shop-${shop.id}`} shop={shop} />
         ))}
       </MapView>
 
-      {/* Header bar overlaid on map */}
+      {/* Header */}
       <SafeAreaView
         edges={['top']}
         className="absolute left-0 right-0 top-0"
@@ -195,7 +158,7 @@ const MyListingDetailScreen = () => {
           </Pressable>
 
           <Text className="flex-1 px-3 text-base font-semibold text-foreground" numberOfLines={1}>
-            {listing.card_name}
+            {listing.title}
           </Text>
 
           <View className="flex-row gap-1">
@@ -216,7 +179,7 @@ const MyListingDetailScreen = () => {
         </View>
       </SafeAreaView>
 
-      {/* Airbnb-style bottom sheet */}
+      {/* Bottom sheet */}
       <BottomSheet
         ref={bottomSheetRef}
         index={1}
@@ -226,19 +189,19 @@ const MyListingDetailScreen = () => {
         backgroundStyle={{ borderRadius: 20, backgroundColor: '#0f0f13' }}
         handleIndicatorStyle={{ backgroundColor: '#a1a1aa', width: 40 }}
       >
-        {count > 0 && !isRelevantLoading ? (
+        {offerCount > 0 && !isOffersLoading ? (
           <BottomSheetFlatList
             ref={flatListRef}
-            data={relevantListings}
-            keyExtractor={(item: RelevantListing) => item.id}
-            renderItem={renderRelevantItem}
+            data={offers}
+            keyExtractor={(item: OfferWithItems) => item.id}
+            renderItem={renderOfferItem}
             contentContainerStyle={{ paddingBottom: 20 }}
             ListHeaderComponent={
               <>
-                <MyCardSummary listing={listing} />
+                <MyBundleSummary listing={listing} />
                 <View className="border-t border-border px-4 pb-2 pt-3">
                   <Text className="text-sm font-semibold text-muted-foreground">
-                    {count} {sectionLabel}
+                    {offerCount} Offer{offerCount !== 1 ? 's' : ''}
                   </Text>
                 </View>
               </>
@@ -246,17 +209,17 @@ const MyListingDetailScreen = () => {
           />
         ) : (
           <BottomSheetScrollView>
-            <MyCardSummary listing={listing} />
+            <MyBundleSummary listing={listing} />
             <View className="border-t border-border px-4 pb-2 pt-3">
-              {isRelevantLoading ? (
+              {isOffersLoading ? (
                 <Skeleton className="h-5 w-32 rounded" />
               ) : (
                 <Text className="text-sm font-semibold text-muted-foreground">
-                  No {sectionLabel.toLowerCase()} found
+                  No offers yet
                 </Text>
               )}
             </View>
-            {isRelevantLoading ? (
+            {isOffersLoading ? (
               <View className="gap-3 px-4 pt-2">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <Skeleton key={`skel-${i}`} className="h-28 w-full rounded-xl" />
@@ -265,7 +228,7 @@ const MyListingDetailScreen = () => {
             ) : (
               <View className="items-center px-4 py-10">
                 <Text className="text-center text-sm text-muted-foreground">
-                  No matching listings found nearby.{'\n'}Try expanding your search radius in settings.
+                  No offers received yet.{'\n'}Share your listing to attract offers.
                 </Text>
               </View>
             )}

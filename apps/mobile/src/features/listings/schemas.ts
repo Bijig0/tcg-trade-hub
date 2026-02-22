@@ -1,48 +1,16 @@
 import { z } from 'zod';
 import {
   ListingTypeSchema,
-  TcgTypeSchema,
   CardConditionSchema,
   NormalizedCardSchema,
-  CardRefSchema,
+  OfferStatusSchema,
 } from '@tcg-trade-hub/database';
-import type { ListingRow } from '@tcg-trade-hub/database';
+import type { ListingRow, ListingItemRow, OfferRow, OfferItemRow } from '@tcg-trade-hub/database';
+
+// --- Bundle listing creation types ---
 
 /**
- * Schema for the create listing form (WTB flow — unchanged).
- *
- * Derived from ListingInsertSchema but adapted for the multi-step form flow:
- * - user_id is omitted (injected at submission time from auth context)
- * - card fields come from the selected NormalizedCard
- * - photos are local URIs that get uploaded before insert
- */
-export const CreateListingFormSchema = z.object({
-  type: ListingTypeSchema,
-  tcg: TcgTypeSchema,
-  card_name: z.string().min(1, 'Card name is required'),
-  card_set: z.string().min(1, 'Card set is required'),
-  card_number: z.string().min(1, 'Card number is required'),
-  card_external_id: z.string().min(1),
-  card_image_url: z.string().url(),
-  card_rarity: z.string().nullable().optional(),
-  card_market_price: z.number().nullable().optional(),
-  condition: CardConditionSchema,
-  asking_price: z
-    .number()
-    .positive('Price must be greater than 0')
-    .nullable()
-    .optional(),
-  description: z.string().max(500, 'Description must be 500 characters or less').nullable().optional(),
-  photos: z.array(z.string()).max(6, 'Maximum 6 photos').default([]),
-  addToCollection: z.boolean().default(false),
-});
-
-export type CreateListingForm = z.infer<typeof CreateListingFormSchema>;
-
-// --- WTS/WTT multi-card types ---
-
-/**
- * A card selected for WTS/WTT listing creation.
+ * A card selected for bundle listing creation (all types).
  * Tracks origin (collection vs external search) and condition.
  */
 export const SelectedCardSchema = z.object({
@@ -56,48 +24,29 @@ export const SelectedCardSchema = z.object({
 export type SelectedCard = z.infer<typeof SelectedCardSchema>;
 
 /**
- * A card wanted in return for a WTT trade.
+ * Unified schema for creating a bundle listing.
+ * All types (WTS/WTB/WTT) use the same shape: selected cards + cash amount.
  */
-export const WantedCardSchema = z.object({
-  card: NormalizedCardSchema,
-});
-
-export type WantedCard = z.infer<typeof WantedCardSchema>;
-
-/**
- * The trade_wants JSONB payload stored on WTT listing rows.
- * Array of CardRef objects with optional market price.
- */
-export const TradeWantsPayloadSchema = z.array(
-  CardRefSchema.extend({
-    marketPrice: z.number().nullable().optional(),
-  }),
-);
-
-export type TradeWantsPayload = z.infer<typeof TradeWantsPayloadSchema>;
-
-/**
- * Validation schema for the bulk WTS form submission.
- * Each selected card becomes its own listing row.
- */
-export const BulkWtsFormSchema = z.object({
-  type: z.literal('wts'),
+export const BundleListingFormSchema = z.object({
+  type: ListingTypeSchema,
   selectedCards: z.array(SelectedCardSchema).min(1, 'Select at least one card'),
+  cashAmount: z.string().default('0'),
+  description: z.string().max(500).nullable().optional(),
 });
 
-export type BulkWtsForm = z.infer<typeof BulkWtsFormSchema>;
+export type BundleListingForm = z.infer<typeof BundleListingFormSchema>;
 
 /**
- * Validation schema for the WTT form submission.
- * Offered cards become listing rows; wanted cards go into trade_wants JSONB.
+ * Schema for creating an offer on a listing.
  */
-export const WttFormSchema = z.object({
-  type: z.literal('wtt'),
-  selectedCards: z.array(SelectedCardSchema).min(1, 'Select at least one card to offer'),
-  wantedCards: z.array(WantedCardSchema).min(1, 'Select at least one card you want'),
+export const CreateOfferFormSchema = z.object({
+  listingId: z.string().uuid(),
+  selectedCards: z.array(SelectedCardSchema),
+  cashAmount: z.string().default('0'),
+  message: z.string().max(500).nullable().optional(),
 });
 
-export type WttForm = z.infer<typeof WttFormSchema>;
+export type CreateOfferForm = z.infer<typeof CreateOfferFormSchema>;
 
 // --- My Listings tab types ---
 
@@ -107,7 +56,9 @@ export type MatchedUserInfo = {
   avatar_url: string | null;
 };
 
-export type MyListingWithMatch = ListingRow & {
+export type MyListingWithOffers = ListingRow & {
+  items: ListingItemRow[];
+  offer_count: number;
   match_id: string | null;
   matched_user: MatchedUserInfo | null;
   conversation_id: string | null;
@@ -116,27 +67,21 @@ export type MyListingWithMatch = ListingRow & {
 export const LISTING_TABS = ['active', 'matched', 'history'] as const;
 export type ListingTab = (typeof LISTING_TABS)[number];
 
-// --- Relevant listings (owner detail page) ---
+// --- Offer types ---
 
-/** Owner info for a relevant listing, with jittered coordinates for privacy */
-export type RelevantListingOwner = {
-  id: string;
-  display_name: string;
-  avatar_url: string | null;
-  rating_score: number;
-  total_trades: number;
-  approximate_lat: number;
-  approximate_lng: number;
+export type OfferWithItems = OfferRow & {
+  items: OfferItemRow[];
+  offerer: {
+    id: string;
+    display_name: string;
+    avatar_url: string | null;
+    rating_score: number;
+    total_trades: number;
+  };
 };
 
-/** A listing returned by get-relevant-listings, enriched with owner + scoring */
-export type RelevantListing = ListingRow & {
-  owner: RelevantListingOwner;
-  relevance_score: number;
-  distance_km: number;
-};
+// --- Relevant shops (used on detail map) ---
 
-/** A nearby game store returned by get-relevant-listings */
 export type RelevantShop = {
   id: string;
   name: string;
@@ -146,3 +91,5 @@ export type RelevantShop = {
   supported_tcgs: string[];
   verified: boolean;
 };
+
+export { OfferStatusSchema };

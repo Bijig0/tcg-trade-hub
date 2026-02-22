@@ -7,18 +7,11 @@ const makeListing = (overrides: Partial<ListingRow> = {}): ListingRow => ({
   user_id: 'user-1',
   type: 'wts',
   tcg: 'pokemon',
-  card_name: 'Charizard VMAX',
-  card_set: 'Champions Path',
-  card_number: '074',
-  card_external_id: 'cp-074',
-  card_image_url: 'https://example.com/charizard.png',
-  card_rarity: 'Ultra Rare',
-  card_market_price: 150,
-  condition: 'nm',
-  asking_price: 140,
+  title: 'Charizard VMAX Bundle',
+  cash_amount: 140,
+  total_value: 150,
   description: null,
   photos: [],
-  trade_wants: null,
   status: 'active',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
@@ -28,24 +21,10 @@ const makeListing = (overrides: Partial<ListingRow> = {}): ListingRow => ({
 const userLocation = { latitude: -37.8136, longitude: 144.9631 };
 
 describe('rankListings', () => {
-  it('should prioritize direct complement matches', () => {
-    const listings = [
-      makeListing({ id: 'l1', card_name: 'Pikachu', type: 'wts' }),
-      makeListing({ id: 'l2', card_name: 'Charizard VMAX', type: 'wts' }),
-    ];
-    const userListings = [
-      makeListing({ id: 'u1', card_name: 'Charizard VMAX', type: 'wtb', user_id: 'me' }),
-    ];
-
-    const result = rankListings(listings, userListings, userLocation);
-    expect(result[0]!.listing.id).toBe('l2');
-    expect(result[0]!.score).toBeGreaterThan(result[1]!.score);
-  });
-
   it('should score TCG matches higher than non-matching TCGs', () => {
     const listings = [
-      makeListing({ id: 'l1', tcg: 'mtg', card_name: 'Black Lotus' }),
-      makeListing({ id: 'l2', tcg: 'pokemon', card_name: 'Pikachu' }),
+      makeListing({ id: 'l1', tcg: 'mtg', title: 'Black Lotus Bundle' }),
+      makeListing({ id: 'l2', tcg: 'pokemon', title: 'Pikachu Bundle' }),
     ];
     const userListings = [
       makeListing({ id: 'u1', tcg: 'pokemon', user_id: 'me' }),
@@ -91,5 +70,18 @@ describe('rankListings', () => {
       expect(r).toHaveProperty('score');
       expect(typeof r.score).toBe('number');
     });
+  });
+
+  it('should not crash when user has listings but no TCG overlap', () => {
+    const listings = [
+      makeListing({ id: 'l1', tcg: 'pokemon' }),
+    ];
+    const userListings = [
+      makeListing({ id: 'u1', tcg: 'mtg', user_id: 'me' }),
+    ];
+
+    const result = rankListings(listings, userListings, userLocation);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.score).toBeGreaterThanOrEqual(0);
   });
 });

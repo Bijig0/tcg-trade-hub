@@ -9,7 +9,8 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
-import { Heart, X, Sparkles } from 'lucide-react-native';
+import { Heart, X, Sparkles, Send } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { cn } from '@/lib/cn';
 import Button from '@/components/ui/Button/Button';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
@@ -35,6 +36,7 @@ export type FeedSwipeViewProps = {
  * when a mutual match is detected.
  */
 const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
+  const router = useRouter();
   const { data, isLoading, fetchNextPage, hasNextPage } = useFeedListings();
   const recordSwipe = useRecordSwipe();
 
@@ -219,12 +221,23 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
       </View>
 
       {/* Action buttons */}
-      <View className="flex-row items-center justify-center gap-8 pb-6 pt-4">
+      <View className="flex-row items-center justify-center gap-6 pb-6 pt-4">
         <Pressable
           onPress={() => handleButtonSwipe('pass')}
           className="h-16 w-16 items-center justify-center rounded-full border-2 border-red-400 bg-card active:bg-red-50"
         >
           <X size={28} className="text-red-500" />
+        </Pressable>
+
+        <Pressable
+          onPress={() => {
+            if (currentListing) {
+              router.push(`/(tabs)/(listings)/listing/${currentListing.id}`);
+            }
+          }}
+          className="h-14 w-14 items-center justify-center rounded-full border-2 border-primary bg-card active:bg-primary/10"
+        >
+          <Send size={22} className="text-primary" />
         </Pressable>
 
         <Pressable

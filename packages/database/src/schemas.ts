@@ -116,23 +116,18 @@ export const CollectionItemInsertSchema = CollectionItemRowSchema.omit({
   purchase_price: z.number().nullable().optional(),
 });
 
+export const OfferStatusSchema = z.enum(['pending', 'accepted', 'declined', 'countered', 'withdrawn']);
+
 export const ListingRowSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string().uuid(),
   type: ListingTypeSchema,
   tcg: TcgTypeSchema,
-  card_name: z.string(),
-  card_set: z.string(),
-  card_number: z.string(),
-  card_external_id: z.string(),
-  card_image_url: z.string(),
-  card_rarity: z.string().nullable(),
-  card_market_price: z.number().nullable(),
-  condition: CardConditionSchema,
-  asking_price: z.number().nullable(),
+  title: z.string(),
+  cash_amount: z.number(),
+  total_value: z.number(),
   description: z.string().nullable(),
   photos: z.array(z.string()),
-  trade_wants: z.unknown().nullable(),
   status: ListingStatusSchema,
   created_at: z.string(),
   updated_at: z.string(),
@@ -144,12 +139,93 @@ export const ListingInsertSchema = ListingRowSchema.omit({
   created_at: true,
   updated_at: true,
 }).extend({
-  asking_price: z.number().positive().nullable().optional(),
+  cash_amount: z.number().default(0),
+  total_value: z.number().default(0),
   description: z.string().nullable().optional(),
   photos: z.array(z.string()).default([]),
+});
+
+export const ListingItemRowSchema = z.object({
+  id: z.string().uuid(),
+  listing_id: z.string().uuid(),
+  collection_item_id: z.string().uuid().nullable(),
+  card_name: z.string(),
+  card_image_url: z.string(),
+  card_external_id: z.string(),
+  tcg: TcgTypeSchema,
+  card_set: z.string().nullable(),
+  card_number: z.string().nullable(),
+  card_rarity: z.string().nullable(),
+  condition: CardConditionSchema,
+  market_price: z.number().nullable(),
+  asking_price: z.number().nullable(),
+  quantity: z.number().int().positive(),
+  created_at: z.string(),
+});
+
+export const ListingItemInsertSchema = ListingItemRowSchema.omit({
+  id: true,
+  created_at: true,
+}).extend({
+  collection_item_id: z.string().uuid().nullable().optional(),
+  card_set: z.string().nullable().optional(),
+  card_number: z.string().nullable().optional(),
   card_rarity: z.string().nullable().optional(),
-  card_market_price: z.number().nullable().optional(),
-  trade_wants: z.unknown().nullable().optional(),
+  condition: CardConditionSchema.default('nm'),
+  market_price: z.number().nullable().optional(),
+  asking_price: z.number().nullable().optional(),
+  quantity: z.number().int().positive().default(1),
+});
+
+export const OfferRowSchema = z.object({
+  id: z.string().uuid(),
+  listing_id: z.string().uuid(),
+  offerer_id: z.string().uuid(),
+  status: OfferStatusSchema,
+  cash_amount: z.number(),
+  message: z.string().nullable(),
+  parent_offer_id: z.string().uuid().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export const OfferInsertSchema = OfferRowSchema.omit({
+  id: true,
+  status: true,
+  created_at: true,
+  updated_at: true,
+}).extend({
+  cash_amount: z.number().default(0),
+  message: z.string().nullable().optional(),
+  parent_offer_id: z.string().uuid().nullable().optional(),
+});
+
+export const OfferItemRowSchema = z.object({
+  id: z.string().uuid(),
+  offer_id: z.string().uuid(),
+  collection_item_id: z.string().uuid().nullable(),
+  card_name: z.string(),
+  card_image_url: z.string(),
+  card_external_id: z.string(),
+  tcg: TcgTypeSchema,
+  card_set: z.string().nullable(),
+  card_number: z.string().nullable(),
+  condition: CardConditionSchema,
+  market_price: z.number().nullable(),
+  quantity: z.number().int().positive(),
+  created_at: z.string(),
+});
+
+export const OfferItemInsertSchema = OfferItemRowSchema.omit({
+  id: true,
+  created_at: true,
+}).extend({
+  collection_item_id: z.string().uuid().nullable().optional(),
+  card_set: z.string().nullable().optional(),
+  card_number: z.string().nullable().optional(),
+  condition: CardConditionSchema.default('nm'),
+  market_price: z.number().nullable().optional(),
+  quantity: z.number().int().positive().default(1),
 });
 
 export const SwipeRowSchema = z.object({
@@ -164,8 +240,8 @@ export const MatchRowSchema = z.object({
   id: z.string().uuid(),
   user_a_id: z.string().uuid(),
   user_b_id: z.string().uuid(),
-  listing_a_id: z.string().uuid(),
-  listing_b_id: z.string().uuid(),
+  listing_id: z.string().uuid(),
+  offer_id: z.string().uuid(),
   status: MatchStatusSchema,
   created_at: z.string(),
   updated_at: z.string(),

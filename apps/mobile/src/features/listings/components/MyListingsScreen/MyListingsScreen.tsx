@@ -11,7 +11,7 @@ import groupListingsByTab from '../../utils/groupListingsByTab/groupListingsByTa
 import ActiveListingCard from '../ActiveListingCard/ActiveListingCard';
 import MatchedListingCard from '../MatchedListingCard/MatchedListingCard';
 import HistoryListingCard from '../HistoryListingCard/HistoryListingCard';
-import type { MyListingWithMatch, ListingTab } from '../../schemas';
+import type { MyListingWithOffers, ListingTab } from '../../schemas';
 import type { ListingType } from '@tcg-trade-hub/database';
 import type { SegmentedFilterItem } from '@/components/ui/SegmentedFilter/SegmentedFilter';
 
@@ -33,15 +33,15 @@ const TYPE_ORDER: ListingType[] = ['wts', 'wtb', 'wtt'];
 type TypeSection = {
   title: string;
   type: ListingType;
-  data: MyListingWithMatch[];
+  data: MyListingWithOffers[];
 };
 
 /**
  * Groups a flat listing array into sections by listing type.
  * Only includes sections that have at least one listing.
  */
-const groupByType = (items: MyListingWithMatch[]): TypeSection[] => {
-  const byType: Record<ListingType, MyListingWithMatch[]> = { wts: [], wtb: [], wtt: [] };
+const groupByType = (items: MyListingWithOffers[]): TypeSection[] => {
+  const byType: Record<ListingType, MyListingWithOffers[]> = { wts: [], wtb: [], wtt: [] };
   for (const item of items) {
     byType[item.type].push(item);
   }
@@ -72,7 +72,7 @@ const EMPTY_STATE_CONFIG: Record<ListingTab, { icon: typeof Package; title: stri
  * Main listings screen with industry-standard status tabs.
  *
  * Three tabs: Active | Matched | History
- * Each tab shows a flat FlatList of cards with per-card status treatment.
+ * Each tab shows a SectionList grouped by listing type.
  * First-time empty state (zero total listings) shows onboarding view.
  */
 const MyListingsScreen = () => {
@@ -86,10 +86,10 @@ const MyListingsScreen = () => {
   };
 
   const handleDeletePress = useCallback(
-    (listing: MyListingWithMatch) => {
+    (listing: MyListingWithOffers) => {
       Alert.alert(
         'Remove Listing',
-        `Are you sure you want to remove "${listing.card_name}"?`,
+        `Are you sure you want to remove "${listing.title}"?`,
         [
           { text: 'Cancel', style: 'cancel' },
           {
@@ -133,7 +133,7 @@ const MyListingsScreen = () => {
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: MyListingWithMatch }) => {
+    ({ item }: { item: MyListingWithOffers }) => {
       switch (activeTab) {
         case 'active':
           return <ActiveListingCard listing={item} onDelete={handleDeletePress} />;
@@ -162,7 +162,7 @@ const MyListingsScreen = () => {
     );
   };
 
-  const keyExtractor = (item: MyListingWithMatch) => item.id;
+  const keyExtractor = (item: MyListingWithOffers) => item.id;
 
   // Loading state
   if (isLoading) {
@@ -196,7 +196,7 @@ const MyListingsScreen = () => {
 
   const allListings = listings ?? [];
 
-  // First-time empty state — no listings at all
+  // First-time empty state -- no listings at all
   if (allListings.length === 0) {
     return (
       <SafeAreaView className="flex-1 bg-background" edges={['top']}>

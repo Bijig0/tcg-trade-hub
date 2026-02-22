@@ -1,20 +1,22 @@
 import React from 'react';
-import { View, Text, Image, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Trash2, Clock } from 'lucide-react-native';
 import ListingTypeBadge from '../ListingTypeBadge/ListingTypeBadge';
+import BundlePreview from '../BundlePreview/BundlePreview';
 import formatListingDate from '../../utils/formatListingDate/formatListingDate';
-import type { MyListingWithMatch } from '../../schemas';
+import type { MyListingWithOffers } from '../../schemas';
 
 type ActiveListingCardProps = {
-  listing: MyListingWithMatch;
-  onDelete: (listing: MyListingWithMatch) => void;
+  listing: MyListingWithOffers;
+  onDelete: (listing: MyListingWithOffers) => void;
 };
 
 /**
  * Card component for listings in the Active tab.
  *
- * Shows type badge, card name, price, condition, date, and a delete button.
+ * Shows type badge, bundle preview, title, price, date, offer count badge,
+ * and a delete button.
  */
 const ActiveListingCard = ({ listing, onDelete }: ActiveListingCardProps) => {
   const router = useRouter();
@@ -24,26 +26,31 @@ const ActiveListingCard = ({ listing, onDelete }: ActiveListingCardProps) => {
       onPress={() => router.push(`/(tabs)/(listings)/listing/${listing.id}`)}
       className="mx-4 mb-3 flex-row rounded-xl border border-border bg-card p-3 active:bg-accent"
     >
-      <Image
-        source={{ uri: listing.card_image_url }}
-        className="h-20 w-14 rounded-lg bg-muted"
-        resizeMode="cover"
-      />
+      <BundlePreview items={listing.items} size="md" />
 
       <View className="ml-3 flex-1 justify-between">
         <View>
-          <ListingTypeBadge type={listing.type} />
+          <View className="flex-row items-center gap-2">
+            <ListingTypeBadge type={listing.type} />
+            {listing.offer_count > 0 && (
+              <View className="rounded-full bg-primary px-2 py-0.5">
+                <Text className="text-xs font-semibold text-primary-foreground">
+                  {listing.offer_count} offer{listing.offer_count !== 1 ? 's' : ''}
+                </Text>
+              </View>
+            )}
+          </View>
 
           <Text
             className="mt-1 text-base font-semibold text-card-foreground"
             numberOfLines={1}
           >
-            {listing.card_name}
+            {listing.title}
           </Text>
 
-          {listing.asking_price != null && (
+          {listing.cash_amount > 0 && (
             <Text className="text-sm text-muted-foreground">
-              ${listing.asking_price.toFixed(2)}
+              ${listing.cash_amount.toFixed(2)}
             </Text>
           )}
         </View>

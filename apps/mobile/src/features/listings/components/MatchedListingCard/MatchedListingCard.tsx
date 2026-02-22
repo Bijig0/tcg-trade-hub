@@ -4,17 +4,19 @@ import { useRouter } from 'expo-router';
 import { Clock, MessageCircle } from 'lucide-react-native';
 import Badge from '@/components/ui/Badge/Badge';
 import ListingTypeBadge from '../ListingTypeBadge/ListingTypeBadge';
+import BundlePreview from '../BundlePreview/BundlePreview';
 import formatListingDate from '../../utils/formatListingDate/formatListingDate';
-import type { MyListingWithMatch } from '../../schemas';
+import type { MyListingWithOffers } from '../../schemas';
 
 type MatchedListingCardProps = {
-  listing: MyListingWithMatch;
+  listing: MyListingWithOffers;
 };
 
 /**
  * Card component for listings in the Matched tab.
  *
- * Has a cyan left border, shows matched user avatar+name, and a "View Chat" CTA.
+ * Has a cyan left border, shows bundle preview, matched user avatar+name,
+ * and a "View Chat" CTA.
  */
 const MatchedListingCard = ({ listing }: MatchedListingCardProps) => {
   const router = useRouter();
@@ -30,11 +32,7 @@ const MatchedListingCard = ({ listing }: MatchedListingCardProps) => {
       onPress={() => router.push(`/(tabs)/(listings)/listing/${listing.id}`)}
       className="mx-4 mb-3 flex-row rounded-xl border border-border border-l-4 border-l-primary bg-card p-3 active:bg-accent"
     >
-      <Image
-        source={{ uri: listing.card_image_url }}
-        className="h-20 w-14 rounded-lg bg-muted"
-        resizeMode="cover"
-      />
+      <BundlePreview items={listing.items} size="md" />
 
       <View className="ml-3 flex-1 justify-between">
         <View>
@@ -47,12 +45,12 @@ const MatchedListingCard = ({ listing }: MatchedListingCardProps) => {
             className="mt-1 text-base font-semibold text-card-foreground"
             numberOfLines={1}
           >
-            {listing.card_name}
+            {listing.title}
           </Text>
 
-          {listing.asking_price != null && (
+          {listing.cash_amount > 0 && (
             <Text className="text-sm text-muted-foreground">
-              ${listing.asking_price.toFixed(2)}
+              ${listing.cash_amount.toFixed(2)}
             </Text>
           )}
         </View>
