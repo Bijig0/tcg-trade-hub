@@ -1,6 +1,7 @@
 // Screens
 export { default as MyListingsScreen } from './components/MyListingsScreen/MyListingsScreen';
 export { default as CreateListingFlow } from './components/CreateListingFlow/CreateListingFlow';
+export { default as MyListingDetailScreen } from './components/MyListingDetailScreen/MyListingDetailScreen';
 
 // Components
 export { default as ListingTypeBadge } from './components/ListingTypeBadge/ListingTypeBadge';
@@ -23,6 +24,8 @@ export { default as useCreateBulkListings } from './hooks/useCreateBulkListings/
 export { default as useCardSearch } from './hooks/useCardSearch/useCardSearch';
 export { default as useCardPriceData } from './hooks/useCardPriceData/useCardPriceData';
 export { default as useDeleteListing } from './hooks/useDeleteListing/useDeleteListing';
+export { default as useRelevantListings } from './hooks/useRelevantListings/useRelevantListings';
+export { default as useInitiateContact } from './hooks/useInitiateContact/useInitiateContact';
 
 // Query keys
 export { listingKeys } from './queryKeys';
@@ -38,6 +41,9 @@ export type {
   MyListingWithMatch,
   MatchedUserInfo,
   ListingTab,
+  RelevantListing,
+  RelevantListingOwner,
+  RelevantShop,
 } from './schemas';
 
 // Utils
