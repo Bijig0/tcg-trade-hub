@@ -31,7 +31,8 @@ const MyCardSummary = ({ listing }: MyCardSummaryProps) => {
       {/* Card thumbnail */}
       <Image
         source={{ uri: listing.card_image_url }}
-        className="h-20 w-14 rounded-lg bg-muted"
+        style={{ width: 56, height: 80, borderRadius: 8 }}
+        className="bg-muted"
         resizeMode="cover"
       />
 

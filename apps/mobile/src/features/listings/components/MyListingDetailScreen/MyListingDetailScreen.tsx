@@ -3,7 +3,7 @@ import { View, Text, Pressable, ActivityIndicator, Dimensions } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import MapView, { Region } from 'react-native-maps';
-import BottomSheet, { BottomSheetFlatList, BottomSheetView, type BottomSheetFlatListMethods } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetFlatList, BottomSheetScrollView, type BottomSheetFlatListMethods } from '@gorhom/bottom-sheet';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react-native';
 
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
@@ -226,43 +226,50 @@ const MyListingDetailScreen = () => {
         backgroundStyle={{ borderRadius: 20, backgroundColor: '#0f0f13' }}
         handleIndicatorStyle={{ backgroundColor: '#a1a1aa', width: 40 }}
       >
-        <BottomSheetView>
-          {/* Card summary (always visible) */}
-          <MyCardSummary listing={listing} />
-
-          {/* Section header */}
-          <View className="border-t border-border px-4 pb-2 pt-3">
-            {isRelevantLoading ? (
-              <Skeleton className="h-5 w-32 rounded" />
-            ) : (
-              <Text className="text-sm font-semibold text-muted-foreground">
-                {count > 0 ? `${count} ${sectionLabel}` : `No ${sectionLabel.toLowerCase()} found`}
-              </Text>
-            )}
-          </View>
-        </BottomSheetView>
-
-        {/* Scrollable list of relevant listings */}
-        {isRelevantLoading ? (
-          <BottomSheetView style={{ gap: 12, paddingHorizontal: 16 }}>
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={`skel-${i}`} className="h-28 w-full rounded-xl" />
-            ))}
-          </BottomSheetView>
-        ) : count === 0 ? (
-          <BottomSheetView style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
-            <Text className="text-center text-sm text-muted-foreground">
-              No matching listings found nearby. Try expanding your search radius in settings.
-            </Text>
-          </BottomSheetView>
-        ) : (
+        {count > 0 && !isRelevantLoading ? (
           <BottomSheetFlatList
             ref={flatListRef}
             data={relevantListings}
             keyExtractor={(item: RelevantListing) => item.id}
             renderItem={renderRelevantItem}
             contentContainerStyle={{ paddingBottom: 20 }}
+            ListHeaderComponent={
+              <>
+                <MyCardSummary listing={listing} />
+                <View className="border-t border-border px-4 pb-2 pt-3">
+                  <Text className="text-sm font-semibold text-muted-foreground">
+                    {count} {sectionLabel}
+                  </Text>
+                </View>
+              </>
+            }
           />
+        ) : (
+          <BottomSheetScrollView>
+            <MyCardSummary listing={listing} />
+            <View className="border-t border-border px-4 pb-2 pt-3">
+              {isRelevantLoading ? (
+                <Skeleton className="h-5 w-32 rounded" />
+              ) : (
+                <Text className="text-sm font-semibold text-muted-foreground">
+                  No {sectionLabel.toLowerCase()} found
+                </Text>
+              )}
+            </View>
+            {isRelevantLoading ? (
+              <View className="gap-3 px-4 pt-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={`skel-${i}`} className="h-28 w-full rounded-xl" />
+                ))}
+              </View>
+            ) : (
+              <View className="items-center px-4 py-10">
+                <Text className="text-center text-sm text-muted-foreground">
+                  No matching listings found nearby.{'\n'}Try expanding your search radius in settings.
+                </Text>
+              </View>
+            )}
+          </BottomSheetScrollView>
         )}
       </BottomSheet>
     </View>
