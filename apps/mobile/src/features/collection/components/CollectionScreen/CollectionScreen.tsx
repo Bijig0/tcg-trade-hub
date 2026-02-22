@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, Pressable, Image, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
@@ -113,15 +112,15 @@ const CollectionScreen: React.FC = () => {
 
   const handleAddPress = useCallback(() => {
     if (activeTab === 'sealed') {
-      router.push('/(tabs)/(profile)/add-sealed');
+      router.push('/(tabs)/(listings)/add-sealed');
     } else {
       const mode = activeTab === 'wishlist' ? 'wishlist' : 'collection';
-      router.push(`/(tabs)/(profile)/add-card?mode=${mode}`);
+      router.push(`/(tabs)/(listings)/add-card?mode=${mode}`);
     }
   }, [activeTab, router]);
 
   const handleItemPress = useCallback((itemId: string) => {
-    router.push(`/(tabs)/(profile)/card-detail?id=${itemId}`);
+    router.push(`/(tabs)/(listings)/card-detail?id=${itemId}`);
   }, [router]);
 
   const renderItem = ({ item }: { item: CollectionItemRow }) => {
@@ -193,7 +192,7 @@ const CollectionScreen: React.FC = () => {
       : 'Track your sealed products and their value.';
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <View className="flex-1 bg-background">
     <View className="flex-1 px-4 pt-4">
       {/* Portfolio Value Header */}
       <View className="mb-4 rounded-xl bg-card p-4">
@@ -275,7 +274,7 @@ const CollectionScreen: React.FC = () => {
         }
       />
     </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
