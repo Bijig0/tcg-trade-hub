@@ -420,31 +420,38 @@ BEGIN
   -- =========================================================================
 
   -- Regular cards (is_wishlist=false, is_sealed=false)
+  -- Each physical card = 1 row with quantity 1.
+  -- Cards with the same external_id are grouped in the UI.
   INSERT INTO public.collection_items (user_id, tcg, external_id, card_name, set_name, set_code, card_number, image_url, rarity, condition, quantity, is_wishlist, market_price, grading_company, grading_score, is_sealed, product_type, purchase_price)
   VALUES
-    (me, 'pokemon', 'swsh3-20',  'Charizard VMAX',        'Darkness Ablaze',  'swsh3', '020/189', 'https://images.pokemontcg.io/swsh3/20_hires.png',  'VMAX',            'nm', 2, false, 45.00,  NULL,  NULL,  false, NULL, NULL),
+    -- Charizard VMAX: 2 physical cards (NM + LP) → grouped in UI
+    (me, 'pokemon', 'swsh3-20',  'Charizard VMAX',        'Darkness Ablaze',  'swsh3', '020/189', 'https://images.pokemontcg.io/swsh3/20_hires.png',  'VMAX',            'nm', 1, false, 45.00,  NULL,  NULL,  false, NULL, NULL),
+    (me, 'pokemon', 'swsh3-20',  'Charizard VMAX',        'Darkness Ablaze',  'swsh3', '020/189', 'https://images.pokemontcg.io/swsh3/20_hires.png',  'VMAX',            'lp', 1, false, 42.00,  NULL,  NULL,  false, NULL, 40.00),
     (me, 'pokemon', 'swsh7-215', 'Umbreon VMAX Alt Art',  'Evolving Skies',   'swsh7', '215/203', 'https://images.pokemontcg.io/swsh7/215_hires.png', 'Secret Rare',     'nm', 1, false, 180.00, 'psa', '10',  false, NULL, NULL),
     (me, 'pokemon', 'sv3-234',   'Charizard ex SAR',      'Obsidian Flames',  'sv3',   '234/197', 'https://images.pokemontcg.io/sv3/234_hires.png',   'Special Art Rare','nm', 1, false, 95.00,  NULL,  NULL,  false, NULL, NULL),
     (me, 'pokemon', 'swsh4-44',  'Pikachu VMAX',          'Vivid Voltage',    'swsh4', '044/185', 'https://images.pokemontcg.io/swsh4/44_hires.png',  'VMAX',            'lp', 1, false, 18.50,  NULL,  NULL,  false, NULL, NULL),
     (me, 'pokemon', 'swsh8-268', 'Mew VMAX Alt Art',      'Fusion Strike',    'swsh8', '268/264', 'https://images.pokemontcg.io/swsh8/268_hires.png', 'Secret Rare',     'nm', 1, false, 55.00,  'cgc', '9.5', false, NULL, NULL),
-    (me, 'mtg',     'MH2-138',   'Ragavan, Nimble Pilferer','Modern Horizons 2','MH2',  '138',    'https://cards.scryfall.io/normal/front/a/9/a9738cda-adb1-47fb-9f4c-ecd930228c4d.jpg', 'Mythic Rare', 'nm', 2, false, 55.00,  NULL,  NULL,  false, NULL, NULL),
+    -- Ragavan: 2 physical cards (NM ungraded + NM PSA 9) → grouped in UI
+    (me, 'mtg',     'MH2-138',   'Ragavan, Nimble Pilferer','Modern Horizons 2','MH2',  '138',    'https://cards.scryfall.io/normal/front/a/9/a9738cda-adb1-47fb-9f4c-ecd930228c4d.jpg', 'Mythic Rare', 'nm', 1, false, 55.00,  NULL,  NULL,  false, NULL, NULL),
+    (me, 'mtg',     'MH2-138',   'Ragavan, Nimble Pilferer','Modern Horizons 2','MH2',  '138',    'https://cards.scryfall.io/normal/front/a/9/a9738cda-adb1-47fb-9f4c-ecd930228c4d.jpg', 'Mythic Rare', 'nm', 1, false, 60.00,  'psa', '9',   false, NULL, 50.00),
     (me, 'mtg',     'ALL-42',    'Force of Will',          'Alliances',        'ALL',   '42',     'https://cards.scryfall.io/normal/front/c/9/c9c7cf66-5a68-4834-98ea-47a25e46f4ed.jpg', 'Uncommon', 'lp', 1, false, 85.00,  NULL,  NULL,  false, NULL, NULL),
     (me, 'yugioh',  'LOB-005',   'Dark Magician',          'Legend of Blue Eyes','LOB',  '005',    'https://images.ygoprodeck.com/images/cards_small/46986414.jpg', 'Ultra Rare', 'mp', 1, false, 25.00,  NULL,  NULL,  false, NULL, NULL)
-  ON CONFLICT (user_id, external_id, condition, is_wishlist) DO NOTHING;
+  ON CONFLICT DO NOTHING;
 
   -- Wishlist items (is_wishlist=true)
   INSERT INTO public.collection_items (user_id, tcg, external_id, card_name, set_name, set_code, card_number, image_url, rarity, condition, quantity, is_wishlist, market_price, is_sealed, product_type, purchase_price)
   VALUES
     (me, 'pokemon', 'swsh4-188', 'Pikachu VMAX Rainbow',  'Vivid Voltage',    'swsh4', '188/185', 'https://images.pokemontcg.io/swsh4/188_hires.png', 'Secret Rare', 'nm', 1, true, 200.00, false, NULL, NULL),
     (me, 'mtg',     'LTR-246',   'The One Ring',           'Tales of Middle-earth','LTR','246',    'https://cards.scryfall.io/normal/front/d/5/d5806e68-1054-458e-866d-1f2470f682b2.jpg', 'Mythic Rare', 'nm', 1, true, 65.00,  false, NULL, NULL)
-  ON CONFLICT (user_id, external_id, condition, is_wishlist) DO NOTHING;
+  ON CONFLICT DO NOTHING;
 
   -- Sealed products (is_sealed=true)
   INSERT INTO public.collection_items (user_id, tcg, external_id, card_name, set_name, set_code, card_number, image_url, condition, quantity, is_wishlist, is_sealed, product_type, purchase_price, market_price)
   VALUES
     (me, 'pokemon', 'sealed-sv3-bb',   'Obsidian Flames Booster Box',       'Obsidian Flames', 'sv3',   '', '', 'nm', 1, false, true, 'booster_box', 145.00, 165.00),
-    (me, 'pokemon', 'sealed-swsh7-etb','Evolving Skies Elite Trainer Box',  'Evolving Skies',  'swsh7', '', '', 'nm', 2, false, true, 'etb',         55.00,  75.00)
-  ON CONFLICT (user_id, external_id, condition, is_wishlist) DO NOTHING;
+    (me, 'pokemon', 'sealed-swsh7-etb','Evolving Skies Elite Trainer Box',  'Evolving Skies',  'swsh7', '', '', 'nm', 1, false, true, 'etb',         55.00,  75.00),
+    (me, 'pokemon', 'sealed-swsh7-etb','Evolving Skies Elite Trainer Box',  'Evolving Skies',  'swsh7', '', '', 'nm', 1, false, true, 'etb',         55.00,  75.00)
+  ON CONFLICT DO NOTHING;
 
   RAISE NOTICE 'Seed data inserted successfully for user %', me;
 END $$;

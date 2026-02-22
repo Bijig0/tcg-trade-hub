@@ -15,14 +15,14 @@ type CollectionCardGroupProps = {
 
 /**
  * Expandable card group row for the collection list.
- * Collapsed: card image, name, set, count badge, total value, chevron.
- * Expanded: plus indented list of individual cards with condition, grading, price.
- * Single-item groups auto-expand.
+ * Single-item groups: tap navigates directly to card detail.
+ * Multi-item groups: tap header toggles expand/collapse,
+ * showing each individual card in its own row within the group container.
  */
 const CollectionCardGroup: React.FC<CollectionCardGroupProps> = ({ group }) => {
   const router = useRouter();
   const isSingle = group.items.length === 1;
-  const [isExpanded, setIsExpanded] = useState(isSingle);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleHeaderPress = useCallback(() => {
     if (isSingle && group.items[0]) {
@@ -36,7 +36,7 @@ const CollectionCardGroup: React.FC<CollectionCardGroupProps> = ({ group }) => {
     router.push(`/(tabs)/(listings)/card-detail?id=${itemId}`);
   }, [router]);
 
-  const renderItem = (item: CollectionItemRow) => {
+  const renderChildCard = (item: CollectionItemRow) => {
     const gradingLabel = item.grading_company
       ? GRADING_COMPANY_LABELS[item.grading_company as GradingCompany]
       : null;
@@ -44,10 +44,21 @@ const CollectionCardGroup: React.FC<CollectionCardGroupProps> = ({ group }) => {
     return (
       <Pressable
         key={item.id}
-        className="ml-14 flex-row items-center border-t border-border py-2 pr-3"
+        className="flex-row items-center rounded-lg bg-muted/50 p-3"
         onPress={() => handleItemPress(item.id)}
       >
-        <View className="flex-1">
+        {item.image_url ? (
+          <Image
+            source={{ uri: item.image_url }}
+            className="h-12 w-9 rounded"
+            resizeMode="cover"
+          />
+        ) : (
+          <View className="h-12 w-9 items-center justify-center rounded bg-muted">
+            <Text className="text-xs text-muted-foreground">?</Text>
+          </View>
+        )}
+        <View className="ml-3 flex-1">
           <View className="flex-row flex-wrap gap-1">
             <Badge variant="secondary">{CONDITION_LABELS[item.condition]}</Badge>
             {gradingLabel && item.grading_score ? (
@@ -57,9 +68,13 @@ const CollectionCardGroup: React.FC<CollectionCardGroupProps> = ({ group }) => {
               <Badge variant="outline">{`${item.photos.length} photo${item.photos.length !== 1 ? 's' : ''}`}</Badge>
             ) : null}
           </View>
+          {item.purchase_price != null ? (
+            <Text className="mt-1 text-xs text-muted-foreground">
+              Paid ${item.purchase_price.toFixed(2)}
+            </Text>
+          ) : null}
         </View>
         <View className="items-end">
-          <Text className="text-xs text-muted-foreground">x{item.quantity}</Text>
           {item.market_price != null ? (
             <Text className="text-sm font-medium text-green-600">
               ${item.market_price.toFixed(2)}
@@ -72,7 +87,7 @@ const CollectionCardGroup: React.FC<CollectionCardGroupProps> = ({ group }) => {
 
   return (
     <View className="mb-2 overflow-hidden rounded-xl bg-card">
-      {/* Group header */}
+      {/* Group header (parent) */}
       <Pressable
         className="flex-row items-center p-3"
         onPress={handleHeaderPress}
@@ -100,7 +115,9 @@ const CollectionCardGroup: React.FC<CollectionCardGroupProps> = ({ group }) => {
           ) : null}
         </View>
         <View className="items-end">
-          <Badge variant="secondary">{`x${group.totalCount}`}</Badge>
+          {!isSingle ? (
+            <Badge variant="secondary">{`x${group.totalCount}`}</Badge>
+          ) : null}
           {group.totalValue > 0 ? (
             <Text className="mt-1 text-sm font-medium text-green-600">
               ${group.totalValue.toFixed(2)}
@@ -108,16 +125,16 @@ const CollectionCardGroup: React.FC<CollectionCardGroupProps> = ({ group }) => {
           ) : null}
         </View>
         {!isSingle ? (
-          <Text className="ml-2 text-muted-foreground">
+          <Text className="ml-2 text-lg text-muted-foreground">
             {isExpanded ? '\u25B2' : '\u25BC'}
           </Text>
         ) : null}
       </Pressable>
 
-      {/* Expanded items */}
+      {/* Expanded child cards — each in its own container */}
       {isExpanded && !isSingle ? (
-        <View className="pb-1">
-          {group.items.map(renderItem)}
+        <View className="gap-2 px-3 pb-3">
+          {group.items.map(renderChildCard)}
         </View>
       ) : null}
     </View>
