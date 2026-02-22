@@ -77,6 +77,9 @@ export type Database = {
           is_sealed: boolean;
           product_type: SealedProductType | null;
           purchase_price: number | null;
+          photos: string[];
+          notes: string | null;
+          acquired_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -100,6 +103,9 @@ export type Database = {
           is_sealed?: boolean;
           product_type?: SealedProductType | null;
           purchase_price?: number | null;
+          photos?: string[];
+          notes?: string | null;
+          acquired_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -123,6 +129,9 @@ export type Database = {
           is_sealed?: boolean;
           product_type?: SealedProductType | null;
           purchase_price?: number | null;
+          photos?: string[];
+          notes?: string | null;
+          acquired_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };

@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, FlatList, Pressable, Image, Alert, TextInput } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { View, Text, FlatList, ScrollView, Pressable, Image, Alert, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
@@ -10,6 +10,8 @@ import usePortfolioValue from '../../hooks/usePortfolioValue/usePortfolioValue';
 import useRemoveCollectionItem from '../../hooks/useRemoveCollectionItem/useRemoveCollectionItem';
 import useAddCollectionItem from '../../hooks/useAddCollectionItem/useAddCollectionItem';
 import parseCsvCollection from '../../utils/parseCsvCollection/parseCsvCollection';
+import groupCollectionItems from '../../utils/groupCollectionItems/groupCollectionItems';
+import CollectionCardGroup from '../CollectionCardGroup/CollectionCardGroup';
 import Button from '@/components/ui/Button/Button';
 import Badge from '@/components/ui/Badge/Badge';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
@@ -63,6 +65,11 @@ const CollectionScreen: React.FC = () => {
     });
   }, [currentItems, filterTcg, searchQuery]);
 
+  const groupedCards = useMemo(
+    () => (activeTab === 'cards' ? groupCollectionItems(filteredItems) : []),
+    [activeTab, filteredItems],
+  );
+
   const handleRemove = useCallback((itemId: string) => {
     Alert.alert('Remove', 'Remove this item?', [
       { text: 'Cancel', style: 'cancel' },
@@ -103,6 +110,8 @@ const CollectionScreen: React.FC = () => {
                   image_url: '',
                   condition: card.condition,
                   quantity: card.quantity,
+                  is_wishlist: false,
+                  is_sealed: false,
                 });
               }
               Alert.alert('Success', `Imported ${parsed.length} cards.`);
@@ -127,7 +136,7 @@ const CollectionScreen: React.FC = () => {
     router.push(`/(tabs)/(listings)/card-detail?id=${itemId}`);
   }, [router]);
 
-  const renderItem = ({ item }: { item: CollectionItemRow }) => {
+  const renderFlatItem = ({ item }: { item: CollectionItemRow }) => {
     const gradingLabel = item.grading_company
       ? GRADING_COMPANY_LABELS[item.grading_company as GradingCompany]
       : null;
@@ -188,6 +197,10 @@ const CollectionScreen: React.FC = () => {
   const emptyDesc = activeTab === 'cards'
     ? 'Add cards to track your collection and market value.'
     : 'Track your sealed products and their value.';
+
+  const isEmpty = activeTab === 'cards'
+    ? groupedCards.length === 0
+    : filteredItems.length === 0;
 
   return (
     <View className="flex-1 bg-background">
@@ -277,19 +290,26 @@ const CollectionScreen: React.FC = () => {
       </View>
 
       {/* Card List */}
-      <FlatList
-        data={filteredItems}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        ListEmptyComponent={
-          <EmptyState
-            icon={<Text className="text-4xl">{activeTab === 'sealed' ? 'S' : 'C'}</Text>}
-            title={emptyTitle}
-            description={emptyDesc}
-            action={{ label: addLabel, onPress: handleAddPress }}
-          />
-        }
-      />
+      {isEmpty ? (
+        <EmptyState
+          icon={<Text className="text-4xl">{activeTab === 'sealed' ? 'S' : 'C'}</Text>}
+          title={emptyTitle}
+          description={emptyDesc}
+          action={{ label: addLabel, onPress: handleAddPress }}
+        />
+      ) : activeTab === 'cards' ? (
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {groupedCards.map((group) => (
+            <CollectionCardGroup key={group.groupKey} group={group} />
+          ))}
+        </ScrollView>
+      ) : (
+        <FlatList
+          data={filteredItems}
+          keyExtractor={(item) => item.id}
+          renderItem={renderFlatItem}
+        />
+      )}
     </View>
     </View>
   );

@@ -8,5 +8,7 @@ export type {
   CardDetail,
   PriceData,
   PriceVariant,
+  PricePoint,
+  PriceHistory,
   SetInfo,
 } from './types';

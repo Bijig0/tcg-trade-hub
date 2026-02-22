@@ -96,6 +96,9 @@ export const CollectionItemRowSchema = z.object({
   is_sealed: z.boolean(),
   product_type: SealedProductTypeSchema.nullable(),
   purchase_price: z.number().nullable(),
+  photos: z.array(z.string()),
+  notes: z.string().nullable(),
+  acquired_at: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -114,6 +117,9 @@ export const CollectionItemInsertSchema = CollectionItemRowSchema.omit({
   is_sealed: z.boolean().default(false),
   product_type: SealedProductTypeSchema.nullable().optional(),
   purchase_price: z.number().nullable().optional(),
+  photos: z.array(z.string()).default([]),
+  notes: z.string().nullable().optional(),
+  acquired_at: z.string().nullable().optional(),
 });
 
 export const OfferStatusSchema = z.enum(['pending', 'accepted', 'declined', 'countered', 'withdrawn']);
