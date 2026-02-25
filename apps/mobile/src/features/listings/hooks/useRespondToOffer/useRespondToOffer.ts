@@ -2,7 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { listingKeys } from '../../queryKeys';
-import type { OfferStatus } from '@tcg-trade-hub/database';
+import { assertTransition } from '@tcg-trade-hub/database';
+import type { OfferStatus, ListingStatus } from '@tcg-trade-hub/database';
 
 type RespondInput = {
   offerId: string;
@@ -25,6 +26,17 @@ const useRespondToOffer = () => {
 
   return useMutation<RespondResult, Error, RespondInput>({
     mutationFn: async ({ offerId, listingId, action }) => {
+      // Fetch current offer to validate transition
+      const { data: currentOffer, error: fetchOfferError } = await supabase
+        .from('offers')
+        .select('*')
+        .eq('id', offerId)
+        .single();
+
+      if (fetchOfferError) throw fetchOfferError;
+
+      assertTransition('offer', currentOffer.status as OfferStatus, action);
+
       // Update offer status
       const { error: offerError } = await supabase
         .from('offers')
@@ -34,14 +46,7 @@ const useRespondToOffer = () => {
       if (offerError) throw offerError;
 
       if (action === 'accepted') {
-        // Get offer details for match creation
-        const { data: offer, error: fetchError } = await supabase
-          .from('offers')
-          .select('*')
-          .eq('id', offerId)
-          .single();
-
-        if (fetchError) throw fetchError;
+        const offer = currentOffer;
 
         const {
           data: { session },
@@ -64,7 +69,17 @@ const useRespondToOffer = () => {
 
         if (matchError) throw matchError;
 
-        // Update listing status
+        // Validate and update listing status
+        const { data: currentListing, error: listingFetchError } = await supabase
+          .from('listings')
+          .select('status')
+          .eq('id', listingId)
+          .single();
+
+        if (listingFetchError) throw listingFetchError;
+
+        assertTransition('listing', currentListing.status as ListingStatus, 'matched');
+
         await supabase
           .from('listings')
           .update({ status: 'matched' })

@@ -6,9 +6,14 @@
   "types": "./src/index.ts",
   "scripts": {
     "generate:types": "supabase gen types typescript --local > src/types.ts",
-    "build": "echo 'no build needed — consumed as TS source'"
+    "build": "echo 'no build needed — consumed as TS source'",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
   }
 }
