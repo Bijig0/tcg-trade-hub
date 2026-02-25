@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Image, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Clock, MessageCircle } from 'lucide-react-native';
 import Badge from '@/components/ui/Badge/Badge';
@@ -69,6 +70,8 @@ const MatchedListingCard = ({ listing }: MatchedListingCardProps) => {
                 <Image
                   source={{ uri: listing.matched_user.avatar_url }}
                   className="h-6 w-6 rounded-full bg-muted"
+                  cachePolicy="disk"
+                  transition={150}
                 />
               ) : (
                 <View className="h-6 w-6 items-center justify-center rounded-full bg-muted">

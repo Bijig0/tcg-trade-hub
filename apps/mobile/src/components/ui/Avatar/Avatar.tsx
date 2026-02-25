@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
+import { Image } from 'expo-image';
 import { cn } from '@/lib/cn';
 
 const avatarSizes = {
@@ -52,6 +53,8 @@ const Avatar = ({
         <Image
           source={{ uri }}
           className="h-full w-full"
+          cachePolicy="disk"
+          transition={150}
           onError={() => setHasError(true)}
         />
       ) : (

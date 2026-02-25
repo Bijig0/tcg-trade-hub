@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, Pressable, Image, Modal, ActionSheetIOS, Platform, Alert } from 'react-native';
+import { View, Text, FlatList, Pressable, Modal, ActionSheetIOS, Platform, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import type { CollectionItemRow } from '@tcg-trade-hub/database';
 import useCollectionPhotos from '../../hooks/useCollectionPhotos/useCollectionPhotos';
 
@@ -57,7 +58,9 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ item }) => {
         source={{ uri: photoUrl }}
         className="rounded-lg"
         style={{ width: PHOTO_WIDTH, height: PHOTO_HEIGHT }}
-        resizeMode="cover"
+        contentFit="cover"
+        cachePolicy="disk"
+        transition={150}
       />
       <Pressable
         className="absolute right-1 top-1 h-6 w-6 items-center justify-center rounded-full bg-black/60"
@@ -104,7 +107,9 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ item }) => {
                 source={{ uri: item.image_url }}
                 className="rounded-lg opacity-60"
                 style={{ width: PHOTO_WIDTH, height: PHOTO_HEIGHT }}
-                resizeMode="cover"
+                contentFit="cover"
+                cachePolicy="disk"
+                transition={150}
               />
             ) : (
               <View
@@ -133,7 +138,8 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ item }) => {
             <Image
               source={{ uri: previewUrl }}
               className="h-[80%] w-[90%]"
-              resizeMode="contain"
+              contentFit="contain"
+              cachePolicy="disk"
             />
           ) : null}
         </Pressable>

@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { View, Text, Image, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { cn } from '@/lib/cn';
 import Input from '@/components/ui/Input/Input';
 import useCardSearch from '../../hooks/useCardSearch/useCardSearch';
@@ -65,7 +66,9 @@ const CardSearchInput = ({ tcg, onSelect, className }: CardSearchInputProps) => 
       <Image
         source={{ uri: item.imageUrl }}
         className="h-12 w-8 rounded bg-muted"
-        resizeMode="cover"
+        contentFit="cover"
+        cachePolicy="disk"
+        transition={150}
       />
       <View className="flex-1">
         <Text className="text-sm font-medium text-foreground" numberOfLines={1}>

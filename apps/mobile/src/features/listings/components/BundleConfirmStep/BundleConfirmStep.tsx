@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
+import { Image } from 'expo-image';
 import Badge from '@/components/ui/Badge/Badge';
 import type { SelectedCard } from '../../schemas';
 import type { ListingType } from '@tcg-trade-hub/database';
@@ -58,7 +59,9 @@ const BundleConfirmStep = ({ type, selectedCards, cashAmount, description }: Bun
           <Image
             source={{ uri: sc.card.imageUrl }}
             className="h-20 w-14 rounded-lg bg-muted"
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="disk"
+            transition={150}
           />
           <View className="flex-1 gap-1">
             <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>

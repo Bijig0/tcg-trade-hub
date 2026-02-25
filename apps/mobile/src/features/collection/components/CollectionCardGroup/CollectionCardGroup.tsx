@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Pressable, Image } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import Badge from '@/components/ui/Badge/Badge';
 import {
@@ -51,7 +52,9 @@ const CollectionCardGroup: React.FC<CollectionCardGroupProps> = ({ group }) => {
           <Image
             source={{ uri: item.image_url }}
             className="h-12 w-9 rounded"
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="disk"
+            transition={150}
           />
         ) : (
           <View className="h-12 w-9 items-center justify-center rounded bg-muted">
@@ -96,7 +99,9 @@ const CollectionCardGroup: React.FC<CollectionCardGroupProps> = ({ group }) => {
           <Image
             source={{ uri: group.image_url }}
             className="h-16 w-12 rounded-md"
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="disk"
+            transition={150}
           />
         ) : (
           <View className="h-16 w-12 items-center justify-center rounded-md bg-muted">

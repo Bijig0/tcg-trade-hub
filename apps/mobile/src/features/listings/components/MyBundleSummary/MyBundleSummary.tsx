@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable, Image } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { ChevronRight } from 'lucide-react-native';
 import { ListingTypeBadge } from '@/features/listings';
 import Badge from '@/components/ui/Badge/Badge';
@@ -61,7 +62,9 @@ const MyBundleSummary = ({ listing, onCardPress }: MyBundleSummaryProps) => {
               <Image
                 source={{ uri: item.card_image_url }}
                 className="h-12 w-8 rounded bg-muted"
-                resizeMode="cover"
+                contentFit="cover"
+                cachePolicy="disk"
+                transition={150}
               />
               <View className="flex-1">
                 <Text className="text-sm font-medium text-foreground" numberOfLines={1}>

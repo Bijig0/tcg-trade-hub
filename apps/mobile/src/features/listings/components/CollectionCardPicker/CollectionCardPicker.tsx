@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, Image, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { Search, ArrowLeft } from 'lucide-react-native';
 import Badge from '@/components/ui/Badge/Badge';
 import useMyCollection from '@/features/collection/hooks/useMyCollection/useMyCollection';
@@ -72,7 +73,9 @@ const CollectionCardPicker = ({ tcg, onSelect }: CollectionCardPickerProps) => {
           <Image
             source={{ uri: item.image_url }}
             className="h-16 w-11 rounded-lg bg-muted"
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="disk"
+            transition={150}
           />
           <View className="flex-1 gap-0.5">
             <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>

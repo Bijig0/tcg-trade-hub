@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
+import { Image } from 'expo-image';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/context/AuthProvider';
 import Card, {
@@ -45,6 +46,7 @@ const CardPillList = ({ cards, label }: CardPillListProps) => (
           <Image
             source={{ uri: card.imageUrl }}
             className="h-5 w-4 rounded-sm"
+            cachePolicy="disk"
           />
           <Text className="text-xs text-foreground" numberOfLines={1}>
             {card.name}

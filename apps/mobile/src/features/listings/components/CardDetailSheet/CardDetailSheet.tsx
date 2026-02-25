@@ -1,5 +1,6 @@
 import React, { forwardRef, useCallback, useState, useMemo } from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
+import { Image } from 'expo-image';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import Badge from '@/components/ui/Badge/Badge';
 import Button from '@/components/ui/Button/Button';
@@ -72,7 +73,9 @@ const CardDetailSheet = forwardRef<BottomSheet, CardDetailSheetProps>(
             <Image
               source={{ uri: item.card_image_url }}
               className="h-64 w-44 rounded-xl bg-muted"
-              resizeMode="contain"
+              contentFit="contain"
+              cachePolicy="disk"
+              transition={200}
             />
           </View>
 

@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
+import { Image } from 'expo-image';
 import { ImageOff } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import type { ListingItemRow } from '@tcg-trade-hub/database';
@@ -34,7 +35,10 @@ const CardThumbnail = ({ item, sizeClass }: CardThumbnailProps) => {
         <Image
           source={{ uri: item.card_image_url }}
           className="h-full w-full"
-          resizeMode="cover"
+          contentFit="cover"
+          cachePolicy="disk"
+          recyclingKey={item.card_external_id ?? item.card_image_url}
+          transition={150}
           onError={handleError}
         />
       ) : (
