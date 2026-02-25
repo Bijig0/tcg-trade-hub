@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, FlatList, RefreshControl, ScrollView, Pressable, Alert, TextInput } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -201,7 +202,7 @@ const CollectionScreen: React.FC = () => {
     : filteredItems.length === 0;
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
     <View className="flex-1 px-4 pt-4">
       {/* Portfolio Value Header */}
       <View className="mb-4 rounded-xl bg-card p-4">
@@ -339,7 +340,7 @@ const CollectionScreen: React.FC = () => {
         />
       )}
     </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

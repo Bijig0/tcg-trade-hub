@@ -39,20 +39,23 @@ const MeetupProposalCard = ({
   const isRecipient = !isOwnMessage && user?.id !== message.sender_id;
   const showActions = isRecipient && !hasResponse;
 
-  const formattedTime = payload.proposed_time
-    ? new Date(payload.proposed_time).toLocaleString([], {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      })
-    : 'TBD';
+  const parsedDate = payload.proposed_time
+    ? new Date(payload.proposed_time)
+    : null;
+  const formattedTime =
+    parsedDate && !isNaN(parsedDate.getTime())
+      ? parsedDate.toLocaleString([], {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        })
+      : 'TBD';
 
   const locationDisplay = payload.location_name ?? 'Location not specified';
 
   return (
     <View
       className={cn(
-        'mb-2 max-w-[85%] px-3',
-        isOwnMessage ? 'self-end' : 'self-start',
+        'mb-2 w-[95%] self-center px-3',
         className,
       )}
     >

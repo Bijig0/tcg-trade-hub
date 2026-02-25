@@ -21,6 +21,7 @@ import ShopMarker from '../ShopMarker/ShopMarker';
 import OfferDetailSheet from '../OfferDetailSheet/OfferDetailSheet';
 import CardDetailSheet from '../CardDetailSheet/CardDetailSheet';
 import type { CardDetailSheetItem } from '../CardDetailSheet/CardDetailSheet';
+import DevListingActions from '../DevListingActions/DevListingActions';
 import type { OfferWithItems, TradeOpportunity } from '../../schemas';
 import type { OfferItemRow, ListingItemRow } from '@tcg-trade-hub/database';
 
@@ -229,6 +230,7 @@ const MyListingDetailScreen = () => {
   const renderListHeader = () => (
     <>
       <MyBundleSummary listing={listing} onCardPress={handleListingCardPress} />
+      {__DEV__ && <DevListingActions listingId={id ?? ''} />}
       <SegmentedFilter
         items={tabItems}
         value={detailTab}
