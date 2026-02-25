@@ -97,38 +97,35 @@ const MyListingDetailScreen = () => {
     setSelectedOffer(null);
   }, []);
 
-  const handleOfferCardPress = useCallback((item: OfferItemRow) => {
-    setSelectedCard({
-      card_name: item.card_name,
-      card_image_url: item.card_image_url,
-      card_external_id: item.card_external_id,
-      tcg: item.tcg,
-      card_set: item.card_set,
-      card_number: item.card_number,
-      condition: item.condition,
-      market_price: item.market_price,
-    });
-    cardDetailRef.current?.expand();
-  }, []);
+  const navigateToCardDetail = useCallback(
+    (card: { card_name: string; card_image_url: string; card_external_id: string; tcg: string; card_set: string | null; card_number: string | null; condition: string; market_price: number | null; card_rarity?: string | null }) => {
+      router.push({
+        pathname: '/(tabs)/(listings)/listing-card-detail',
+        params: {
+          cardExternalId: card.card_external_id,
+          cardName: card.card_name,
+          cardImageUrl: card.card_image_url,
+          tcg: card.tcg,
+          cardSet: card.card_set ?? '',
+          cardNumber: card.card_number ?? '',
+          condition: card.condition,
+          marketPrice: card.market_price != null ? String(card.market_price) : '',
+          cardRarity: card.card_rarity ?? '',
+        },
+      });
+    },
+    [router],
+  );
 
-  const handleListingCardPress = useCallback((item: ListingItemRow) => {
-    setSelectedCard({
-      card_name: item.card_name,
-      card_image_url: item.card_image_url,
-      card_external_id: item.card_external_id,
-      tcg: item.tcg,
-      card_set: item.card_set,
-      card_number: item.card_number,
-      condition: item.condition,
-      market_price: item.market_price,
-      card_rarity: item.card_rarity,
-    });
-    cardDetailRef.current?.expand();
-  }, []);
+  const handleOfferCardPress = useCallback(
+    (item: OfferItemRow) => navigateToCardDetail(item),
+    [navigateToCardDetail],
+  );
 
-  const handleCardDetailClose = useCallback(() => {
-    setSelectedCard(null);
-  }, []);
+  const handleListingCardPress = useCallback(
+    (item: ListingItemRow) => navigateToCardDetail(item),
+    [navigateToCardDetail],
+  );
 
   // --- Trade opportunity handlers ---
 
@@ -377,13 +374,6 @@ const MyListingDetailScreen = () => {
         onDecline={handleDecline}
         isResponding={respondToOffer.isPending}
         onCardPress={handleOfferCardPress}
-      />
-
-      {/* Stacked: Card detail sheet */}
-      <CardDetailSheet
-        ref={cardDetailRef}
-        item={selectedCard}
-        onClose={handleCardDetailClose}
       />
     </View>
   );
