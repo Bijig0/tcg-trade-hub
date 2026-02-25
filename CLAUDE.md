@@ -2,15 +2,18 @@
 
 ## Project Overview
 
-TCG Trade Hub is a location-based mobile app for trading card game collectors to buy, sell, and trade cards locally. Expo (React Native) with Expo Router, Supabase backend, React Native Reusables (shadcn-style) UI components.
+TCG Trade Hub is a location-based app for trading card game collectors to buy, sell, and trade cards locally. Two apps: an Expo (React Native) mobile app and a TanStack Start web app (pre-registration landing page). Supabase backend, oRPC API layer, React Native Reusables (shadcn-style) UI components.
 
 ## Tech Stack
 
-- **Runtime**: Expo SDK (React Native) with Expo Router (file-based routing)
+- **Runtime — mobile**: Expo SDK (React Native) with Expo Router (file-based routing)
+- **Runtime — web**: TanStack Start (Vite + TanStack Router, SSR)
 - **Language**: TypeScript (strict mode)
-- **Styling**: NativeWind (Tailwind CSS for React Native)
-- **UI Components**: React Native Reusables (copy-paste, shadcn-style)
-- **State — server**: TanStack Query (React Query)
+- **API layer**: oRPC (`@orpc/server` + `@orpc/client`) — type-safe RPC with Zod input/output validation
+- **Styling — mobile**: NativeWind (Tailwind CSS for React Native)
+- **Styling — web**: Tailwind CSS v4
+- **UI Components — mobile**: React Native Reusables (copy-paste, shadcn-style)
+- **State — server**: TanStack Query (React Query), integrated with oRPC via `@orpc/tanstack-query`
 - **State — client**: Zustand with Immer middleware
 - **Validation**: Zod (schemas + type inference)
 - **Backend**: Supabase (Auth, PostgreSQL + PostGIS, Realtime, Edge Functions, Storage)
@@ -23,42 +26,66 @@ TCG Trade Hub is a location-based mobile app for trading card game collectors to
 ```
 tcg-trade-hub/
 ├── apps/
-│   └── mobile/                    # Expo app (primary)
-│       ├── app/                   # Expo Router route files ONLY
-│       │   ├── _layout.tsx
-│       │   ├── (auth)/
-│       │   ├── (onboarding)/
-│       │   └── (tabs)/
+│   ├── mobile/                    # Expo app (primary)
+│   │   ├── app/                   # Expo Router route files ONLY
+│   │   │   ├── _layout.tsx
+│   │   │   ├── (auth)/
+│   │   │   ├── (onboarding)/
+│   │   │   └── (tabs)/
+│   │   ├── src/
+│   │   │   ├── components/        # Shared UI components
+│   │   │   │   └── ui/            # React Native Reusables base components
+│   │   │   ├── features/          # Feature modules (see Feature Module Structure)
+│   │   │   │   ├── auth/
+│   │   │   │   ├── chat/
+│   │   │   │   ├── collection/
+│   │   │   │   ├── feed/
+│   │   │   │   ├── listings/
+│   │   │   │   ├── meetups/
+│   │   │   │   ├── notifications/
+│   │   │   │   ├── offers/
+│   │   │   │   ├── profile/
+│   │   │   │   ├── safety/        # blocking, reporting
+│   │   │   │   └── shops/
+│   │   │   ├── hooks/             # Cross-feature hooks (folder per hook)
+│   │   │   ├── utils/             # Cross-feature pure utilities (folder per function)
+│   │   │   ├── context/           # React Context providers
+│   │   │   ├── stores/            # Zustand stores (folder per store)
+│   │   │   ├── config/            # App config, constants, env
+│   │   │   └── lib/               # Third-party client init (supabase.ts, queryClient.ts)
+│   │   ├── assets/
+│   │   ├── app.json
+│   │   ├── tailwind.config.ts
+│   │   └── tsconfig.json
+│   └── web/                       # TanStack Start web app (pre-registration landing)
 │       ├── src/
-│       │   ├── components/        # Shared UI components
-│       │   │   └── ui/            # React Native Reusables base components
-│       │   ├── features/          # Feature modules (see Feature Module Structure)
-│       │   │   ├── auth/
-│       │   │   ├── chat/
-│       │   │   ├── collection/
-│       │   │   ├── feed/
-│       │   │   ├── listings/
-│       │   │   ├── meetups/
-│       │   │   ├── notifications/
-│       │   │   ├── offers/
-│       │   │   ├── profile/
-│       │   │   ├── safety/        # blocking, reporting
-│       │   │   └── shops/
-│       │   ├── hooks/             # Cross-feature hooks (folder per hook)
-│       │   ├── utils/             # Cross-feature pure utilities (folder per function)
-│       │   ├── context/           # React Context providers
-│       │   ├── stores/            # Zustand stores (folder per store)
-│       │   ├── config/            # App config, constants, env
-│       │   └── lib/               # Third-party client init (supabase.ts, queryClient.ts)
-│       ├── assets/
-│       ├── app.json
-│       ├── tailwind.config.ts
+│       │   ├── components/        # Web components (PreRegistrationForm, CardAutocomplete, etc.)
+│       │   ├── lib/
+│       │   │   ├── orpc.ts        # oRPC client + TanStack Query utils
+│       │   │   ├── queryClient.ts
+│       │   │   ├── rpcHandler.server.ts  # Server-side oRPC handler
+│       │   │   └── supabase.server.ts    # Service-role Supabase client
+│       │   ├── routes/            # TanStack Router file routes
+│       │   ├── router.tsx
+│       │   └── styles/
+│       ├── vite.config.ts
 │       └── tsconfig.json
 ├── packages/
+│   ├── api/                       # oRPC API layer (shared between apps)
+│   │   ├── src/
+│   │   │   ├── base.ts            # Base oRPC instance with Context type
+│   │   │   ├── context.ts         # Context type (Supabase client)
+│   │   │   ├── router.ts          # Router definition (all procedures)
+│   │   │   ├── procedures/        # Individual oRPC procedures
+│   │   │   │   ├── cardSearch.ts
+│   │   │   │   └── preRegistration.ts
+│   │   │   ├── mock/              # Mock data for development
+│   │   │   └── index.ts           # Public exports (os, router, Router, Context)
+│   │   └── package.json
 │   └── database/                  # Shared Supabase types + Zod schemas
 │       ├── src/
 │       │   ├── types.ts           # Generated: supabase gen types typescript
-│       │   ├── schemas.ts         # Generated: supazod
+│       │   ├── schemas.ts         # Zod schemas (single source of truth)
 │       │   └── index.ts           # Re-exports
 │       └── package.json
 ├── supabase/
@@ -440,6 +467,48 @@ export const supabase = createClient<Database>(
 );
 ```
 
+## oRPC API Layer
+
+The `packages/api` package defines a type-safe RPC layer using oRPC. Procedures use Zod schemas from `@tcg-trade-hub/database` for input/output validation. The router type is exported so clients get full type inference without codegen.
+
+### Adding a new procedure
+
+1. Create a file in `packages/api/src/procedures/`.
+2. Import `os` from `../base` and schemas from `@tcg-trade-hub/database`.
+3. Chain `.input()`, `.output()`, `.handler()`.
+4. Register in `packages/api/src/router.ts`.
+
+```typescript
+// packages/api/src/procedures/myProcedure.ts
+import { os } from '../base';
+import { SomeInsertSchema } from '@tcg-trade-hub/database';
+import { z } from 'zod';
+
+export const myProcedure = os
+  .input(SomeInsertSchema)
+  .output(z.object({ success: z.boolean() }))
+  .handler(async ({ input, context }) => {
+    const { supabase } = context;
+    // ...
+    return { success: true };
+  });
+```
+
+### Client usage (web)
+
+The web app creates a typed oRPC client in `apps/web/src/lib/orpc.ts` with TanStack Query integration via `@orpc/tanstack-query`.
+
+```typescript
+import { orpc } from '@/lib/orpc';
+
+// In a component — fully type-safe, no codegen
+const { data } = orpc.card.search.useQuery({ input: { query: 'charizard', tcg: 'pokemon' } });
+```
+
+### Server handler
+
+The web app handles oRPC requests server-side in `apps/web/src/lib/rpcHandler.server.ts`. It creates a Supabase service-role client and passes it as context to the router.
+
 ## Supabase Edge Functions
 
 - Each Edge Function gets its own folder under `supabase/functions/`.
@@ -604,3 +673,5 @@ EXPO_PUSH_ACCESS_TOKEN=
 - Do not create God components — extract logic into hooks and pure functions
 - Do not skip collocated tests for pure utility functions
 - Do not import from feature internals — use the feature's `index.ts` barrel export
+- Do not call Supabase directly from web components — use oRPC procedures via `@tcg-trade-hub/api`
+- Do not duplicate Zod schemas in procedures — import from `@tcg-trade-hub/database`
