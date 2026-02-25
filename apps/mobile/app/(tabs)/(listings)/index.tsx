@@ -6,6 +6,7 @@ import SegmentedFilter from '@/components/ui/SegmentedFilter/SegmentedFilter';
 import { MyListingsScreen } from '@/features/listings';
 import { CollectionScreen } from '@/features/collection';
 import InterestedScreen from '@/features/feed/components/InterestedScreen/InterestedScreen';
+import usePrefetchListingsSubTabs from '@/hooks/usePrefetchListingsSubTabs/usePrefetchListingsSubTabs';
 import type { SegmentedFilterItem } from '@/components/ui/SegmentedFilter/SegmentedFilter';
 
 type Section = 'listings' | 'interested' | 'collection';
@@ -25,6 +26,7 @@ const SECTION_TITLES: Record<Section, string> = {
 const VALID_SECTIONS: Section[] = ['listings', 'interested', 'collection'];
 
 const ListingsRoute = () => {
+  usePrefetchListingsSubTabs();
   const params = useLocalSearchParams<{ section?: string }>();
   const initialSection =
     params.section && VALID_SECTIONS.includes(params.section as Section)

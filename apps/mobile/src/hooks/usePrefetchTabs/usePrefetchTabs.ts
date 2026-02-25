@@ -5,6 +5,13 @@ import { useAuth } from '@/context/AuthProvider';
 import { chatKeys } from '@/features/chat/queryKeys';
 import { meetupKeys } from '@/features/meetups/queryKeys';
 import { profileKeys } from '@/features/profile/queryKeys';
+import { listingKeys } from '@/features/listings/queryKeys';
+import { feedKeys } from '@/features/feed/queryKeys';
+import { collectionKeys } from '@/features/collection/queryKeys';
+import { fetchMyListings } from '@/features/listings/hooks/useMyListings/useMyListings';
+import { fetchLikedListings } from '@/features/feed/hooks/useLikedListings/useLikedListings';
+import { fetchMyCollection } from '@/features/collection/hooks/useMyCollection/useMyCollection';
+import { fetchMySealedProducts } from '@/features/collection/hooks/useMySealedProducts/useMySealedProducts';
 import type { MeetupRow, ShopRow, UserRow, MessageType } from '@tcg-trade-hub/database';
 
 type ConversationPreview = {
@@ -54,10 +61,23 @@ const usePrefetchTabs = () => {
   useEffect(() => {
     if (!user) return;
 
-    // NOTE: Listings tab is NOT prefetched here because useMyListings
-    // enriches raw rows with items, offer_count, and trade_wants.
-    // Prefetching raw data into the same cache key causes crashes
-    // when components expect the enriched shape.
+    // Listings sub-tabs (uses same extracted queryFn as hooks — cache shape guaranteed)
+    queryClient.prefetchQuery({
+      queryKey: listingKeys.myListings(),
+      queryFn: () => fetchMyListings(user.id),
+    });
+    queryClient.prefetchQuery({
+      queryKey: feedKeys.liked(),
+      queryFn: () => fetchLikedListings(user.id),
+    });
+    queryClient.prefetchQuery({
+      queryKey: collectionKeys.myCollection(),
+      queryFn: () => fetchMyCollection(user.id),
+    });
+    queryClient.prefetchQuery({
+      queryKey: collectionKeys.mySealedProducts(),
+      queryFn: () => fetchMySealedProducts(user.id),
+    });
 
     // Conversations tab
     queryClient.prefetchQuery<ConversationPreview[]>({
@@ -77,7 +97,8 @@ const usePrefetchTabs = () => {
           `,
           )
           .or(
-            `matches.user_a_id.eq.${user.id},matches.user_b_id.eq.${user.id}`,
+            `user_a_id.eq.${user.id},user_b_id.eq.${user.id}`,
+            { referencedTable: 'matches' },
           );
 
         if (error) throw error;
