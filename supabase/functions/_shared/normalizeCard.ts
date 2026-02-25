@@ -73,7 +73,7 @@ export function normalizePokemonCard(card: PokemonCard): NormalizedCard {
     setName: card.set.name,
     setCode: card.set.id,
     number: card.number,
-    imageUrl: card.images.large || card.images.small,
+    imageUrl: card.images.small || card.images.large,
     marketPrice: extractPokemonPrice(card),
     rarity: card.rarity ?? 'Unknown',
   };
@@ -112,13 +112,13 @@ interface ScryfallCard {
 
 function extractScryfallImage(card: ScryfallCard): string {
   if (card.image_uris) {
-    return card.image_uris.large || card.image_uris.normal || card.image_uris.small || '';
+    return card.image_uris.normal || card.image_uris.small || card.image_uris.large || '';
   }
   // Double-faced cards store images per face
   if (card.card_faces && card.card_faces.length > 0) {
     const face = card.card_faces[0];
     if (face.image_uris) {
-      return face.image_uris.large || face.image_uris.normal || face.image_uris.small || '';
+      return face.image_uris.normal || face.image_uris.small || face.image_uris.large || '';
     }
   }
   return '';

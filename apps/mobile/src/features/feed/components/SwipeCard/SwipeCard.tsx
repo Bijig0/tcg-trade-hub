@@ -46,6 +46,8 @@ const SwipeCard = ({ listing, className }: SwipeCardProps) => {
             contentFit="contain"
             cachePolicy="disk"
             transition={200}
+            placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
+            placeholderContentFit="contain"
             onError={handleHeroError}
           />
           <ListingTypeBadge type={listing.type} className="absolute left-3 top-3 px-3 py-1.5" />

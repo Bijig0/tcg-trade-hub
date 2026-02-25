@@ -455,24 +455,24 @@ BEGIN
   INSERT INTO public.listing_items (listing_id, card_name, card_image_url, card_external_id, tcg, card_set, card_number, card_rarity, condition, market_price, asking_price, quantity)
   VALUES
     -- Current user
-    (my_l1, 'Charizard VMAX',              'https://images.pokemontcg.io/swsh3/20_hires.png',      'swsh3-20',  'pokemon', 'Darkness Ablaze',     '020/189', 'VMAX',             'nm', 45.00,  42.00, 1),
+    (my_l1, 'Charizard VMAX',              'https://images.pokemontcg.io/swsh3/20.png',      'swsh3-20',  'pokemon', 'Darkness Ablaze',     '020/189', 'VMAX',             'nm', 45.00,  42.00, 1),
     (my_l2, 'Dark Magician',               'https://images.ygoprodeck.com/images/cards_small/46986414.jpg', 'LOB-005', 'yugioh', 'Legend of Blue Eyes', 'LOB-005', 'Ultra Rare', 'lp', 25.00, 20.00, 1),
     (my_l3, 'Force of Will',               'https://cards.scryfall.io/normal/front/9/a/9a879b60-4381-447d-8a5a-8e0b6a1d49ca.jpg', 'ALL-42', 'mtg', 'Alliances', '42', 'Uncommon', 'lp', 85.00, NULL, 1),
-    (my_l4, 'Pikachu VMAX',                'https://images.pokemontcg.io/swsh4/44_hires.png',      'swsh4-44',  'pokemon', 'Vivid Voltage',       '044/185', 'VMAX',             'nm', 18.50,  16.00, 1),
+    (my_l4, 'Pikachu VMAX',                'https://images.pokemontcg.io/swsh4/44.png',      'swsh4-44',  'pokemon', 'Vivid Voltage',       '044/185', 'VMAX',             'nm', 18.50,  16.00, 1),
 
     -- my_l5: Evolving Skies Bundle (3 items)
-    (my_l5, 'Dragonite V Alt Art',          'https://images.pokemontcg.io/swsh7/203_hires.png',    'swsh7-203', 'pokemon', 'Evolving Skies',      '203/203', 'Secret Rare',      'nm', 45.00,  40.00, 1),
-    (my_l5, 'Glaceon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/209_hires.png',    'swsh7-209', 'pokemon', 'Evolving Skies',      '209/203', 'Secret Rare',      'nm', 80.00,  70.00, 1),
-    (my_l5, 'Leafeon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/205_hires.png',    'swsh7-205', 'pokemon', 'Evolving Skies',      '205/203', 'Secret Rare',      'nm', 70.00,  65.00, 1),
+    (my_l5, 'Dragonite V Alt Art',          'https://images.pokemontcg.io/swsh7/203.png',    'swsh7-203', 'pokemon', 'Evolving Skies',      '203/203', 'Secret Rare',      'nm', 45.00,  40.00, 1),
+    (my_l5, 'Glaceon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/209.png',    'swsh7-209', 'pokemon', 'Evolving Skies',      '209/203', 'Secret Rare',      'nm', 80.00,  70.00, 1),
+    (my_l5, 'Leafeon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/205.png',    'swsh7-205', 'pokemon', 'Evolving Skies',      '205/203', 'Secret Rare',      'nm', 70.00,  65.00, 1),
 
     -- my_l6: Modern Staples Bundle (2 items)
     (my_l6, 'Lightning Bolt',              'https://cards.scryfall.io/normal/front/f/2/f29ba16f-c8fb-42fe-aabf-87089cb214a7.jpg', 'A25-141', 'mtg', 'Masters 25', '141', 'Uncommon', 'nm', 3.00, NULL, 4),
     (my_l6, 'Path to Exile',               'https://cards.scryfall.io/normal/front/3/5/35649ef0-b2fd-429f-be5f-766d5cea5994.jpg', 'E01-17', 'mtg', 'Archenemy: Nicol Bolas', '17', 'Uncommon', 'nm', 4.00, NULL, 4),
 
     -- Alex Chen
-    (u1_l1, 'Umbreon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/215_hires.png',    'swsh7-215', 'pokemon', 'Evolving Skies',      '215/203', 'Secret Rare',      'nm', 180.00, 170.00, 1),
+    (u1_l1, 'Umbreon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/215.png',    'swsh7-215', 'pokemon', 'Evolving Skies',      '215/203', 'Secret Rare',      'nm', 180.00, 170.00, 1),
     (u1_l2, 'Charizard ex SAR',             'https://images.pokemontcg.io/sv3/223.png',      'sv3-223',   'pokemon', 'Obsidian Flames',     '223/197', 'Special Art Rare', 'nm', 95.00,  80.00,  1),
-    (u1_l3, 'Rayquaza VMAX Alt Art',        'https://images.pokemontcg.io/swsh7/218_hires.png',    'swsh7-218', 'pokemon', 'Evolving Skies',      '218/203', 'Secret Rare',      'nm', 125.00, 120.00, 1),
+    (u1_l3, 'Rayquaza VMAX Alt Art',        'https://images.pokemontcg.io/swsh7/218.png',    'swsh7-218', 'pokemon', 'Evolving Skies',      '218/203', 'Secret Rare',      'nm', 125.00, 120.00, 1),
 
     -- Sarah Mitchell
     (u2_l1, 'Ragavan, Nimble Pilferer',     'https://cards.scryfall.io/normal/front/a/9/a9738cda-adb1-47fb-9f4c-ecd930228c4d.jpg', 'MH2-138', 'mtg', 'Modern Horizons 2', '138', 'Mythic Rare', 'nm', 55.00, 50.00, 1),
@@ -487,21 +487,21 @@ BEGIN
     (u3_l3, 'Apollousa (Starlight)',         'https://images.ygoprodeck.com/images/cards_small/4280258.jpg',  'RIRA-097', 'yugioh', 'Rising Rampage', 'RIRA-097', 'Starlight Rare', 'nm', 200.00, 180.00, 1),
 
     -- Emma Rodriguez
-    (u4_l1, 'Mew VMAX Alt Art',             'https://images.pokemontcg.io/swsh8/268_hires.png',    'swsh8-268', 'pokemon', 'Fusion Strike',        '268/264', 'Secret Rare',      'nm', 55.00,  50.00, 1),
+    (u4_l1, 'Mew VMAX Alt Art',             'https://images.pokemontcg.io/swsh8/268.png',    'swsh8-268', 'pokemon', 'Fusion Strike',        '268/264', 'Secret Rare',      'nm', 55.00,  50.00, 1),
     (u4_l2, 'Sheoldred, the Apocalypse',    'https://cards.scryfall.io/normal/front/d/6/d67be074-cdd4-41d9-ac89-0a0456c4e4b2.jpg', 'DMU-107', 'mtg', 'Dominaria United', '107', 'Mythic Rare', 'nm', 75.00, 70.00, 1),
     -- u4_l3: Full Art Trainer Collection (3 sample items)
-    (u4_l3, 'Professor''s Research FA',      'https://images.pokemontcg.io/swsh1/209_hires.png',   'swsh1-209', 'pokemon', 'Sword & Shield',      '209/202', 'Full Art',         'nm', 18.00, NULL, 1),
-    (u4_l3, 'Boss''s Orders FA',             'https://images.pokemontcg.io/swsh2/189_hires.png',   'swsh2-189', 'pokemon', 'Rebel Clash',          '189/192', 'Full Art',         'nm', 15.00, NULL, 1),
-    (u4_l3, 'Marnie FA',                     'https://images.pokemontcg.io/swsh1/208_hires.png',   'swsh1-208', 'pokemon', 'Sword & Shield',      '208/202', 'Full Art',         'nm', 22.00, NULL, 1),
+    (u4_l3, 'Professor''s Research FA',      'https://images.pokemontcg.io/swsh1/209.png',   'swsh1-209', 'pokemon', 'Sword & Shield',      '209/202', 'Full Art',         'nm', 18.00, NULL, 1),
+    (u4_l3, 'Boss''s Orders FA',             'https://images.pokemontcg.io/swsh2/189.png',   'swsh2-189', 'pokemon', 'Rebel Clash',          '189/192', 'Full Art',         'nm', 15.00, NULL, 1),
+    (u4_l3, 'Marnie FA',                     'https://images.pokemontcg.io/swsh1/208.png',   'swsh1-208', 'pokemon', 'Sword & Shield',      '208/202', 'Full Art',         'nm', 22.00, NULL, 1),
 
     -- Liam O'Brien
-    (u5_l1, 'Gengar VMAX Alt Art',          'https://images.pokemontcg.io/swsh8/271_hires.png',    'swsh8-271', 'pokemon', 'Fusion Strike',        '271/264', 'Secret Rare',      'nm', 28.00,  25.00, 1),
-    (u5_l2, 'Pikachu VMAX Rainbow',         'https://images.pokemontcg.io/swsh4/188_hires.png',    'swsh4-188', 'pokemon', 'Vivid Voltage',        '188/185', 'Secret Rare',      'nm', 200.00, 180.00, 1),
+    (u5_l1, 'Gengar VMAX Alt Art',          'https://images.pokemontcg.io/swsh8/271.png',    'swsh8-271', 'pokemon', 'Fusion Strike',        '271/264', 'Secret Rare',      'nm', 28.00,  25.00, 1),
+    (u5_l2, 'Pikachu VMAX Rainbow',         'https://images.pokemontcg.io/swsh4/188.png',    'swsh4-188', 'pokemon', 'Vivid Voltage',        '188/185', 'Secret Rare',      'nm', 200.00, 180.00, 1),
 
     -- Mia Zhang
-    (u6_l1, 'Giratina VSTAR Alt Art',       'https://images.pokemontcg.io/swsh11/131_hires.png',   'swsh11-131','pokemon', 'Lost Origin',          '131/196', 'Secret Rare',      'nm', 70.00,  65.00, 1),
+    (u6_l1, 'Giratina VSTAR Alt Art',       'https://images.pokemontcg.io/swsh11/131.png',   'swsh11-131','pokemon', 'Lost Origin',          '131/196', 'Secret Rare',      'nm', 70.00,  65.00, 1),
     (u6_l2, 'Liliana of the Veil',          'https://cards.scryfall.io/normal/front/d/1/d12c8c97-6491-452c-811d-943441a7ef9f.jpg', 'DMU-97', 'mtg', 'Dominaria United', '97', 'Mythic Rare', 'nm', 22.00, NULL, 1),
-    (u6_l3, 'Umbreon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/215_hires.png',    'swsh7-215', 'pokemon', 'Evolving Skies',      '215/203', 'Secret Rare',      'nm', 180.00, 160.00, 1),
+    (u6_l3, 'Umbreon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/215.png',    'swsh7-215', 'pokemon', 'Evolving Skies',      '215/203', 'Secret Rare',      'nm', 180.00, 160.00, 1),
 
     -- Noah Patel
     (u7_l1, 'Wrenn and Six',                'https://cards.scryfall.io/normal/front/5/b/5bd498cc-a609-4457-9325-6888d59ca36f.jpg', 'MH1-217', 'mtg', 'Modern Horizons', '217', 'Mythic Rare', 'nm', 60.00, 55.00, 1),
@@ -512,7 +512,7 @@ BEGIN
 
     -- Olivia Kim
     (u8_l1, 'Accesscode Talker',            'https://images.ygoprodeck.com/images/cards_small/86066372.jpg', 'ETCO-086', 'yugioh', 'Eternity Code', 'ETCO-086', 'Ultra Rare', 'nm', 20.00, 18.00, 1),
-    (u8_l2, 'Lugia VSTAR Alt Art',          'https://images.pokemontcg.io/swsh12pt5/139_hires.png', 'swsh12pt5-186', 'pokemon', 'Silver Tempest', '186/195', 'Secret Rare', 'nm', 60.00, 55.00, 1),
+    (u8_l2, 'Lugia VSTAR Alt Art',          'https://images.pokemontcg.io/swsh12pt5/139.png', 'swsh12pt5-186', 'pokemon', 'Silver Tempest', '186/195', 'Secret Rare', 'nm', 60.00, 55.00, 1),
     -- u8_l3: Ghost Rare Collection (3 items)
     (u8_l3, 'Stardust Dragon (Ghost)',       'https://images.ygoprodeck.com/images/cards_small/44508094.jpg', 'TDGS-040', 'yugioh', 'The Duelist Genesis', 'TDGS-040', 'Ghost Rare', 'lp', 85.00, NULL, 1),
     (u8_l3, 'Rainbow Dragon (Ghost)',        'https://images.ygoprodeck.com/images/cards_small/95744531.jpg', 'TAEV-098', 'yugioh', 'Tactical Evolution', 'TAEV-098', 'Ghost Rare', 'lp', 95.00, NULL, 1),
@@ -520,15 +520,15 @@ BEGIN
 
     -- Ethan Brooks
     -- u9_l1: SV Promos Bundle (3 items)
-    (u9_l1, 'Pikachu ex Promo',             'https://images.pokemontcg.io/svp/39_hires.png',       'svp-39',    'pokemon', 'Scarlet & Violet Promos', '039', 'Promo', 'nm', 15.00, 12.00, 1),
-    (u9_l1, 'Mewtwo ex Promo',              'https://images.pokemontcg.io/svp/30_hires.png',       'svp-30',    'pokemon', 'Scarlet & Violet Promos', '030', 'Promo', 'nm', 12.00, 10.00, 1),
-    (u9_l1, 'Charizard ex Promo',           'https://images.pokemontcg.io/svp/29_hires.png',       'svp-29',    'pokemon', 'Scarlet & Violet Promos', '029', 'Promo', 'nm', 18.00, 15.00, 1),
+    (u9_l1, 'Pikachu ex Promo',             'https://images.pokemontcg.io/svp/39.png',       'svp-39',    'pokemon', 'Scarlet & Violet Promos', '039', 'Promo', 'nm', 15.00, 12.00, 1),
+    (u9_l1, 'Mewtwo ex Promo',              'https://images.pokemontcg.io/svp/30.png',       'svp-30',    'pokemon', 'Scarlet & Violet Promos', '030', 'Promo', 'nm', 12.00, 10.00, 1),
+    (u9_l1, 'Charizard ex Promo',           'https://images.pokemontcg.io/svp/29.png',       'svp-29',    'pokemon', 'Scarlet & Violet Promos', '029', 'Promo', 'nm', 18.00, 15.00, 1),
     (u9_l2, 'Solitude',                     'https://cards.scryfall.io/normal/front/4/7/47a6234f-309f-4e03-9263-66da48b57153.jpg', 'MH2-32', 'mtg', 'Modern Horizons 2', '32', 'Mythic Rare', 'nm', 35.00, NULL, 1),
 
     -- Sophie Turner
-    (u10_l1, 'Palkia VSTAR Alt Art',         'https://images.pokemontcg.io/swsh10/195_hires.png',  'swsh10-195', 'pokemon', 'Astral Radiance',      '195/189', 'Secret Rare',     'nm', 45.00, 42.00, 1),
-    (u10_l2, 'Origin Forme Dialga VSTAR Alt','https://images.pokemontcg.io/swsh10/196_hires.png',  'swsh10-196', 'pokemon', 'Astral Radiance',      '196/189', 'Secret Rare',     'nm', 38.00, 35.00, 1),
-    (u10_l3, 'Charizard UPC Promo',          'https://images.pokemontcg.io/swsh12pt5gg/GG70_hires.png', 'swsh12pt5gg-GG70', 'pokemon', 'Crown Zenith GG', 'GG70', 'Special Art Rare', 'nm', 210.00, 200.00, 1),
+    (u10_l1, 'Palkia VSTAR Alt Art',         'https://images.pokemontcg.io/swsh10/195.png',  'swsh10-195', 'pokemon', 'Astral Radiance',      '195/189', 'Secret Rare',     'nm', 45.00, 42.00, 1),
+    (u10_l2, 'Origin Forme Dialga VSTAR Alt','https://images.pokemontcg.io/swsh10/196.png',  'swsh10-196', 'pokemon', 'Astral Radiance',      '196/189', 'Secret Rare',     'nm', 38.00, 35.00, 1),
+    (u10_l3, 'Charizard UPC Promo',          'https://images.pokemontcg.io/swsh12pt5gg/GG70.png', 'swsh12pt5gg-GG70', 'pokemon', 'Crown Zenith GG', 'GG70', 'Special Art Rare', 'nm', 210.00, 200.00, 1),
 
     -- Ryan Nakamura
     (u11_l1, 'Teferi, Time Raveler',         'https://cards.scryfall.io/normal/front/5/c/5cb76266-ae50-4bbc-8f96-d98f309b02d3.jpg', 'WAR-221', 'mtg', 'War of the Spark', '221', 'Rare', 'nm', 14.00, 12.00, 1),
@@ -536,14 +536,14 @@ BEGIN
 
     -- Chloe Anderson
     -- u12_l1: Eeveelution Bundle (3 items)
-    (u12_l1, 'Umbreon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/215_hires.png',   'swsh7-215', 'pokemon', 'Evolving Skies',      '215/203', 'Secret Rare',      'nm', 180.00, 170.00, 1),
-    (u12_l1, 'Glaceon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/209_hires.png',   'swsh7-209', 'pokemon', 'Evolving Skies',      '209/203', 'Secret Rare',      'nm', 80.00,  75.00,  1),
-    (u12_l1, 'Espeon VMAX Alt Art',          'https://images.pokemontcg.io/swsh7/65_hires.png',   'swsh7-270', 'pokemon', 'Evolving Skies',      '270/203', 'Secret Rare',      'nm', 65.00,  60.00,  1),
+    (u12_l1, 'Umbreon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/215.png',   'swsh7-215', 'pokemon', 'Evolving Skies',      '215/203', 'Secret Rare',      'nm', 180.00, 170.00, 1),
+    (u12_l1, 'Glaceon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/209.png',   'swsh7-209', 'pokemon', 'Evolving Skies',      '209/203', 'Secret Rare',      'nm', 80.00,  75.00,  1),
+    (u12_l1, 'Espeon VMAX Alt Art',          'https://images.pokemontcg.io/swsh7/65.png',   'swsh7-270', 'pokemon', 'Evolving Skies',      '270/203', 'Secret Rare',      'nm', 65.00,  60.00,  1),
     -- u12_l2: Radiant Collection (3 sample items)
-    (u12_l2, 'Radiant Charizard',            'https://images.pokemontcg.io/pgo/11_hires.png',      'pgo-11',    'pokemon', 'Pokemon GO',           '011/078', 'Radiant Rare',     'nm', 12.00, NULL, 1),
-    (u12_l2, 'Radiant Blastoise',            'https://images.pokemontcg.io/pgo/18_hires.png',      'pgo-18',    'pokemon', 'Pokemon GO',           '018/078', 'Radiant Rare',     'nm', 6.00,  NULL, 1),
-    (u12_l2, 'Radiant Greninja',             'https://images.pokemontcg.io/swsh10/46_hires.png',   'swsh10-46', 'pokemon', 'Astral Radiance',      '046/189', 'Radiant Rare',     'nm', 5.00,  NULL, 1),
-    (u12_l3, 'Galarian Gallery Hits',        'https://images.pokemontcg.io/swsh12pt5gg/GG70_hires.png', 'swsh12pt5gg-GG70', 'pokemon', 'Crown Zenith GG', 'GG70', 'Special Art Rare', 'nm', 65.00, 60.00, 1),
+    (u12_l2, 'Radiant Charizard',            'https://images.pokemontcg.io/pgo/11.png',      'pgo-11',    'pokemon', 'Pokemon GO',           '011/078', 'Radiant Rare',     'nm', 12.00, NULL, 1),
+    (u12_l2, 'Radiant Blastoise',            'https://images.pokemontcg.io/pgo/18.png',      'pgo-18',    'pokemon', 'Pokemon GO',           '018/078', 'Radiant Rare',     'nm', 6.00,  NULL, 1),
+    (u12_l2, 'Radiant Greninja',             'https://images.pokemontcg.io/swsh10/46.png',   'swsh10-46', 'pokemon', 'Astral Radiance',      '046/189', 'Radiant Rare',     'nm', 5.00,  NULL, 1),
+    (u12_l3, 'Galarian Gallery Hits',        'https://images.pokemontcg.io/swsh12pt5gg/GG70.png', 'swsh12pt5gg-GG70', 'pokemon', 'Crown Zenith GG', 'GG70', 'Special Art Rare', 'nm', 65.00, 60.00, 1),
 
     -- Daniel Lee
     -- u13_l1: Snake-Eyes Core (2 items)
@@ -667,10 +667,10 @@ BEGIN
     (msg_21, conv_4, u4, 'card_offer', NULL,
       jsonb_build_object(
         'offering', jsonb_build_array(
-          jsonb_build_object('externalId', 'swsh8-268', 'tcg', 'pokemon', 'name', 'Mew VMAX Alt Art', 'imageUrl', 'https://images.pokemontcg.io/swsh8/268_hires.png', 'condition', 'nm', 'quantity', 1)
+          jsonb_build_object('externalId', 'swsh8-268', 'tcg', 'pokemon', 'name', 'Mew VMAX Alt Art', 'imageUrl', 'https://images.pokemontcg.io/swsh8/268.png', 'condition', 'nm', 'quantity', 1)
         ),
         'requesting', jsonb_build_array(
-          jsonb_build_object('externalId', 'swsh4-44', 'tcg', 'pokemon', 'name', 'Pikachu VMAX', 'imageUrl', 'https://images.pokemontcg.io/swsh4/44_hires.png', 'condition', 'nm', 'quantity', 1)
+          jsonb_build_object('externalId', 'swsh4-44', 'tcg', 'pokemon', 'name', 'Pikachu VMAX', 'imageUrl', 'https://images.pokemontcg.io/swsh4/44.png', 'condition', 'nm', 'quantity', 1)
         ),
         'note', 'Straight swap? Mew for Pikachu VMAX.'
       ),
@@ -755,18 +755,18 @@ BEGIN
   INSERT INTO public.collection_items (user_id, tcg, external_id, card_name, set_name, set_code, card_number, image_url, rarity, condition, quantity, is_wishlist, market_price, grading_company, grading_score, is_sealed, product_type, purchase_price)
   VALUES
     -- Pokemon
-    (me, 'pokemon', 'swsh3-20',   'Charizard VMAX',         'Darkness Ablaze',   'swsh3',  '020/189', 'https://images.pokemontcg.io/swsh3/20_hires.png',   'VMAX',             'nm', 1, false, 45.00,  NULL,  NULL,  false, NULL, NULL),
-    (me, 'pokemon', 'swsh3-20',   'Charizard VMAX',         'Darkness Ablaze',   'swsh3',  '020/189', 'https://images.pokemontcg.io/swsh3/20_hires.png',   'VMAX',             'lp', 1, false, 42.00,  NULL,  NULL,  false, NULL, 40.00),
-    (me, 'pokemon', 'swsh7-215',  'Umbreon VMAX Alt Art',   'Evolving Skies',    'swsh7',  '215/203', 'https://images.pokemontcg.io/swsh7/215_hires.png',  'Secret Rare',      'nm', 1, false, 180.00, 'psa', '10',  false, NULL, NULL),
+    (me, 'pokemon', 'swsh3-20',   'Charizard VMAX',         'Darkness Ablaze',   'swsh3',  '020/189', 'https://images.pokemontcg.io/swsh3/20.png',   'VMAX',             'nm', 1, false, 45.00,  NULL,  NULL,  false, NULL, NULL),
+    (me, 'pokemon', 'swsh3-20',   'Charizard VMAX',         'Darkness Ablaze',   'swsh3',  '020/189', 'https://images.pokemontcg.io/swsh3/20.png',   'VMAX',             'lp', 1, false, 42.00,  NULL,  NULL,  false, NULL, 40.00),
+    (me, 'pokemon', 'swsh7-215',  'Umbreon VMAX Alt Art',   'Evolving Skies',    'swsh7',  '215/203', 'https://images.pokemontcg.io/swsh7/215.png',  'Secret Rare',      'nm', 1, false, 180.00, 'psa', '10',  false, NULL, NULL),
     (me, 'pokemon', 'sv3-223',    'Charizard ex SAR',       'Obsidian Flames',   'sv3',    '223/197', 'https://images.pokemontcg.io/sv3/223.png',    'Special Art Rare', 'nm', 1, false, 95.00,  NULL,  NULL,  false, NULL, NULL),
-    (me, 'pokemon', 'swsh4-44',   'Pikachu VMAX',           'Vivid Voltage',     'swsh4',  '044/185', 'https://images.pokemontcg.io/swsh4/44_hires.png',   'VMAX',             'lp', 1, false, 18.50,  NULL,  NULL,  false, NULL, NULL),
-    (me, 'pokemon', 'swsh8-268',  'Mew VMAX Alt Art',       'Fusion Strike',     'swsh8',  '268/264', 'https://images.pokemontcg.io/swsh8/268_hires.png',  'Secret Rare',      'nm', 1, false, 55.00,  'cgc', '9.5', false, NULL, NULL),
-    (me, 'pokemon', 'swsh7-203',  'Dragonite V Alt Art',    'Evolving Skies',    'swsh7',  '203/203', 'https://images.pokemontcg.io/swsh7/203_hires.png',  'Secret Rare',      'nm', 1, false, 45.00,  NULL,  NULL,  false, NULL, 38.00),
-    (me, 'pokemon', 'swsh7-218',  'Rayquaza VMAX Alt Art',  'Evolving Skies',    'swsh7',  '218/203', 'https://images.pokemontcg.io/swsh7/218_hires.png',  'Secret Rare',      'nm', 1, false, 125.00, 'psa', '9',   false, NULL, 110.00),
-    (me, 'pokemon', 'swsh11-131', 'Giratina VSTAR Alt Art', 'Lost Origin',       'swsh11', '131/196', 'https://images.pokemontcg.io/swsh11/131_hires.png', 'Secret Rare',      'nm', 1, false, 70.00,  NULL,  NULL,  false, NULL, 55.00),
-    (me, 'pokemon', 'swsh8-271',  'Gengar VMAX Alt Art',    'Fusion Strike',     'swsh8',  '271/264', 'https://images.pokemontcg.io/swsh8/271_hires.png',  'Secret Rare',      'lp', 1, false, 25.00,  NULL,  NULL,  false, NULL, 20.00),
-    (me, 'pokemon', 'pgo-11',     'Radiant Charizard',      'Pokemon GO',        'pgo',    '011/078', 'https://images.pokemontcg.io/pgo/11_hires.png',     'Radiant Rare',     'nm', 1, false, 12.00,  NULL,  NULL,  false, NULL, 8.00),
-    (me, 'pokemon', 'swsh10-195', 'Palkia VSTAR Alt Art',   'Astral Radiance',   'swsh10', '195/189', 'https://images.pokemontcg.io/swsh10/195_hires.png', 'Secret Rare',      'nm', 1, false, 45.00,  NULL,  NULL,  false, NULL, 35.00),
+    (me, 'pokemon', 'swsh4-44',   'Pikachu VMAX',           'Vivid Voltage',     'swsh4',  '044/185', 'https://images.pokemontcg.io/swsh4/44.png',   'VMAX',             'lp', 1, false, 18.50,  NULL,  NULL,  false, NULL, NULL),
+    (me, 'pokemon', 'swsh8-268',  'Mew VMAX Alt Art',       'Fusion Strike',     'swsh8',  '268/264', 'https://images.pokemontcg.io/swsh8/268.png',  'Secret Rare',      'nm', 1, false, 55.00,  'cgc', '9.5', false, NULL, NULL),
+    (me, 'pokemon', 'swsh7-203',  'Dragonite V Alt Art',    'Evolving Skies',    'swsh7',  '203/203', 'https://images.pokemontcg.io/swsh7/203.png',  'Secret Rare',      'nm', 1, false, 45.00,  NULL,  NULL,  false, NULL, 38.00),
+    (me, 'pokemon', 'swsh7-218',  'Rayquaza VMAX Alt Art',  'Evolving Skies',    'swsh7',  '218/203', 'https://images.pokemontcg.io/swsh7/218.png',  'Secret Rare',      'nm', 1, false, 125.00, 'psa', '9',   false, NULL, 110.00),
+    (me, 'pokemon', 'swsh11-131', 'Giratina VSTAR Alt Art', 'Lost Origin',       'swsh11', '131/196', 'https://images.pokemontcg.io/swsh11/131.png', 'Secret Rare',      'nm', 1, false, 70.00,  NULL,  NULL,  false, NULL, 55.00),
+    (me, 'pokemon', 'swsh8-271',  'Gengar VMAX Alt Art',    'Fusion Strike',     'swsh8',  '271/264', 'https://images.pokemontcg.io/swsh8/271.png',  'Secret Rare',      'lp', 1, false, 25.00,  NULL,  NULL,  false, NULL, 20.00),
+    (me, 'pokemon', 'pgo-11',     'Radiant Charizard',      'Pokemon GO',        'pgo',    '011/078', 'https://images.pokemontcg.io/pgo/11.png',     'Radiant Rare',     'nm', 1, false, 12.00,  NULL,  NULL,  false, NULL, 8.00),
+    (me, 'pokemon', 'swsh10-195', 'Palkia VSTAR Alt Art',   'Astral Radiance',   'swsh10', '195/189', 'https://images.pokemontcg.io/swsh10/195.png', 'Secret Rare',      'nm', 1, false, 45.00,  NULL,  NULL,  false, NULL, 35.00),
 
     -- MTG
     (me, 'mtg', 'MH2-138', 'Ragavan, Nimble Pilferer',  'Modern Horizons 2',    'MH2', '138', 'https://cards.scryfall.io/normal/front/a/9/a9738cda-adb1-47fb-9f4c-ecd930228c4d.jpg', 'Mythic Rare', 'nm', 1, false, 55.00,  NULL,  NULL,  false, NULL, NULL),
@@ -785,9 +785,9 @@ BEGIN
   -- Wishlist items
   INSERT INTO public.collection_items (user_id, tcg, external_id, card_name, set_name, set_code, card_number, image_url, rarity, condition, quantity, is_wishlist, market_price, is_sealed, product_type, purchase_price)
   VALUES
-    (me, 'pokemon', 'swsh4-188',       'Pikachu VMAX Rainbow',    'Vivid Voltage',           'swsh4',       '188/185', 'https://images.pokemontcg.io/swsh4/188_hires.png',  'Secret Rare', 'nm', 1, true, 200.00, false, NULL, NULL),
+    (me, 'pokemon', 'swsh4-188',       'Pikachu VMAX Rainbow',    'Vivid Voltage',           'swsh4',       '188/185', 'https://images.pokemontcg.io/swsh4/188.png',  'Secret Rare', 'nm', 1, true, 200.00, false, NULL, NULL),
     (me, 'mtg',     'LTR-246',         'The One Ring',            'Tales of Middle-earth',   'LTR',         '246',     'https://cards.scryfall.io/normal/front/d/5/d5806e68-1054-458e-866d-1f2470f682b2.jpg', 'Mythic Rare', 'nm', 1, true, 65.00, false, NULL, NULL),
-    (me, 'pokemon', 'swsh7-209',       'Glaceon VMAX Alt Art',    'Evolving Skies',          'swsh7',       '209/203', 'https://images.pokemontcg.io/swsh7/209_hires.png',  'Secret Rare', 'nm', 1, true, 80.00,  false, NULL, NULL),
+    (me, 'pokemon', 'swsh7-209',       'Glaceon VMAX Alt Art',    'Evolving Skies',          'swsh7',       '209/203', 'https://images.pokemontcg.io/swsh7/209.png',  'Secret Rare', 'nm', 1, true, 80.00,  false, NULL, NULL),
     (me, 'yugioh',  'DUNE-100',        'Ash Blossom (Starlight)', 'Duelist Nexus',           'DUNE',        '100',     'https://images.ygoprodeck.com/images/cards_small/14558127.jpg', 'Starlight Rare', 'nm', 1, true, 100.00, false, NULL, NULL)
   ON CONFLICT DO NOTHING;
 
