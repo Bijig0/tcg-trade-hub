@@ -35,6 +35,7 @@ const MultiCardSelector = ({ selectedCards, onToggle }: MultiCardSelectorProps) 
   const [tcgFilter, setTcgFilter] = useState<TcgType | null>(null);
   const [showExternalSearch, setShowExternalSearch] = useState(false);
   const [externalCondition, setExternalCondition] = useState<CardCondition>('nm');
+  const [externalTcg, setExternalTcg] = useState<TcgType | null>(null);
 
   const selectedIds = useMemo(
     () => new Set(selectedCards.map((sc) => sc.card.externalId)),
@@ -192,6 +193,34 @@ const MultiCardSelector = ({ selectedCards, onToggle }: MultiCardSelectorProps) 
         <View className="gap-3 rounded-xl border border-border bg-card p-3">
           <Text className="text-sm font-medium text-foreground">Add a card not in your collection</Text>
 
+          {/* TCG selector */}
+          <View className="gap-1">
+            <Text className="text-xs text-muted-foreground">TCG</Text>
+            <View className="flex-row gap-2">
+              {(['pokemon', 'mtg', 'yugioh'] as const).map((tcg) => (
+                <Pressable
+                  key={tcg}
+                  onPress={() => setExternalTcg(tcg)}
+                  className={cn(
+                    'rounded-full border px-3 py-1',
+                    externalTcg === tcg
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border',
+                  )}
+                >
+                  <Text
+                    className={cn(
+                      'text-xs',
+                      externalTcg === tcg ? 'text-primary font-medium' : 'text-foreground',
+                    )}
+                  >
+                    {TCG_LABELS[tcg]}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
           {/* Condition picker */}
           <View className="gap-1">
             <Text className="text-xs text-muted-foreground">Condition</Text>
@@ -220,7 +249,7 @@ const MultiCardSelector = ({ selectedCards, onToggle }: MultiCardSelectorProps) 
             </View>
           </View>
 
-          <CardSearchInput tcg={null} onSelect={handleExternalSelect} />
+          <CardSearchInput tcg={externalTcg} onSelect={handleExternalSelect} />
 
           <Pressable onPress={() => setShowExternalSearch(false)}>
             <Text className="text-center text-sm text-muted-foreground">Cancel</Text>
@@ -228,7 +257,10 @@ const MultiCardSelector = ({ selectedCards, onToggle }: MultiCardSelectorProps) 
         </View>
       ) : (
         <Pressable
-          onPress={() => setShowExternalSearch(true)}
+          onPress={() => {
+            setExternalTcg(tcgFilter);
+            setShowExternalSearch(true);
+          }}
           className="flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-border py-3"
         >
           <Search size={16} className="text-primary" />
