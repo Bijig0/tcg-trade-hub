@@ -14,11 +14,11 @@ const ChatRoute = () => {
 
   return (
     <ChatThread
-      conversationId={params.conversationId!}
-      matchId={params.matchId!}
+      conversationId={params.conversationId ?? ''}
+      matchId={params.matchId ?? ''}
       otherUser={{
-        id: params.otherUserId!,
-        name: params.otherUserName!,
+        id: params.otherUserId ?? '',
+        name: params.otherUserName ?? 'Unknown',
         avatar: params.otherUserAvatar ?? null,
       }}
     />

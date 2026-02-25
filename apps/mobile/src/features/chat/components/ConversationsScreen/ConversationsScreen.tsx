@@ -85,8 +85,16 @@ const ConversationsScreen = () => {
   const router = useRouter();
   const { data: conversations, isLoading, isError, error, refetch } = useConversations();
 
-  const handlePress = (conversationId: string) => {
-    router.push(`/(tabs)/(messages)/chat/${conversationId}`);
+  const handlePress = (conversation: ConversationPreview) => {
+    router.push({
+      pathname: `/(tabs)/(messages)/chat/${conversation.conversationId}`,
+      params: {
+        matchId: conversation.matchId,
+        otherUserId: conversation.otherUser.id,
+        otherUserName: conversation.otherUser.name,
+        otherUserAvatar: conversation.otherUser.avatar ?? '',
+      },
+    });
   };
 
   if (isError) {
@@ -134,7 +142,7 @@ const ConversationsScreen = () => {
           renderItem={({ item }) => (
             <ConversationItem
               conversation={item}
-              onPress={() => handlePress(item.conversationId)}
+              onPress={() => handlePress(item)}
             />
           )}
           ListEmptyComponent={
