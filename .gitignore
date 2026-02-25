@@ -9,3 +9,8 @@ dist/
 ios/
 android/
 *.db
+
+# Graph DB (generated at runtime)
+graph.db
+graph.db-shm
+graph.db-wal

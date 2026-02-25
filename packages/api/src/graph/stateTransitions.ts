@@ -5,6 +5,7 @@ import {
   MATCH_TRANSITIONS,
   MEETUP_TRANSITIONS,
   REPORT_TRANSITIONS,
+  SHOP_EVENT_TRANSITIONS,
 } from "@tcg-trade-hub/database";
 
 // ---------------------------------------------------------------------------
@@ -29,6 +30,7 @@ const ENTITIES: EntityConfig[] = [
   { name: "match", transitions: MATCH_TRANSITIONS, table: "matches" },
   { name: "meetup", transitions: MEETUP_TRANSITIONS, table: "meetups" },
   { name: "report", transitions: REPORT_TRANSITIONS, table: "reports" },
+  { name: "shop_event", transitions: SHOP_EVENT_TRANSITIONS, table: "shop_events" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -96,7 +98,8 @@ const buildEntityFlowDef = (entity: EntityConfig): FlowDefinition => ({
   description: `All valid status transitions for the ${entity.name} entity`,
 });
 
-const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
+const capitalize = (s: string): string =>
+  s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
 // ---------------------------------------------------------------------------
 // P2P Trade Flow — end-to-end path across entities
