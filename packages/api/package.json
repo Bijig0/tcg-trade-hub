@@ -15,6 +15,6 @@
     "@supabase/supabase-js": "^2.47.0",
     "@tcg-trade-hub/database": "workspace:*",
     "zod": "^3.24.0",
-    "flow-graph": "file:../../../flow-graph"
+    "flow-graph": "link:../../../flow-graph"
   }
 }

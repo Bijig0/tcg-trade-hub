@@ -22,7 +22,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "zod": "^3.24.0",
-    "flow-graph": "file:../../../flow-graph",
+    "flow-graph": "link:../../../flow-graph",
     "cytoscape": "^3.30.0",
     "cytoscape-dagre": "^2.5.0",
     "cytoscape-elk": "^2.2.0",
