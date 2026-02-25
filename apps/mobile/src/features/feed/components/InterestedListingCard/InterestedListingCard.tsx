@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { Star, X, Send } from 'lucide-react-native';
+import { Star, X, Handshake } from 'lucide-react-native';
 import { ListingTypeBadge } from '@/features/listings';
 import BundlePreview from '@/features/listings/components/BundlePreview/BundlePreview';
 import { feedKeys } from '../../queryKeys';
@@ -92,12 +92,10 @@ const InterestedListingCard = ({
             e.stopPropagation();
             onMakeOffer(listing);
           }}
-          className="rounded-lg bg-primary px-2.5 py-1.5 active:bg-primary/80"
+          className="flex-row items-center gap-1 rounded-lg bg-amber-500 px-2.5 py-1.5 active:bg-amber-600"
         >
-          <View className="flex-row items-center gap-1">
-            <Send size={12} color="white" />
-            <Text className="text-xs font-semibold text-primary-foreground">Offer</Text>
-          </View>
+          <Handshake size={12} color="white" />
+          <Text className="text-xs font-bold text-white">Offer</Text>
         </Pressable>
       </View>
     </Pressable>

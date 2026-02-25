@@ -2,12 +2,11 @@ import React, { useRef } from 'react';
 import { View, Text, Image, ScrollView, RefreshControl, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, Star, Send, User } from 'lucide-react-native';
+import { ArrowLeft, Star, Handshake, User } from 'lucide-react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 
 import Badge from '@/components/ui/Badge/Badge';
 import Avatar from '@/components/ui/Avatar/Avatar';
-import Button from '@/components/ui/Button/Button';
 import RefreshableScreen from '@/components/ui/RefreshableScreen/RefreshableScreen';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import { ListingTypeBadge } from '@/features/listings';
@@ -251,18 +250,15 @@ const ListingDetailScreen = () => {
 
           {/* Bottom action bar */}
           <View className="border-t border-border bg-background px-4 pb-6 pt-3">
-            <Button
-              size="lg"
+            <Pressable
               onPress={handleMakeOffer}
-              className="w-full"
+              className="h-14 w-full flex-row items-center justify-center gap-2 rounded-lg bg-amber-500 active:bg-amber-600"
             >
-              <View className="flex-row items-center gap-2">
-                <Send size={18} color="white" />
-                <Text className="text-base font-semibold text-primary-foreground">
-                  Make Offer
-                </Text>
-              </View>
-            </Button>
+              <Handshake size={20} color="white" />
+              <Text className="text-base font-bold text-white">
+                Make Offer
+              </Text>
+            </Pressable>
           </View>
 
           {/* Offer creation sheet */}

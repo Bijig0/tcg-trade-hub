@@ -10,8 +10,7 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
-import { Heart, X, Sparkles, Send } from 'lucide-react-native';
-import { useQueryClient } from '@tanstack/react-query';
+import { Heart, X, Sparkles, Handshake } from 'lucide-react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { cn } from '@/lib/cn';
 import Button from '@/components/ui/Button/Button';
@@ -21,7 +20,6 @@ import OfferCreationSheet from '@/features/listings/components/OfferCreationShee
 import SwipeCard from '../SwipeCard/SwipeCard';
 import useFeedListings from '../../hooks/useFeedListings/useFeedListings';
 import useRecordSwipe from '../../hooks/useRecordSwipe/useRecordSwipe';
-import { feedKeys } from '../../queryKeys';
 import type { ListingWithDistance } from '../../schemas';
 import type { MatchRow } from '@tcg-trade-hub/database';
 
@@ -42,7 +40,6 @@ export type FeedSwipeViewProps = {
  * when a mutual match is detected.
  */
 const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
-  const queryClient = useQueryClient();
   const { data, isLoading, error, refetch, fetchNextPage, hasNextPage } = useFeedListings();
   const recordSwipe = useRecordSwipe();
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -275,9 +272,10 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
 
         <Pressable
           onPress={handleMakeOffer}
-          className="h-14 w-14 items-center justify-center rounded-full border-2 border-primary bg-card active:bg-primary/10"
+          className="items-center justify-center rounded-full bg-amber-500 px-5 py-3 shadow-sm active:bg-amber-600"
         >
-          <Send size={22} className="text-primary" />
+          <Handshake size={22} color="white" />
+          <Text className="mt-0.5 text-[10px] font-bold text-white">OFFER</Text>
         </Pressable>
 
         <Pressable
