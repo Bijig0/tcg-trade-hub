@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { Star } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import { ListingTypeBadge } from '@/features/listings';
 import BundlePreview from '@/features/listings/components/BundlePreview/BundlePreview';
 import type { ListingWithDistance } from '../../schemas';
+import { feedKeys } from '../../queryKeys';
 import formatDistance from '../../utils/formatDistance/formatDistance';
 
 export type ListingCardProps = {
@@ -18,7 +20,9 @@ export type ListingCardProps = {
  */
 const ListingCard = ({ listing, className }: ListingCardProps) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const handlePress = () => {
+    queryClient.setQueryData(feedKeys.detail(listing.id), listing);
     router.push(`/(tabs)/(listings)/listing/${listing.id}`);
   };
 
