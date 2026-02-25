@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TextInput, Alert, ActivityIndicator } from 'react-native';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { DollarSign } from 'lucide-react-native';
+import { DollarSign, Handshake } from 'lucide-react-native';
 import Button from '@/components/ui/Button/Button';
 import MultiCardSelector from '../MultiCardSelector/MultiCardSelector';
 import useCreateOffer from '../../hooks/useCreateOffer/useCreateOffer';
@@ -81,8 +81,14 @@ const OfferCreationSheet = ({ listing, bottomSheetRef }: OfferCreationSheetProps
     >
       <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         <View className="px-4 py-3">
-          <Text className="text-lg font-semibold text-foreground">
-            Make Offer for "{listing.title}"
+          <View className="flex-row items-center gap-2">
+            <Handshake size={20} color="#f59e0b" />
+            <Text className="text-lg font-semibold text-foreground">
+              Make Offer
+            </Text>
+          </View>
+          <Text className="mt-1 text-sm text-muted-foreground" numberOfLines={1}>
+            for "{listing.title}"
           </Text>
 
           <Text className="mt-4 text-sm font-medium text-muted-foreground">
@@ -145,14 +151,17 @@ const OfferCreationSheet = ({ listing, bottomSheetRef }: OfferCreationSheetProps
             size="lg"
             onPress={handleSubmit}
             disabled={createOffer.isPending}
-            className="mt-4 w-full"
+            className="mt-4 w-full bg-amber-500 active:bg-amber-600"
           >
             {createOffer.isPending ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text className="text-base font-semibold text-primary-foreground">
-                Submit Offer
-              </Text>
+              <View className="flex-row items-center gap-2">
+                <Handshake size={18} color="white" />
+                <Text className="text-base font-bold text-white">
+                  Submit Offer
+                </Text>
+              </View>
             )}
           </Button>
         </View>
