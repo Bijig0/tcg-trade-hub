@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TextInput, ScrollView, Pressable, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, Trash2 } from 'lucide-react-native';
 import parseCsvCollection from '../../utils/parseCsvCollection/parseCsvCollection';
@@ -76,11 +77,12 @@ const CsvImportScreen: React.FC = () => {
   const lineCount = csvText.trim() ? csvText.trim().split('\n').length : 0;
 
   return (
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
     <KeyboardAvoidingView
-      className="flex-1 bg-background"
+      className="flex-1"
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View className="flex-1 px-4 pt-14">
+      <View className="flex-1 px-4 pt-4">
         {/* Header */}
         <View className="mb-4 flex-row items-center">
           <Pressable onPress={() => router.back()} hitSlop={12} className="mr-3">
@@ -148,6 +150,7 @@ const CsvImportScreen: React.FC = () => {
         </View>
       </View>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

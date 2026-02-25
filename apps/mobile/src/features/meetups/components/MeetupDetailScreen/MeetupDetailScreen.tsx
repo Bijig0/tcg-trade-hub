@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, RefreshControl, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Badge from '@/components/ui/Badge/Badge';
@@ -11,6 +12,7 @@ import useCompleteMeetup from '../../hooks/useCompleteMeetup/useCompleteMeetup';
 import useCancelMeetup from '../../hooks/useCancelMeetup/useCancelMeetup';
 import { meetupKeys } from '../../queryKeys';
 import RatingModal from '../RatingModal/RatingModal';
+import DevMeetupActions from '../DevMeetupActions/DevMeetupActions';
 
 /**
  * Full detail screen for a single meetup.
@@ -40,19 +42,19 @@ const MeetupDetailScreen = () => {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['top']}>
         <ActivityIndicator size="large" />
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (isError || !meetup) {
     return (
-      <View className="flex-1 items-center justify-center bg-background px-6">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-6" edges={['top']}>
         <Text className="text-center text-base text-destructive">
           Failed to load meetup details.
         </Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -215,6 +217,14 @@ const MeetupDetailScreen = () => {
             )}
           </View>
         ) : null}
+
+        {/* Dev actions (dev mode only) */}
+        {__DEV__ && status === 'confirmed' && (
+          <DevMeetupActions
+            meetupId={meetup.id}
+            otherCompletionField={is_user_a ? 'user_b_completed' : 'user_a_completed'}
+          />
+        )}
 
         {/* Action buttons */}
         <View className="gap-3 px-4 pt-6">

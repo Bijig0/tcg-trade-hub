@@ -27,19 +27,19 @@ const PublicProfileScreen = () => {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['top']}>
         <ActivityIndicator size="large" />
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (isError || !profile) {
     return (
-      <View className="flex-1 items-center justify-center bg-background px-6">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-6" edges={['top']}>
         <Text className="text-center text-base text-destructive">
           Failed to load profile.
         </Text>
-      </View>
+      </SafeAreaView>
     );
   }
 

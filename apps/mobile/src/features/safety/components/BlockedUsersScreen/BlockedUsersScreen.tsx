@@ -17,31 +17,31 @@ const BlockedUsersScreen = () => {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['top']}>
         <ActivityIndicator size="large" />
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (isError) {
     return (
-      <View className="flex-1 items-center justify-center bg-background px-6">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-6" edges={['top']}>
         <Text className="text-center text-base text-destructive">
           Failed to load blocked users.
         </Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (!blockedUsers || blockedUsers.length === 0) {
     return (
-      <View className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
         <EmptyState
           icon={<Text className="text-5xl">🛡️</Text>}
           title="No Blocked Users"
           description="You haven't blocked anyone."
         />
-      </View>
+      </SafeAreaView>
     );
   }
 

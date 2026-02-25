@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Send, Handshake, MapPin } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/context/AuthProvider';
@@ -24,6 +25,7 @@ import MessageBubble from '../MessageBubble/MessageBubble';
 import OfferCard from '../OfferCard/OfferCard';
 import MeetupProposalCard from '../MeetupProposalCard/MeetupProposalCard';
 import SystemMessage from '../SystemMessage/SystemMessage';
+import DevChatActions from '../DevChatActions/DevChatActions';
 import type {
   CardOfferResponsePayload,
   MeetupResponsePayload,
@@ -281,7 +283,7 @@ const ChatThread = ({
     ],
   );
 
-  const otherInitials = otherUser.name
+  const otherInitials = (otherUser.name || 'U')
     .split(' ')
     .map((w) => w[0])
     .join('')
@@ -289,9 +291,10 @@ const ChatThread = ({
     .toUpperCase();
 
   return (
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-background"
+      className="flex-1"
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       {/* Header */}
@@ -325,6 +328,15 @@ const ChatThread = ({
               <ActivityIndicator className="py-4" />
             ) : null
           }
+        />
+      )}
+
+      {/* Dev actions (dev mode only) */}
+      {__DEV__ && (
+        <DevChatActions
+          conversationId={conversationId}
+          otherUserId={otherUser.id}
+          matchId={matchId}
         />
       )}
 
@@ -377,6 +389,7 @@ const ChatThread = ({
         </Pressable>
       </View>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
