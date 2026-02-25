@@ -11,13 +11,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { ArrowLeft } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthProvider';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Button from '@/components/ui/Button/Button';
 import Input from '@/components/ui/Input/Input';
-import Slider from '@/components/ui/Slider/Slider';
 import { cn } from '@/lib/cn';
-import { TCG_LABELS, MIN_RADIUS_KM, MAX_RADIUS_KM } from '@/config/constants';
+import { TCG_LABELS } from '@/config/constants';
 import useUpdateProfile from '../../hooks/useUpdateProfile/useUpdateProfile';
 import type { TcgType } from '@tcg-trade-hub/database';
 
@@ -27,7 +27,7 @@ const ALL_TCGS: TcgType[] = ['pokemon', 'mtg', 'yugioh'];
  * Form screen for editing the current user's profile.
  *
  * Fields: avatar (image picker), display name (text input),
- * search radius (slider 5-100km), preferred TCGs (multi-select).
+ * preferred TCGs (multi-select).
  */
 const EditProfileScreen = () => {
   const router = useRouter();
@@ -36,14 +36,12 @@ const EditProfileScreen = () => {
 
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(profile?.avatar_url ?? null);
-  const [radiusKm, setRadiusKm] = useState(profile?.radius_km ?? 25);
   const [selectedTcgs, setSelectedTcgs] = useState<TcgType[]>(profile?.preferred_tcgs ?? []);
 
   useEffect(() => {
     if (profile) {
       setDisplayName(profile.display_name);
       setAvatarUrl(profile.avatar_url);
-      setRadiusKm(profile.radius_km);
       setSelectedTcgs([...profile.preferred_tcgs]);
     }
   }, [profile]);
@@ -90,7 +88,6 @@ const EditProfileScreen = () => {
       {
         display_name: displayName.trim(),
         avatar_url: avatarUrl,
-        radius_km: radiusKm,
         preferred_tcgs: selectedTcgs,
       },
       {
@@ -103,6 +100,14 @@ const EditProfileScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    {/* Navigation header */}
+    <View className="flex-row items-center border-b border-border px-4 py-3">
+      <Pressable onPress={() => router.back()} className="mr-3 p-1">
+        <ArrowLeft size={24} className="text-foreground" />
+      </Pressable>
+      <Text className="flex-1 text-lg font-semibold text-foreground">Edit Profile</Text>
+    </View>
+
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1"
@@ -127,20 +132,6 @@ const EditProfileScreen = () => {
             onChangeText={setDisplayName}
             autoCapitalize="words"
           />
-        </View>
-
-        {/* Search radius */}
-        <View className="mt-6 px-6">
-          <Slider
-            label="Search Radius"
-            value={radiusKm}
-            onValueChange={setRadiusKm}
-            min={MIN_RADIUS_KM}
-            max={MAX_RADIUS_KM}
-            step={5}
-            showValue
-          />
-          <Text className="mt-1 text-xs text-muted-foreground">{radiusKm} km</Text>
         </View>
 
         {/* Preferred TCGs */}

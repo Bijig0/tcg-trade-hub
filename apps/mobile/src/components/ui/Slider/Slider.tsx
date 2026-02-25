@@ -58,6 +58,8 @@ const Slider = ({
   className,
 }: SliderProps) => {
   const trackWidth = useRef(0);
+  const trackRef = useRef<View>(null);
+  const trackPageX = useRef(0);
 
   const clampAndStep = useCallback(
     (raw: number) => {
@@ -72,7 +74,7 @@ const Slider = ({
       if (trackWidth.current === 0) return;
       const ratio = Math.max(
         0,
-        Math.min(1, gestureState.moveX / trackWidth.current),
+        Math.min(1, (gestureState.moveX - trackPageX.current) / trackWidth.current),
       );
       const raw = min + ratio * (max - min);
       onValueChange(clampAndStep(raw));
@@ -89,8 +91,11 @@ const Slider = ({
     }),
   ).current;
 
-  const onLayout = (e: LayoutChangeEvent) => {
-    trackWidth.current = e.nativeEvent.layout.width;
+  const onLayout = (_e: LayoutChangeEvent) => {
+    trackRef.current?.measureInWindow((x, _y, width) => {
+      trackPageX.current = x;
+      trackWidth.current = width;
+    });
   };
 
   const percentage =
@@ -112,6 +117,7 @@ const Slider = ({
       ) : null}
 
       <View
+        ref={trackRef}
         onLayout={onLayout}
         className="h-10 justify-center"
         {...panResponder.panHandlers}

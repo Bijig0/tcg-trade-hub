@@ -2,18 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Switch, Pressable, Alert, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { ArrowLeft } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import Button from '@/components/ui/Button/Button';
 import Separator from '@/components/ui/Separator/Separator';
 import Slider from '@/components/ui/Slider/Slider';
-import { cn } from '@/lib/cn';
-import { TCG_LABELS, MIN_RADIUS_KM, MAX_RADIUS_KM } from '@/config/constants';
+import { MIN_RADIUS_KM, MAX_RADIUS_KM } from '@/config/constants';
 import useUpdateProfile from '../../hooks/useUpdateProfile/useUpdateProfile';
 import DevUserSwitcher from '../DevUserSwitcher/DevUserSwitcher';
-import type { TcgType } from '@tcg-trade-hub/database';
-
-const ALL_TCGS: TcgType[] = ['pokemon', 'mtg', 'yugioh'];
 
 type NotificationPrefs = {
   new_matches: boolean;
@@ -30,7 +27,6 @@ const SettingsScreen = () => {
   const { profile, user, signOut } = useAuth();
   const updateProfile = useUpdateProfile();
   const [radiusKm, setRadiusKm] = useState(profile?.radius_km ?? 25);
-  const [selectedTcgs, setSelectedTcgs] = useState<TcgType[]>(profile?.preferred_tcgs ?? []);
   const [showApproxDistance, setShowApproxDistance] = useState(true);
   const [notifications, setNotifications] = useState<NotificationPrefs>({
     new_matches: true,
@@ -42,17 +38,8 @@ const SettingsScreen = () => {
   useEffect(() => {
     if (profile) {
       setRadiusKm(profile.radius_km);
-      setSelectedTcgs([...profile.preferred_tcgs]);
     }
   }, [profile]);
-
-  const toggleTcg = (tcg: TcgType) => {
-    const updated = selectedTcgs.includes(tcg)
-      ? selectedTcgs.filter((t) => t !== tcg)
-      : [...selectedTcgs, tcg];
-    setSelectedTcgs(updated);
-    updateProfile.mutate({ preferred_tcgs: updated });
-  };
 
   const handleRadiusChange = (value: number) => {
     setRadiusKm(value);
@@ -123,6 +110,14 @@ const SettingsScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    {/* Navigation header */}
+    <View className="flex-row items-center border-b border-border px-4 py-3">
+      <Pressable onPress={() => router.back()} className="mr-3 p-1">
+        <ArrowLeft size={24} className="text-foreground" />
+      </Pressable>
+      <Text className="flex-1 text-lg font-semibold text-foreground">Settings</Text>
+    </View>
+
     <ScrollView className="flex-1" contentContainerClassName="pb-12">
       {/* Account Section */}
       <View className="px-4 pt-6">
@@ -180,35 +175,6 @@ const SettingsScreen = () => {
             <Pressable onPress={handleRadiusSave}>
               <Text className="mt-1 text-xs text-primary">Save radius</Text>
             </Pressable>
-          </View>
-
-          <View>
-            <Text className="mb-2 text-sm font-medium text-foreground">Preferred TCGs</Text>
-            {ALL_TCGS.map((tcg) => {
-              const isSelected = selectedTcgs.includes(tcg);
-              return (
-                <Pressable
-                  key={tcg}
-                  onPress={() => toggleTcg(tcg)}
-                  className={cn(
-                    'mb-2 flex-row items-center rounded-lg border p-3',
-                    isSelected ? 'border-primary bg-primary/10' : 'border-border bg-card',
-                  )}
-                >
-                  <View
-                    className={cn(
-                      'mr-3 h-5 w-5 items-center justify-center rounded border',
-                      isSelected ? 'border-primary bg-primary' : 'border-input bg-background',
-                    )}
-                  >
-                    {isSelected ? (
-                      <Text className="text-xs font-bold text-primary-foreground">{'\u2713'}</Text>
-                    ) : null}
-                  </View>
-                  <Text className="text-sm text-foreground">{TCG_LABELS[tcg]}</Text>
-                </Pressable>
-              );
-            })}
           </View>
 
           <View>
