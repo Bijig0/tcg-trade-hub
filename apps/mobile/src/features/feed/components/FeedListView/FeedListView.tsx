@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, View, ActivityIndicator, type ListRenderItemInfo } from 'react-native';
+import { FlatList, View, Text, Pressable, ActivityIndicator, type ListRenderItemInfo } from 'react-native';
 import { PackageOpen } from 'lucide-react-native';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
@@ -21,6 +21,7 @@ const FeedListView = ({ onRefresh }: FeedListViewProps) => {
   const {
     data,
     isLoading,
+    error,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -61,6 +62,23 @@ const FeedListView = ({ onRefresh }: FeedListViewProps) => {
             </View>
           </View>
         ))}
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 items-center justify-center px-8">
+        <Text className="mb-2 text-lg font-semibold text-destructive">Feed Error</Text>
+        <Text className="mb-4 text-center text-sm text-muted-foreground">
+          {error.message}
+        </Text>
+        <Pressable
+          onPress={() => refetch()}
+          className="rounded-lg bg-primary px-6 py-2"
+        >
+          <Text className="font-semibold text-primary-foreground">Retry</Text>
+        </Pressable>
       </View>
     );
   }

@@ -21,6 +21,7 @@ export type ListingCardProps = {
 const ListingCard = ({ listing, className }: ListingCardProps) => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const items = listing.items ?? [];
   const handlePress = () => {
     queryClient.setQueryData(feedKeys.detail(listing.id), listing);
     router.push(`/(tabs)/(listings)/listing/${listing.id}`);
@@ -34,14 +35,14 @@ const ListingCard = ({ listing, className }: ListingCardProps) => {
         className,
       )}
     >
-      <BundlePreview items={listing.items} size="md" />
+      <BundlePreview items={items} size="md" />
 
       <View className="ml-3 flex-1 justify-between">
         <View>
           <View className="flex-row items-center gap-2">
             <ListingTypeBadge type={listing.type} />
             <Text className="text-xs text-muted-foreground">
-              {listing.items.length} card{listing.items.length !== 1 ? 's' : ''}
+              {items.length} card{items.length !== 1 ? 's' : ''}
             </Text>
           </View>
 

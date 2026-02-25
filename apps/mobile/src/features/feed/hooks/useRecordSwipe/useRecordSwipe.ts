@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthProvider';
 import { feedKeys } from '../../queryKeys';
 import type { SwipeDirection, MatchRow } from '@tcg-trade-hub/database';
 
@@ -16,29 +17,40 @@ type RecordSwipeResponse = {
 /**
  * Hook that records a swipe action (like/pass) on a listing.
  *
- * Calls the `record-swipe` edge function. On success, invalidates feed queries
- * so already-swiped listings are excluded. Returns the match object if a
- * mutual interest is detected.
+ * Inserts directly into the swipes table. On success, invalidates feed queries
+ * so already-swiped listings are excluded.
  */
 const useRecordSwipe = () => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation<RecordSwipeResponse, Error, RecordSwipeInput>({
     mutationFn: async ({ listingId, direction }) => {
-      const { data, error } = await supabase.functions.invoke<RecordSwipeResponse>(
-        'record-swipe',
-        {
-          body: {
-            listing_id: listingId,
-            direction,
-          },
-        },
-      );
+      if (!user) throw new Error('Not authenticated');
 
-      if (error) throw error;
-      if (!data) throw new Error('No data returned from record-swipe');
+      const { data, error } = await supabase
+        .from('swipes')
+        .insert({
+          user_id: user.id,
+          listing_id: listingId,
+          direction,
+        })
+        .select('id')
+        .single();
 
-      return data;
+      if (error) {
+        console.error('[useRecordSwipe] Error recording swipe:', error);
+        throw error;
+      }
+
+      console.log(`[useRecordSwipe] Recorded ${direction} on ${listingId}`);
+
+      // Match detection is handled server-side (triggers/functions).
+      // For now, return no match — matches are created through offers.
+      return {
+        swipe_id: data.id,
+        match: null,
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: feedKeys.lists() });

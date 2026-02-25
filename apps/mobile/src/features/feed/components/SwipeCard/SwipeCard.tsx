@@ -21,7 +21,8 @@ export type SwipeCardProps = {
  * Full-screen card for the swipe view showing bundle preview.
  */
 const SwipeCard = ({ listing, className }: SwipeCardProps) => {
-  const firstItem = listing.items[0];
+  const items = listing.items ?? [];
+  const firstItem = items[0];
   const heroImage = firstItem?.card_image_url ?? '';
 
   return (
@@ -50,8 +51,8 @@ const SwipeCard = ({ listing, className }: SwipeCardProps) => {
       {/* Card info */}
       <View className="flex-1 p-4">
         {/* Bundle thumbnail row */}
-        {listing.items.length > 1 && (
-          <BundlePreview items={listing.items} size="sm" className="mb-3" />
+        {items.length > 1 && (
+          <BundlePreview items={items} size="sm" className="mb-3" />
         )}
 
         <Text className="text-2xl font-bold text-card-foreground" numberOfLines={2}>
@@ -59,7 +60,7 @@ const SwipeCard = ({ listing, className }: SwipeCardProps) => {
         </Text>
 
         <Text className="mt-1 text-sm text-muted-foreground">
-          {TCG_LABELS[listing.tcg] ?? listing.tcg} &middot; {listing.items.length} card{listing.items.length !== 1 ? 's' : ''}
+          {TCG_LABELS[listing.tcg] ?? listing.tcg} &middot; {items.length} card{items.length !== 1 ? 's' : ''}
         </Text>
 
         <View className="mt-3 flex-row items-center gap-2">

@@ -37,7 +37,7 @@ export type FeedSwipeViewProps = {
  */
 const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
   const router = useRouter();
-  const { data, isLoading, fetchNextPage, hasNextPage } = useFeedListings();
+  const { data, isLoading, error, refetch, fetchNextPage, hasNextPage } = useFeedListings();
   const recordSwipe = useRecordSwipe();
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -164,6 +164,23 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
     return (
       <View className="flex-1 items-center justify-center p-4">
         <Skeleton className="h-[70%] w-full rounded-2xl" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 items-center justify-center px-8">
+        <Text className="mb-2 text-lg font-semibold text-destructive">Feed Error</Text>
+        <Text className="mb-4 text-center text-sm text-muted-foreground">
+          {error.message}
+        </Text>
+        <Pressable
+          onPress={() => refetch()}
+          className="rounded-lg bg-primary px-6 py-2"
+        >
+          <Text className="font-semibold text-primary-foreground">Retry</Text>
+        </Pressable>
       </View>
     );
   }
