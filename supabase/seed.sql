@@ -803,3 +803,426 @@ BEGIN
 
   RAISE NOTICE 'Seed data inserted successfully for user %', me;
 END $$;
+
+-- =============================================================================
+-- TEST USER (test123@gmail.com)
+-- =============================================================================
+
+INSERT INTO auth.users (
+  id, instance_id, aud, role, email, encrypted_password,
+  email_confirmed_at, created_at, updated_at,
+  confirmation_token, recovery_token,
+  raw_app_meta_data, raw_user_meta_data
+)
+SELECT
+  gen_random_uuid(), '00000000-0000-0000-0000-000000000000',
+  'authenticated', 'authenticated',
+  'test123@gmail.com',
+  crypt('12345678', gen_salt('bf')),
+  now(), now(), now(), '', '',
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{"display_name":"Test"}'::jsonb
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'test123@gmail.com'
+);
+
+-- =============================================================================
+-- TEST USER FULL SEED DATA
+-- =============================================================================
+
+DO $$
+DECLARE
+  t uuid;
+
+  -- Existing fake user references
+  u1  uuid := 'a1111111-1111-1111-1111-111111111111';
+  u3  uuid := 'a3333333-3333-3333-3333-333333333333';
+  u4  uuid := 'a4444444-4444-4444-4444-444444444444';
+  u5  uuid := 'a5555555-5555-5555-5555-555555555555';
+  u7  uuid := 'a7777777-7777-7777-7777-777777777777';
+  u10 uuid := 'a1010101-1010-1010-1010-101010101010';
+  u12 uuid := 'a1212121-1212-1212-1212-121212121212';
+
+  -- Existing fake user listings (for swipes)
+  u1_l1  uuid := 'b2000001-0000-0000-0000-000000000001';
+  u2_l1  uuid := 'b2000002-0000-0000-0000-000000000001';
+  u3_l2  uuid := 'b2000003-0000-0000-0000-000000000002';
+  u4_l1  uuid := 'b2000004-0000-0000-0000-000000000001';
+  u5_l1  uuid := 'b2000005-0000-0000-0000-000000000001';
+  u6_l1  uuid := 'b2000006-0000-0000-0000-000000000001';
+  u8_l2  uuid := 'b2000008-0000-0000-0000-000000000002';
+  u9_l1  uuid := 'b2000009-0000-0000-0000-000000000001';
+  u10_l2 uuid := 'b2000010-0000-0000-0000-000000000002';
+  u11_l2 uuid := 'b2000011-0000-0000-0000-000000000002';
+  u13_l3 uuid := 'b2000013-0000-0000-0000-000000000003';
+
+  -- Test user listing UUIDs
+  t_l1 uuid := 'b4000001-0000-0000-0000-000000000001';
+  t_l2 uuid := 'b4000001-0000-0000-0000-000000000002';
+  t_l3 uuid := 'b4000001-0000-0000-0000-000000000003';
+  t_l4 uuid := 'b4000001-0000-0000-0000-000000000004';
+  t_l5 uuid := 'b4000001-0000-0000-0000-000000000005';
+  t_l6 uuid := 'b4000001-0000-0000-0000-000000000006';
+
+  -- Offer UUIDs
+  off_t1 uuid := 'c3000001-0000-0000-0000-000000000001';
+  off_t2 uuid := 'c3000001-0000-0000-0000-000000000002';
+  off_t3 uuid := 'c3000001-0000-0000-0000-000000000003';
+  off_t4 uuid := 'c3000001-0000-0000-0000-000000000004';
+  off_t5 uuid := 'c3000001-0000-0000-0000-000000000005';
+  off_t6 uuid := 'c3000001-0000-0000-0000-000000000006';
+  off_t7 uuid := 'c3000001-0000-0000-0000-000000000007';
+
+  -- Match UUIDs
+  t_m1 uuid := 'd3000001-0000-0000-0000-000000000001';
+  t_m2 uuid := 'd3000001-0000-0000-0000-000000000002';
+  t_m3 uuid := 'd3000001-0000-0000-0000-000000000003';
+  t_m4 uuid := 'd3000001-0000-0000-0000-000000000004';
+  t_m5 uuid := 'd3000001-0000-0000-0000-000000000005';
+
+  -- Conversation UUIDs
+  t_conv1 uuid := 'e3000001-0000-0000-0000-000000000001';
+  t_conv2 uuid := 'e3000001-0000-0000-0000-000000000002';
+  t_conv3 uuid := 'e3000001-0000-0000-0000-000000000003';
+  t_conv4 uuid := 'e3000001-0000-0000-0000-000000000004';
+  t_conv5 uuid := 'e3000001-0000-0000-0000-000000000005';
+
+  -- Message UUIDs
+  t_msg01 uuid := 'f3000001-0000-0000-0000-000000000001';
+  t_msg02 uuid := 'f3000001-0000-0000-0000-000000000002';
+  t_msg03 uuid := 'f3000001-0000-0000-0000-000000000003';
+  t_msg04 uuid := 'f3000001-0000-0000-0000-000000000004';
+  t_msg05 uuid := 'f3000001-0000-0000-0000-000000000005';
+  t_msg06 uuid := 'f3000001-0000-0000-0000-000000000006';
+  t_msg07 uuid := 'f3000001-0000-0000-0000-000000000007';
+  t_msg08 uuid := 'f3000001-0000-0000-0000-000000000008';
+  t_msg09 uuid := 'f3000001-0000-0000-0000-000000000009';
+  t_msg10 uuid := 'f3000001-0000-0000-0000-000000000010';
+  t_msg11 uuid := 'f3000001-0000-0000-0000-000000000011';
+  t_msg12 uuid := 'f3000001-0000-0000-0000-000000000012';
+  t_msg13 uuid := 'f3000001-0000-0000-0000-000000000013';
+  t_msg14 uuid := 'f3000001-0000-0000-0000-000000000014';
+  t_msg15 uuid := 'f3000001-0000-0000-0000-000000000015';
+  t_msg16 uuid := 'f3000001-0000-0000-0000-000000000016';
+  t_msg17 uuid := 'f3000001-0000-0000-0000-000000000017';
+  t_msg18 uuid := 'f3000001-0000-0000-0000-000000000018';
+  t_msg19 uuid := 'f3000001-0000-0000-0000-000000000019';
+  t_msg20 uuid := 'f3000001-0000-0000-0000-000000000020';
+  t_msg21 uuid := 'f3000001-0000-0000-0000-000000000021';
+  t_msg22 uuid := 'f3000001-0000-0000-0000-000000000022';
+  t_msg23 uuid := 'f3000001-0000-0000-0000-000000000023';
+  t_msg24 uuid := 'f3000001-0000-0000-0000-000000000024';
+  t_msg25 uuid := 'f3000001-0000-0000-0000-000000000025';
+  t_msg26 uuid := 'f3000001-0000-0000-0000-000000000026';
+  t_msg27 uuid := 'f3000001-0000-0000-0000-000000000027';
+  t_msg28 uuid := 'f3000001-0000-0000-0000-000000000028';
+
+  -- Meetup UUIDs
+  t_meet1 uuid := 'ab000001-0000-0000-0000-000000000001';
+  t_meet2 uuid := 'ab000001-0000-0000-0000-000000000002';
+  t_meet3 uuid := 'ab000001-0000-0000-0000-000000000003';
+  t_meet4 uuid := 'ab000001-0000-0000-0000-000000000004';
+  t_meet5 uuid := 'ab000001-0000-0000-0000-000000000005';
+
+  -- Shop IDs (looked up dynamically)
+  shop_good_games  uuid;
+  shop_games_lab   uuid;
+  shop_cardtastic  uuid;
+  shop_general     uuid;
+  shop_cherry      uuid;
+  shop_hobbymaster uuid;
+
+BEGIN
+  -- =========================================================================
+  -- Look up the test user from auth
+  -- =========================================================================
+  SELECT id INTO t FROM auth.users WHERE email = 'test123@gmail.com' LIMIT 1;
+
+  IF t IS NULL THEN
+    RAISE NOTICE 'Test user (test123@gmail.com) not found in auth.users. Skipping seed.';
+    RETURN;
+  END IF;
+
+  -- Look up shop IDs
+  SELECT id INTO shop_good_games  FROM public.shops WHERE name = 'Good Games Melbourne' LIMIT 1;
+  SELECT id INTO shop_games_lab   FROM public.shops WHERE name = 'Games Laboratory' LIMIT 1;
+  SELECT id INTO shop_cardtastic  FROM public.shops WHERE name = 'Cardtastic TCG' LIMIT 1;
+  SELECT id INTO shop_general     FROM public.shops WHERE name = 'General Games Malvern' LIMIT 1;
+  SELECT id INTO shop_cherry      FROM public.shops WHERE name = 'Cherry Collectables' LIMIT 1;
+  SELECT id INTO shop_hobbymaster FROM public.shops WHERE name = 'Hobbymaster Doncaster' LIMIT 1;
+
+  -- =========================================================================
+  -- PUBLIC USER
+  -- =========================================================================
+  INSERT INTO public.users (id, email, display_name)
+  VALUES (t, 'test123@gmail.com', 'Test')
+  ON CONFLICT (id) DO NOTHING;
+
+  UPDATE public.users
+  SET
+    location = ST_SetSRID(ST_MakePoint(144.9700, -37.8200), 4326),
+    radius_km = 25,
+    preferred_tcgs = ARRAY['pokemon', 'mtg', 'yugioh']::public.tcg_type[],
+    rating_score = 4.55,
+    total_trades = 5
+  WHERE id = t;
+
+  -- =========================================================================
+  -- LISTINGS (6 total: 4 active, 1 matched, 1 completed)
+  -- =========================================================================
+  INSERT INTO public.listings (id, user_id, type, tcg, title, cash_amount, total_value, description, status, created_at)
+  VALUES
+    (t_l1, t, 'wts', 'pokemon', 'Charizard VSTAR',              60.00,  125.00, 'Brilliant Stars chase card. Pack fresh, sleeved immediately.',                'active',    now() - interval '5 days'),
+    (t_l2, t, 'wtb', 'mtg',     'Sheoldred, the Apocalypse',    65.00,  135.00, 'Need for my Standard deck. NM only please.',                                 'active',    now() - interval '4 days'),
+    (t_l3, t, 'wtt', 'pokemon', 'Astral Radiance Bundle',        0.00,  120.00, 'Three alt art/secret rares from Astral Radiance. Trading as a set.',         'active',    now() - interval '3 days'),
+    (t_l4, t, 'wts', 'yugioh',  'Branded Despia Core',          50.00,  105.00, 'Complete Branded engine. All 1st edition, NM.',                              'matched',   now() - interval '15 days'),
+    (t_l5, t, 'wts', 'pokemon', 'Pikachu VMAX Rainbow',        175.00,  370.00, 'The rainbow chonkachu! Perfect centering.',                                  'active',    now() - interval '2 days'),
+    (t_l6, t, 'wtt', 'mtg',     'Scalding Tarn Bundle',          0.00,   95.00, 'Trading fetchlands for Pioneer or Legacy staples.',                          'completed', now() - interval '25 days')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- =========================================================================
+  -- LISTING ITEMS
+  -- =========================================================================
+  INSERT INTO public.listing_items (listing_id, card_name, card_image_url, card_external_id, tcg, card_set, card_number, card_rarity, condition, market_price, asking_price, quantity)
+  VALUES
+    -- t_l1: Charizard VSTAR
+    (t_l1, 'Charizard VSTAR',             'https://images.pokemontcg.io/swsh9/174.png',   'swsh9-174', 'pokemon', 'Brilliant Stars',   '174/172', 'Secret Rare',   'nm', 65.00,  60.00, 1),
+
+    -- t_l2: Sheoldred WTB
+    (t_l2, 'Sheoldred, the Apocalypse',    'https://cards.scryfall.io/normal/front/d/6/d67be074-cdd4-41d9-ac89-0a0456c4e4b2.jpg', 'DMU-107', 'mtg', 'Dominaria United', '107', 'Mythic Rare', 'nm', 75.00, 65.00, 1),
+
+    -- t_l3: Astral Radiance Bundle (3 cards)
+    (t_l3, 'Palkia VSTAR Alt Art',         'https://images.pokemontcg.io/swsh10/195.png',  'swsh10-195', 'pokemon', 'Astral Radiance',  '195/189', 'Secret Rare',  'nm', 45.00,  NULL, 1),
+    (t_l3, 'Origin Forme Dialga VSTAR Alt','https://images.pokemontcg.io/swsh10/196.png',  'swsh10-196', 'pokemon', 'Astral Radiance',  '196/189', 'Secret Rare',  'nm', 38.00,  NULL, 1),
+    (t_l3, 'Radiant Greninja',             'https://images.pokemontcg.io/swsh10/46.png',   'swsh10-46',  'pokemon', 'Astral Radiance',  '046/189', 'Radiant Rare', 'nm', 5.00,   NULL, 1),
+
+    -- t_l4: Branded Despia Core (2 cards)
+    (t_l4, 'Branded Fusion',               'https://images.ygoprodeck.com/images/cards_small/44362883.jpg', 'DAMA-052', 'yugioh', 'Dawn of Majesty', 'DAMA-052', 'Ultra Rare',  'nm', 28.00, 25.00, 3),
+    (t_l4, 'Masquerade the Blazing Dragon','https://images.ygoprodeck.com/images/cards_small/28816714.jpg', 'DABL-038', 'yugioh', 'Darkwing Blast',  'DABL-038', 'Secret Rare', 'nm', 22.00, 20.00, 1),
+
+    -- t_l5: Pikachu VMAX Rainbow
+    (t_l5, 'Pikachu VMAX Rainbow',         'https://images.pokemontcg.io/swsh4/188.png',   'swsh4-188',  'pokemon', 'Vivid Voltage',    '188/185', 'Secret Rare',  'nm', 200.00, 175.00, 1),
+
+    -- t_l6: Scalding Tarn Bundle (2 cards)
+    (t_l6, 'Scalding Tarn',                'https://cards.scryfall.io/normal/front/7/1/71e491c5-8c07-449b-b2f1-ffa052e6d311.jpg', 'MH2-254', 'mtg', 'Modern Horizons 2', '254', 'Rare', 'nm', 28.00, NULL, 2),
+    (t_l6, 'Misty Rainforest',             'https://cards.scryfall.io/normal/front/8/8/88231c0d-0cc8-44ec-bf95-81d1710ac141.jpg', 'MH2-250', 'mtg', 'Modern Horizons 2', '250', 'Rare', 'nm', 22.00, NULL, 2)
+  ON CONFLICT DO NOTHING;
+
+  -- =========================================================================
+  -- OFFERS (5 accepted -> matches, 2 pending)
+  -- =========================================================================
+  INSERT INTO public.offers (id, listing_id, offerer_id, status, cash_amount, message, created_at)
+  VALUES
+    -- Accepted (lead to matches)
+    (off_t1, t_l1, u1,  'accepted',  55.00, 'I would love the Charizard VSTAR! Would you take $55?',                now() - interval '4 days'),
+    (off_t2, t_l3, u4,  'accepted',   0.00, 'Your Astral Radiance set for my Full Art Trainer collection?',         now() - interval '2 days'),
+    (off_t3, t_l4, u3,  'accepted',  50.00, 'I need the Branded core for my deck! $50 works for me.',              now() - interval '13 days'),
+    (off_t4, t_l6, u7,  'accepted',   0.00, 'My Wrenn and Six for your fetchlands? Values are close.',              now() - interval '23 days'),
+    (off_t5, t_l5, u12, 'accepted', 170.00, 'The rainbow Pikachu is my grail card! I will pay $170.',              now() - interval '1 day'),
+    -- Pending
+    (off_t6, t_l1, u10, 'pending',   50.00, 'Would you consider $50 for the Charizard VSTAR?',                     now() - interval '2 days'),
+    (off_t7, t_l5, u5,  'pending',  160.00, 'I have been chasing this Pikachu forever. $160?',                     now() - interval '10 hours')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- =========================================================================
+  -- OFFER ITEMS (cards included in trade offers)
+  -- =========================================================================
+  INSERT INTO public.offer_items (offer_id, card_name, card_image_url, card_external_id, tcg, card_set, card_number, condition, market_price, quantity)
+  VALUES
+    -- off_t2: Emma trading FA trainers for Astral Radiance bundle
+    (off_t2, 'Professor''s Research FA', 'https://images.pokemontcg.io/swsh1/209.png', 'swsh1-209', 'pokemon', 'Sword & Shield', '209/202', 'nm', 18.00, 1),
+    (off_t2, 'Boss''s Orders FA',        'https://images.pokemontcg.io/swsh2/189.png', 'swsh2-189', 'pokemon', 'Rebel Clash',    '189/192', 'nm', 15.00, 1),
+    (off_t2, 'Marnie FA',                'https://images.pokemontcg.io/swsh1/208.png', 'swsh1-208', 'pokemon', 'Sword & Shield', '208/202', 'nm', 22.00, 1),
+    -- off_t4: Noah trading Wrenn and Six for fetchlands
+    (off_t4, 'Wrenn and Six', 'https://cards.scryfall.io/normal/front/5/b/5bd498cc-a609-4457-9325-6888d59ca36f.jpg', 'MH1-217', 'mtg', 'Modern Horizons', '217', 'nm', 60.00, 1)
+  ON CONFLICT DO NOTHING;
+
+  -- =========================================================================
+  -- MATCHES (5: 3 active, 2 completed)
+  -- =========================================================================
+  INSERT INTO public.matches (id, user_a_id, user_b_id, listing_id, offer_id, status, created_at)
+  VALUES
+    (t_m1, t, u1,  t_l1, off_t1, 'active',    now() - interval '4 days'),
+    (t_m2, t, u4,  t_l3, off_t2, 'active',    now() - interval '2 days'),
+    (t_m3, t, u3,  t_l4, off_t3, 'completed', now() - interval '13 days'),
+    (t_m4, t, u7,  t_l6, off_t4, 'completed', now() - interval '23 days'),
+    (t_m5, t, u12, t_l5, off_t5, 'active',    now() - interval '1 day')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- =========================================================================
+  -- CONVERSATIONS (1 per match)
+  -- =========================================================================
+  INSERT INTO public.conversations (id, match_id, created_at)
+  VALUES
+    (t_conv1, t_m1, now() - interval '4 days'),
+    (t_conv2, t_m2, now() - interval '2 days'),
+    (t_conv3, t_m3, now() - interval '13 days'),
+    (t_conv4, t_m4, now() - interval '23 days'),
+    (t_conv5, t_m5, now() - interval '1 day')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- =========================================================================
+  -- MESSAGES (varied types: text, card_offer, meetup_proposal)
+  -- =========================================================================
+  INSERT INTO public.messages (id, conversation_id, sender_id, type, body, payload, created_at)
+  VALUES
+    -- Conv 1: t + Alex Chen (Pokemon sale, active match)
+    (t_msg01, t_conv1, u1, 'text', 'Hey! Your Charizard VSTAR looks amazing. Is it still available?', NULL, now() - interval '4 days'),
+    (t_msg02, t_conv1, t,  'text', 'Yes! It is pack fresh, went straight into a sleeve and toploader.', NULL, now() - interval '3 days 23 hours'),
+    (t_msg03, t_conv1, u1, 'text', 'Awesome. I can do $55 for it. Would that work?', NULL, now() - interval '3 days 20 hours'),
+    (t_msg04, t_conv1, t,  'text', 'That sounds fair! Want to meet at a card shop this weekend?', NULL, now() - interval '3 days 18 hours'),
+    (t_msg05, t_conv1, u1, 'meetup_proposal', 'How about Good Games Melbourne on Saturday at 11am?',
+      jsonb_build_object('shop_id', shop_good_games, 'location_name', 'Good Games Melbourne', 'proposed_time', (now() + interval '2 days')::text),
+      now() - interval '3 days 16 hours'),
+    (t_msg06, t_conv1, t,  'text', 'Sounds good! I will be there. See you Saturday!', NULL, now() - interval '3 days 14 hours'),
+
+    -- Conv 2: t + Emma Rodriguez (Pokemon trade, active match)
+    (t_msg07, t_conv2, u4, 'text', 'Hi! I am interested in your Astral Radiance bundle. Those alt arts are gorgeous!', NULL, now() - interval '2 days'),
+    (t_msg08, t_conv2, t,  'text', 'Thanks! They are all NM, pulled them during the set release. What do you have to trade?', NULL, now() - interval '1 day 22 hours'),
+    (t_msg09, t_conv2, u4, 'card_offer', NULL,
+      jsonb_build_object(
+        'offering', jsonb_build_array(
+          jsonb_build_object('externalId', 'swsh1-209', 'tcg', 'pokemon', 'name', 'Professor''s Research FA', 'imageUrl', 'https://images.pokemontcg.io/swsh1/209.png', 'condition', 'nm', 'quantity', 1),
+          jsonb_build_object('externalId', 'swsh2-189', 'tcg', 'pokemon', 'name', 'Boss''s Orders FA', 'imageUrl', 'https://images.pokemontcg.io/swsh2/189.png', 'condition', 'nm', 'quantity', 1),
+          jsonb_build_object('externalId', 'swsh1-208', 'tcg', 'pokemon', 'name', 'Marnie FA', 'imageUrl', 'https://images.pokemontcg.io/swsh1/208.png', 'condition', 'nm', 'quantity', 1)
+        ),
+        'requesting', jsonb_build_array(
+          jsonb_build_object('externalId', 'swsh10-195', 'tcg', 'pokemon', 'name', 'Palkia VSTAR Alt Art', 'imageUrl', 'https://images.pokemontcg.io/swsh10/195.png', 'condition', 'nm', 'quantity', 1),
+          jsonb_build_object('externalId', 'swsh10-196', 'tcg', 'pokemon', 'name', 'Origin Forme Dialga VSTAR Alt', 'imageUrl', 'https://images.pokemontcg.io/swsh10/196.png', 'condition', 'nm', 'quantity', 1),
+          jsonb_build_object('externalId', 'swsh10-46', 'tcg', 'pokemon', 'name', 'Radiant Greninja', 'imageUrl', 'https://images.pokemontcg.io/swsh10/46.png', 'condition', 'nm', 'quantity', 1)
+        ),
+        'cash_amount', 15,
+        'cash_direction', 'offering',
+        'note', 'My 3 full art trainers plus $15 for your 3 Astral Radiance cards?'
+      ),
+      now() - interval '1 day 20 hours'),
+    (t_msg10, t_conv2, t,  'text', 'That is a fair deal! I accept. Let us arrange a meetup.', NULL, now() - interval '1 day 18 hours'),
+    (t_msg11, t_conv2, u4, 'meetup_proposal', 'Cardtastic TCG on Thursday at 5pm?',
+      jsonb_build_object('shop_id', shop_cardtastic, 'location_name', 'Cardtastic TCG', 'proposed_time', (now() + interval '3 days')::text),
+      now() - interval '1 day 16 hours'),
+    (t_msg12, t_conv2, t,  'text', 'Thursday works! See you there.', NULL, now() - interval '1 day 14 hours'),
+
+    -- Conv 3: t + James Wilson (YuGiOh sale, completed)
+    (t_msg13, t_conv3, u3, 'text', 'Hey! I need the Branded Despia core for my competitive deck. Is it still up?', NULL, now() - interval '13 days'),
+    (t_msg14, t_conv3, t,  'text', 'It is! All 1st edition, NM. Everything you need to run the engine.', NULL, now() - interval '12 days 22 hours'),
+    (t_msg15, t_conv3, u3, 'text', 'Perfect. $50 for the lot?', NULL, now() - interval '12 days 20 hours'),
+    (t_msg16, t_conv3, t,  'text', 'Deal! Where do you want to meet?', NULL, now() - interval '12 days 18 hours'),
+    (t_msg17, t_conv3, u3, 'meetup_proposal', 'General Games Malvern, next Friday at 4pm?',
+      jsonb_build_object('shop_id', shop_general, 'location_name', 'General Games Malvern', 'proposed_time', (now() - interval '6 days')::text),
+      now() - interval '12 days'),
+    (t_msg18, t_conv3, t,  'text', 'See you there!', NULL, now() - interval '11 days 22 hours'),
+    (t_msg19, t_conv3, u3, 'text', 'Cards are perfect, exactly what I needed. Thanks for the smooth trade!', NULL, now() - interval '6 days'),
+
+    -- Conv 4: t + Noah Patel (MTG trade, completed)
+    (t_msg20, t_conv4, u7, 'text', 'Your fetchland bundle is exactly what I need for Modern. Wrenn and Six for the pair?', NULL, now() - interval '23 days'),
+    (t_msg21, t_conv4, t,  'text', 'That works for me! Wrenn and Six is a card I have been wanting.', NULL, now() - interval '22 days 22 hours'),
+    (t_msg22, t_conv4, u7, 'meetup_proposal', 'Hobbymaster Doncaster, Saturday at 1pm?',
+      jsonb_build_object('shop_id', shop_hobbymaster, 'location_name', 'Hobbymaster Doncaster', 'proposed_time', (now() - interval '20 days')::text),
+      now() - interval '22 days'),
+    (t_msg23, t_conv4, t,  'text', 'Sounds good! See you Saturday.', NULL, now() - interval '21 days 22 hours'),
+
+    -- Conv 5: t + Chloe Anderson (Pokemon sale, active match)
+    (t_msg24, t_conv5, u12, 'text', 'Oh wow, the rainbow Pikachu VMAX! That is my dream card. Is it still available?', NULL, now() - interval '1 day'),
+    (t_msg25, t_conv5, t,   'text', 'Yes! The centering is perfect too. Want to see it in person?', NULL, now() - interval '22 hours'),
+    (t_msg26, t_conv5, u12, 'text', 'Absolutely! I can meet whenever works for you.', NULL, now() - interval '18 hours'),
+    (t_msg27, t_conv5, t,   'text', 'How about Cherry Collectables? They have good lighting for card inspection.', NULL, now() - interval '16 hours'),
+    (t_msg28, t_conv5, u12, 'meetup_proposal', 'Cherry Collectables, Wednesday at 1pm?',
+      jsonb_build_object('shop_id', shop_cherry, 'location_name', 'Cherry Collectables', 'proposed_time', (now() + interval '1 day')::text),
+      now() - interval '14 hours')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- =========================================================================
+  -- MEETUPS (5 total: 3 upcoming, 2 completed)
+  -- =========================================================================
+  INSERT INTO public.meetups (id, match_id, proposal_message_id, shop_id, location_name, proposed_time, status, user_a_completed, user_b_completed, created_at)
+  VALUES
+    -- Upcoming
+    (t_meet1, t_m1, t_msg05, shop_good_games, 'Good Games Melbourne',   now() + interval '2 days',  'confirmed', false, false, now() - interval '3 days 16 hours'),
+    (t_meet2, t_m2, t_msg11, shop_cardtastic, 'Cardtastic TCG',         now() + interval '3 days',  'confirmed', false, false, now() - interval '1 day 16 hours'),
+    (t_meet5, t_m5, t_msg28, shop_cherry,     'Cherry Collectables',    now() + interval '1 day',   'confirmed', false, false, now() - interval '14 hours'),
+    -- Completed
+    (t_meet3, t_m3, t_msg17, shop_general,    'General Games Malvern',  now() - interval '6 days',  'completed', true,  true,  now() - interval '12 days'),
+    (t_meet4, t_m4, t_msg22, shop_hobbymaster,'Hobbymaster Doncaster',  now() - interval '20 days', 'completed', true,  true,  now() - interval '22 days')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- =========================================================================
+  -- RATINGS (from completed meetups)
+  -- =========================================================================
+  INSERT INTO public.ratings (meetup_id, rater_id, ratee_id, score, comment, created_at)
+  VALUES
+    -- Meetup 3: t <-> James
+    (t_meet3, u3, t, 5, 'Excellent seller! Cards were exactly as described.',           now() - interval '5 days'),
+    (t_meet3, t, u3, 4, 'Quick and easy meetup. Good buyer, would trade again!',        now() - interval '5 days'),
+    -- Meetup 4: t <-> Noah
+    (t_meet4, u7, t, 5, 'Perfect fetchlands. Great trader, would trade again!',         now() - interval '19 days'),
+    (t_meet4, t, u7, 5, 'Noah brought a beautiful Wrenn and Six. Highly recommend!',    now() - interval '19 days')
+  ON CONFLICT DO NOTHING;
+
+  -- =========================================================================
+  -- SWIPES (likes and passes on other users' listings)
+  -- =========================================================================
+  INSERT INTO public.swipes (user_id, listing_id, direction, created_at)
+  VALUES
+    -- Likes
+    (t, u1_l1,  'like', now() - interval '5 days'),
+    (t, u4_l1,  'like', now() - interval '4 days'),
+    (t, u6_l1,  'like', now() - interval '3 days'),
+    (t, u8_l2,  'like', now() - interval '2 days'),
+    (t, u9_l1,  'like', now() - interval '1 day'),
+    (t, u10_l2, 'like', now() - interval '12 hours'),
+    -- Passes
+    (t, u5_l1,  'pass', now() - interval '4 days'),
+    (t, u11_l2, 'pass', now() - interval '2 days'),
+    (t, u13_l3, 'pass', now() - interval '1 day')
+  ON CONFLICT DO NOTHING;
+
+  -- =========================================================================
+  -- COLLECTION ITEMS
+  -- =========================================================================
+
+  -- Regular cards
+  INSERT INTO public.collection_items (user_id, tcg, external_id, card_name, set_name, set_code, card_number, image_url, rarity, condition, quantity, is_wishlist, market_price, grading_company, grading_score, is_sealed, product_type, purchase_price)
+  VALUES
+    -- Pokemon
+    (t, 'pokemon', 'swsh9-174',  'Charizard VSTAR',           'Brilliant Stars',  'swsh9',  '174/172', 'https://images.pokemontcg.io/swsh9/174.png',    'Secret Rare',      'nm', 1, false, 65.00,  NULL,  NULL,  false, NULL, 50.00),
+    (t, 'pokemon', 'swsh4-188',  'Pikachu VMAX Rainbow',      'Vivid Voltage',    'swsh4',  '188/185', 'https://images.pokemontcg.io/swsh4/188.png',    'Secret Rare',      'nm', 1, false, 200.00, 'psa', '10',  false, NULL, 180.00),
+    (t, 'pokemon', 'swsh10-195', 'Palkia VSTAR Alt Art',      'Astral Radiance',  'swsh10', '195/189', 'https://images.pokemontcg.io/swsh10/195.png',   'Secret Rare',      'nm', 1, false, 45.00,  NULL,  NULL,  false, NULL, 35.00),
+    (t, 'pokemon', 'swsh10-196', 'Origin Forme Dialga VSTAR Alt','Astral Radiance','swsh10','196/189', 'https://images.pokemontcg.io/swsh10/196.png',   'Secret Rare',      'nm', 1, false, 38.00,  NULL,  NULL,  false, NULL, 30.00),
+    (t, 'pokemon', 'swsh10-46',  'Radiant Greninja',           'Astral Radiance',  'swsh10', '046/189', 'https://images.pokemontcg.io/swsh10/46.png',   'Radiant Rare',     'nm', 2, false, 5.00,   NULL,  NULL,  false, NULL, 3.00),
+    (t, 'pokemon', 'swsh7-209',  'Glaceon VMAX Alt Art',       'Evolving Skies',   'swsh7',  '209/203', 'https://images.pokemontcg.io/swsh7/209.png',   'Secret Rare',      'nm', 1, false, 80.00,  'cgc', '9.5', false, NULL, 65.00),
+    (t, 'pokemon', 'pgo-11',     'Radiant Charizard',          'Pokemon GO',       'pgo',    '011/078', 'https://images.pokemontcg.io/pgo/11.png',      'Radiant Rare',     'nm', 1, false, 12.00,  NULL,  NULL,  false, NULL, 8.00),
+    (t, 'pokemon', 'sv3-223',    'Charizard ex SAR',           'Obsidian Flames',  'sv3',    '223/197', 'https://images.pokemontcg.io/sv3/223.png',     'Special Art Rare', 'nm', 1, false, 95.00,  NULL,  NULL,  false, NULL, 75.00),
+    (t, 'pokemon', 'swsh8-268',  'Mew VMAX Alt Art',           'Fusion Strike',    'swsh8',  '268/264', 'https://images.pokemontcg.io/swsh8/268.png',   'Secret Rare',      'lp', 1, false, 50.00,  NULL,  NULL,  false, NULL, 40.00),
+
+    -- MTG
+    (t, 'mtg', 'MH2-254', 'Scalding Tarn',            'Modern Horizons 2',        'MH2', '254', 'https://cards.scryfall.io/normal/front/7/1/71e491c5-8c07-449b-b2f1-ffa052e6d311.jpg', 'Rare',        'nm', 2, false, 28.00,  NULL,  NULL,  false, NULL, 22.00),
+    (t, 'mtg', 'MH2-250', 'Misty Rainforest',         'Modern Horizons 2',        'MH2', '250', 'https://cards.scryfall.io/normal/front/8/8/88231c0d-0cc8-44ec-bf95-81d1710ac141.jpg', 'Rare',        'nm', 2, false, 22.00,  NULL,  NULL,  false, NULL, 18.00),
+    (t, 'mtg', 'MH1-217', 'Wrenn and Six',            'Modern Horizons',          'MH1', '217', 'https://cards.scryfall.io/normal/front/5/b/5bd498cc-a609-4457-9325-6888d59ca36f.jpg', 'Mythic Rare', 'nm', 1, false, 60.00,  NULL,  NULL,  false, NULL, NULL),
+    (t, 'mtg', 'ALL-42',  'Force of Will',            'Alliances',                'ALL', '42',  'https://cards.scryfall.io/normal/front/9/a/9a879b60-4381-447d-8a5a-8e0b6a1d49ca.jpg', 'Uncommon',    'lp', 1, false, 85.00,  NULL,  NULL,  false, NULL, 70.00),
+    (t, 'mtg', 'ONE-196', 'Atraxa, Grand Unifier',    'Phyrexia: All Will Be One','ONE', '196', 'https://cards.scryfall.io/normal/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.jpg', 'Mythic Rare', 'nm', 1, false, 30.00,  NULL,  NULL,  false, NULL, 25.00),
+
+    -- Yu-Gi-Oh
+    (t, 'yugioh', 'DAMA-052',  'Branded Fusion',              'Dawn of Majesty',     'DAMA', '052', 'https://images.ygoprodeck.com/images/cards_small/44362883.jpg', 'Ultra Rare',  'nm', 3, false, 28.00, NULL, NULL, false, NULL, 20.00),
+    (t, 'yugioh', 'MACR-036',  'Ash Blossom & Joyous Spring', 'Maximum Crisis',      'MACR', '036', 'https://images.ygoprodeck.com/images/cards_small/14558127.jpg', 'Secret Rare', 'nm', 2, false, 22.00, NULL, NULL, false, NULL, 18.00),
+    (t, 'yugioh', 'LOB-001',   'Blue-Eyes White Dragon',      'Legend of Blue Eyes',  'LOB',  '001', 'https://images.ygoprodeck.com/images/cards_small/89631139.jpg', 'Ultra Rare',  'lp', 1, false, 40.00, NULL, NULL, false, NULL, 30.00)
+  ON CONFLICT DO NOTHING;
+
+  -- Wishlist items
+  INSERT INTO public.collection_items (user_id, tcg, external_id, card_name, set_name, set_code, card_number, image_url, rarity, condition, quantity, is_wishlist, market_price, is_sealed, product_type, purchase_price)
+  VALUES
+    (t, 'pokemon', 'swsh7-215', 'Umbreon VMAX Alt Art',     'Evolving Skies',       'swsh7', '215/203', 'https://images.pokemontcg.io/swsh7/215.png',  'Secret Rare',    'nm', 1, true, 180.00, false, NULL, NULL),
+    (t, 'mtg',     'DMU-107',   'Sheoldred, the Apocalypse','Dominaria United',      'DMU',   '107',     'https://cards.scryfall.io/normal/front/d/6/d67be074-cdd4-41d9-ac89-0a0456c4e4b2.jpg', 'Mythic Rare', 'nm', 1, true, 75.00, false, NULL, NULL),
+    (t, 'pokemon', 'swsh11-131','Giratina VSTAR Alt Art',   'Lost Origin',           'swsh11','131/196', 'https://images.pokemontcg.io/swsh11/131.png', 'Secret Rare',    'nm', 1, true, 70.00, false, NULL, NULL),
+    (t, 'yugioh',  'ETCO-099',  'Accesscode Talker (Starlight)','Eternity Code',     'ETCO',  '099',     'https://images.ygoprodeck.com/images/cards_small/86066372.jpg', 'Starlight Rare', 'nm', 1, true, 220.00, false, NULL, NULL)
+  ON CONFLICT DO NOTHING;
+
+  -- Sealed products
+  INSERT INTO public.collection_items (user_id, tcg, external_id, card_name, set_name, set_code, card_number, image_url, condition, quantity, is_wishlist, is_sealed, product_type, purchase_price, market_price)
+  VALUES
+    (t, 'pokemon', 'sealed-swsh7-bb',  'Evolving Skies Booster Box',        'Evolving Skies',   'swsh7', '', '', 'nm', 1, false, true, 'booster_box', 220.00, 280.00),
+    (t, 'pokemon', 'sealed-sv3-etb',   'Obsidian Flames Elite Trainer Box', 'Obsidian Flames',  'sv3',   '', '', 'nm', 2, false, true, 'etb',          42.00,  55.00),
+    (t, 'mtg',     'sealed-mh2-draft', 'Modern Horizons 2 Draft Box',      'Modern Horizons 2','MH2',   '', '', 'nm', 1, false, true, 'booster_box', 280.00, 310.00)
+  ON CONFLICT DO NOTHING;
+
+  RAISE NOTICE 'Test user seed data inserted successfully for user %', t;
+END $$;
