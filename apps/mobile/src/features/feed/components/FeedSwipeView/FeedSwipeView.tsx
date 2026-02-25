@@ -4,6 +4,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  withTiming,
   withSpring,
   runOnJS,
   interpolate,
@@ -23,6 +24,7 @@ import type { MatchRow } from '@tcg-trade-hub/database';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
+const SWIPE_EXIT_DURATION = 250;
 
 export type FeedSwipeViewProps = {
   className?: string;
@@ -43,6 +45,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [, setMatchData] = useState<MatchRow | null>(null);
   const [showMatch, setShowMatch] = useState(false);
+  const [isSwiping, setIsSwiping] = useState(false);
 
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -51,12 +54,13 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
   const currentListing = listings[currentIndex] as ListingWithDistance | undefined;
   const nextListing = listings[currentIndex + 1] as ListingWithDistance | undefined;
 
-  const handleSwipeComplete = useCallback(
+  const advanceCard = useCallback(
     (direction: 'like' | 'pass') => {
-      if (!currentListing) return;
+      const listing = listings[currentIndex] as ListingWithDistance | undefined;
+      if (!listing) return;
 
       recordSwipe.mutate(
-        { listingId: currentListing.id, direction },
+        { listingId: listing.id, direction },
         {
           onSuccess: (response) => {
             if (response.match) {
@@ -69,28 +73,46 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
 
       setCurrentIndex((prev) => {
         const nextIdx = prev + 1;
-        // Prefetch next page when near the end
         if (nextIdx >= listings.length - 3 && hasNextPage) {
           fetchNextPage();
         }
         return nextIdx;
       });
+      setIsSwiping(false);
     },
-    [currentListing, recordSwipe, listings.length, hasNextPage, fetchNextPage],
+    [currentIndex, listings, recordSwipe, hasNextPage, fetchNextPage],
+  );
+
+  const animateOffScreen = useCallback(
+    (direction: 'like' | 'pass') => {
+      'worklet';
+      const targetX = direction === 'like' ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5;
+
+      translateX.value = withTiming(targetX, { duration: SWIPE_EXIT_DURATION }, (finished) => {
+        if (finished) {
+          // Snap back to center instantly before next card renders
+          translateX.value = 0;
+          translateY.value = 0;
+          runOnJS(advanceCard)(direction);
+        }
+      });
+    },
+    [translateX, translateY, advanceCard],
   );
 
   const panGesture = Gesture.Pan()
+    .enabled(!isSwiping)
     .onUpdate((event) => {
       translateX.value = event.translationX;
       translateY.value = event.translationY;
     })
     .onEnd((event) => {
       if (event.translationX > SWIPE_THRESHOLD) {
-        translateX.value = withSpring(SCREEN_WIDTH * 1.5);
-        runOnJS(handleSwipeComplete)('like');
+        runOnJS(setIsSwiping)(true);
+        animateOffScreen('like');
       } else if (event.translationX < -SWIPE_THRESHOLD) {
-        translateX.value = withSpring(-SCREEN_WIDTH * 1.5);
-        runOnJS(handleSwipeComplete)('pass');
+        runOnJS(setIsSwiping)(true);
+        animateOffScreen('pass');
       } else {
         translateX.value = withSpring(0);
         translateY.value = withSpring(0);
@@ -150,14 +172,9 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
   }));
 
   const handleButtonSwipe = (direction: 'like' | 'pass') => {
-    const targetX = direction === 'like' ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5;
-    translateX.value = withSpring(targetX);
-    handleSwipeComplete(direction);
-  };
-
-  const resetSwipePosition = () => {
-    translateX.value = withSpring(0);
-    translateY.value = withSpring(0);
+    if (isSwiping) return;
+    setIsSwiping(true);
+    animateOffScreen(direction);
   };
 
   if (isLoading) {
@@ -214,7 +231,6 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
           <Animated.View
             className="w-full flex-1"
             style={cardAnimatedStyle}
-            onLayout={() => resetSwipePosition()}
           >
             <SwipeCard listing={currentListing} />
 
@@ -241,6 +257,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
       <View className="flex-row items-center justify-center gap-6 pb-6 pt-4">
         <Pressable
           onPress={() => handleButtonSwipe('pass')}
+          disabled={isSwiping}
           className="h-16 w-16 items-center justify-center rounded-full border-2 border-red-400 bg-card active:bg-red-50"
         >
           <X size={28} className="text-red-500" />
@@ -259,6 +276,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
 
         <Pressable
           onPress={() => handleButtonSwipe('like')}
+          disabled={isSwiping}
           className="h-16 w-16 items-center justify-center rounded-full border-2 border-emerald-400 bg-card active:bg-emerald-50"
         >
           <Heart size={28} className="text-emerald-500" fill="#10b981" />
