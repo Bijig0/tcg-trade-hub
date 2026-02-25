@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Image, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { ArrowLeft, TrendingUp, TrendingDown } from 'lucide-react-native';
 import Badge from '@/components/ui/Badge/Badge';
 import PriceChart from '@/components/PriceChart/PriceChart';
@@ -49,7 +50,9 @@ const CardPricingDetailScreen = ({
         <Image
           source={{ uri: detail.largeImageUrl }}
           className="h-72 w-48 rounded-xl bg-muted"
-          resizeMode="contain"
+          contentFit="contain"
+          cachePolicy="disk"
+          transition={200}
         />
       </View>
 

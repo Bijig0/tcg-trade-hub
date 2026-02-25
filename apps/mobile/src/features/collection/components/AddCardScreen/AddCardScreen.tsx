@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, Pressable, Image, ScrollView } from 'react-native';
+import { View, Text, FlatList, Pressable, ScrollView } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { TcgType, NormalizedCard, GradingCompany } from '@tcg-trade-hub/database';
@@ -158,7 +159,9 @@ const AddCardScreen: React.FC = () => {
                 <Image
                   source={{ uri: item.imageUrl }}
                   className="h-16 w-12 rounded-md"
-                  resizeMode="cover"
+                  contentFit="cover"
+                  cachePolicy="disk"
+                  transition={150}
                 />
               ) : (
                 <View className="h-16 w-12 items-center justify-center rounded-md bg-muted">
@@ -214,7 +217,9 @@ const AddCardScreen: React.FC = () => {
               <Image
                 source={{ uri: selectedCard.imageUrl }}
                 className="h-64 w-44 rounded-xl"
-                resizeMode="contain"
+                contentFit="contain"
+                cachePolicy="disk"
+                transition={200}
               />
             ) : null}
             <Text className="mt-3 text-lg font-bold text-foreground">{selectedCard.name}</Text>

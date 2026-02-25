@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TextInput, Pressable } from 'react-native';
+import { View, Text, TextInput, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { DollarSign, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react-native';
 import Badge from '@/components/ui/Badge/Badge';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
@@ -106,7 +107,9 @@ const BulkPricingStep = ({
               <Image
                 source={{ uri: sc.card.imageUrl }}
                 className="h-16 w-11 rounded-lg bg-muted"
-                resizeMode="cover"
+                contentFit="cover"
+                cachePolicy="disk"
+                transition={150}
               />
               <View className="flex-1 gap-0.5">
                 <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>

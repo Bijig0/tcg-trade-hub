@@ -1,5 +1,6 @@
 import React, { forwardRef, useCallback } from 'react';
-import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Star, ChevronRight } from 'lucide-react-native';
 import Avatar from '@/components/ui/Avatar/Avatar';
@@ -86,7 +87,9 @@ const OfferDetailSheet = forwardRef<BottomSheet, OfferDetailSheetProps>(
                   <Image
                     source={{ uri: item.card_image_url }}
                     className="h-14 w-10 rounded-md bg-muted"
-                    resizeMode="cover"
+                    contentFit="cover"
+                    cachePolicy="disk"
+                    transition={150}
                   />
                   <View className="flex-1">
                     <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>

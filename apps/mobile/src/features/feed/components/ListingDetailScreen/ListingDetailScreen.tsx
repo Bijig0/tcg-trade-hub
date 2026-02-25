@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { View, Text, Image, ScrollView, RefreshControl, Pressable } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Star, Handshake, User } from 'lucide-react-native';
@@ -167,7 +168,9 @@ const ListingDetailScreen = () => {
                         <Image
                           source={{ uri: item.card_image_url }}
                           className="h-20 w-14 rounded-lg bg-muted"
-                          resizeMode="cover"
+                          contentFit="cover"
+                          cachePolicy="disk"
+                          transition={150}
                         />
                         <View className="ml-3 flex-1 justify-between">
                           <View>

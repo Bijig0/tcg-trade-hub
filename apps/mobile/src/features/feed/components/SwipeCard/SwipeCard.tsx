@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
+import { Image } from 'expo-image';
 import { ImageOff } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import { ListingTypeBadge } from '@/features/listings';
@@ -42,7 +43,9 @@ const SwipeCard = ({ listing, className }: SwipeCardProps) => {
           <Image
             source={{ uri: heroImage }}
             className="h-full w-full bg-muted"
-            resizeMode="contain"
+            contentFit="contain"
+            cachePolicy="disk"
+            transition={200}
             onError={handleHeroError}
           />
           <ListingTypeBadge type={listing.type} className="absolute left-3 top-3 px-3 py-1.5" />

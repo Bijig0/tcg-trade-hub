@@ -1,5 +1,6 @@
 import React, { useMemo, forwardRef, useCallback } from 'react';
-import { View, Text, Image, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Zap } from 'lucide-react-native';
 import Button from '@/components/ui/Button/Button';
@@ -134,7 +135,9 @@ const MatchConfirmSheet = forwardRef<BottomSheet, MatchConfirmSheetProps>(
                       <Image
                         source={{ uri: card.image_url }}
                         className="h-10 w-8 rounded"
-                        resizeMode="cover"
+                        contentFit="cover"
+                        cachePolicy="disk"
+                        transition={150}
                       />
                     ) : (
                       <View className="h-10 w-8 items-center justify-center rounded bg-muted">

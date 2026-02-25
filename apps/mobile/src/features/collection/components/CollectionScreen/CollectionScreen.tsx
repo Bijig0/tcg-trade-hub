@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, FlatList, RefreshControl, ScrollView, Pressable, Image, Alert, TextInput } from 'react-native';
+import { View, Text, FlatList, RefreshControl, ScrollView, Pressable, Alert, TextInput } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Search, X, Eye, EyeOff } from 'lucide-react-native';
@@ -136,7 +137,7 @@ const CollectionScreen: React.FC = () => {
         onLongPress={() => handleRemove(item.id)}
       >
         {item.image_url ? (
-          <Image source={{ uri: item.image_url }} className="h-16 w-12 rounded-md" resizeMode="cover" />
+          <Image source={{ uri: item.image_url }} className="h-16 w-12 rounded-md" contentFit="cover" cachePolicy="disk" transition={150} />
         ) : (
           <View className="h-16 w-12 items-center justify-center rounded-md bg-muted">
             <Text className="text-xs text-muted-foreground">

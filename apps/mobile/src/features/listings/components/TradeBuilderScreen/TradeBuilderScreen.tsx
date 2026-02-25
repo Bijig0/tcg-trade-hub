@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, Pressable, Image, FlatList, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Pressable, FlatList, ActivityIndicator, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Check } from 'lucide-react-native';
@@ -142,7 +143,7 @@ const TradeBuilderScreen = () => {
       }`}
     >
       {item.image_url ? (
-        <Image source={{ uri: item.image_url }} className="h-14 w-10 rounded" resizeMode="cover" />
+        <Image source={{ uri: item.image_url }} className="h-14 w-10 rounded" contentFit="cover" cachePolicy="disk" transition={150} />
       ) : (
         <View className="h-14 w-10 items-center justify-center rounded bg-muted">
           <Text className="text-[8px] text-muted-foreground">?</Text>
