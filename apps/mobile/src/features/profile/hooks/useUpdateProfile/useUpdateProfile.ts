@@ -10,6 +10,7 @@ type UpdateProfileParams = {
   avatar_url?: string | null;
   radius_km?: number;
   preferred_tcgs?: TcgType[];
+  auto_match?: boolean;
 };
 
 /**

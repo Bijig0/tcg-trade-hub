@@ -1,8 +1,25 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { listingKeys } from '../../queryKeys';
-import type { ListingRow, ListingItemRow } from '@tcg-trade-hub/database';
+import { TradeWantSchema } from '@tcg-trade-hub/database';
+import type { ListingRow, ListingItemRow, TradeWant } from '@tcg-trade-hub/database';
 import type { MyListingWithOffers, MatchedUserInfo } from '../../schemas';
+
+/**
+ * Parses trade_wants JSONB from a listing row.
+ */
+const parseTradeWants = (raw: unknown): TradeWant[] => {
+  try {
+    const arr = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (!Array.isArray(arr)) return [];
+    return arr.flatMap((item) => {
+      const result = TradeWantSchema.safeParse(item);
+      return result.success ? [result.data] : [];
+    });
+  } catch {
+    return [];
+  }
+};
 
 /**
  * Hook that fetches all of the current user's listings with items and offer counts,
@@ -72,6 +89,7 @@ const useMyListings = () => {
           ...l,
           items: itemsByListing.get(l.id) ?? [],
           offer_count: offerCountMap.get(l.id) ?? 0,
+          trade_wants: parseTradeWants(l.trade_wants),
           match_id: null,
           matched_user: null,
           conversation_id: null,
@@ -150,6 +168,7 @@ const useMyListings = () => {
           ...listing,
           items: itemsByListing.get(listing.id) ?? [],
           offer_count: offerCountMap.get(listing.id) ?? 0,
+          trade_wants: parseTradeWants(listing.trade_wants),
           match_id: matchInfo?.match_id ?? null,
           matched_user: matchInfo ? (userMap.get(matchInfo.other_user_id) ?? null) : null,
           conversation_id: matchInfo ? (conversationMap.get(matchInfo.match_id) ?? null) : null,

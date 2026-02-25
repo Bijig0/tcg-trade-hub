@@ -6,4 +6,5 @@ export const listingKeys = {
   detail: (id: string) => [...listingKeys.all, 'detail', id] as const,
   offers: (listingId: string) => [...listingKeys.all, 'offers', listingId] as const,
   offerDetail: (id: string) => [...listingKeys.all, 'offer-detail', id] as const,
+  opportunities: (listingId: string) => [...listingKeys.all, 'opportunities', listingId] as const,
 };

@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, FlatList, ScrollView, Pressable, Image, Alert, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search, X } from 'lucide-react-native';
+import { Search, X, Eye, EyeOff } from 'lucide-react-native';
 import useMyCollection from '../../hooks/useMyCollection/useMyCollection';
 import useMySealedProducts from '../../hooks/useMySealedProducts/useMySealedProducts';
 import usePortfolioValue from '../../hooks/usePortfolioValue/usePortfolioValue';
 import useRemoveCollectionItem from '../../hooks/useRemoveCollectionItem/useRemoveCollectionItem';
+import useUpdateCollectionVisibility from '../../hooks/useUpdateCollectionVisibility/useUpdateCollectionVisibility';
 import groupCollectionItems from '../../utils/groupCollectionItems/groupCollectionItems';
 import CollectionCardGroup from '../CollectionCardGroup/CollectionCardGroup';
 import Button from '@/components/ui/Button/Button';
@@ -38,6 +39,7 @@ const CollectionScreen: React.FC = () => {
   const { data: sealed } = useMySealedProducts();
   const portfolio = usePortfolioValue();
   const removeItem = useRemoveCollectionItem();
+  const { toggleItem: toggleVisibility, setAll: setAllVisibility } = useUpdateCollectionVisibility();
 
   const [activeTab, setActiveTab] = useState<Tab>('cards');
   const [filterTcg, setFilterTcg] = useState<FilterTcg>('all');
@@ -64,6 +66,24 @@ const CollectionScreen: React.FC = () => {
     () => (activeTab === 'cards' ? groupCollectionItems(filteredItems) : []),
     [activeTab, filteredItems],
   );
+
+  const tradeableCount = useMemo(() => {
+    const items = currentItems ?? [];
+    return items.filter((i) => i.is_tradeable && !i.is_wishlist).length;
+  }, [currentItems]);
+
+  const totalNonWishlist = useMemo(() => {
+    const items = currentItems ?? [];
+    return items.filter((i) => !i.is_wishlist).length;
+  }, [currentItems]);
+
+  const handleToggleVisibility = useCallback((itemId: string, currentValue: boolean) => {
+    toggleVisibility.mutate({ itemId, is_tradeable: !currentValue });
+  }, [toggleVisibility]);
+
+  const handleSetAllTradeable = useCallback((value: boolean) => {
+    setAllVisibility.mutate({ is_tradeable: value });
+  }, [setAllVisibility]);
 
   const handleRemove = useCallback((itemId: string) => {
     Alert.alert('Remove', 'Remove this item?', [
@@ -128,7 +148,7 @@ const CollectionScreen: React.FC = () => {
             {sealedLabel ? <Badge variant="outline">{sealedLabel}</Badge> : null}
           </View>
         </View>
-        <View className="items-end">
+        <View className="items-end gap-1">
           <Text className="text-xs text-muted-foreground">x{item.quantity}</Text>
           {item.market_price != null ? (
             <Text className="text-sm font-medium text-green-600">
@@ -139,6 +159,18 @@ const CollectionScreen: React.FC = () => {
               ${item.purchase_price.toFixed(2)}
             </Text>
           ) : null}
+          {!item.is_wishlist && (
+            <Pressable
+              onPress={() => handleToggleVisibility(item.id, item.is_tradeable)}
+              hitSlop={8}
+            >
+              {item.is_tradeable ? (
+                <Eye size={14} className="text-primary" />
+              ) : (
+                <EyeOff size={14} className="text-muted-foreground" />
+              )}
+            </Pressable>
+          )}
         </View>
       </Pressable>
     );
@@ -171,6 +203,29 @@ const CollectionScreen: React.FC = () => {
           </Text>
         </View>
       </View>
+
+      {/* Tradeable Banner */}
+      {totalNonWishlist > 0 && (
+        <View className="mb-3 flex-row items-center justify-between rounded-lg bg-card px-3 py-2">
+          <Text className="text-sm text-muted-foreground">
+            {tradeableCount} of {totalNonWishlist} items tradeable
+          </Text>
+          <View className="flex-row gap-2">
+            <Pressable
+              onPress={() => handleSetAllTradeable(true)}
+              className="rounded px-2 py-1 active:bg-accent"
+            >
+              <Text className="text-xs font-medium text-primary">Show All</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => handleSetAllTradeable(false)}
+              className="rounded px-2 py-1 active:bg-accent"
+            >
+              <Text className="text-xs font-medium text-muted-foreground">Hide All</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
 
       {/* Search Bar */}
       <View className="mb-3 flex-row items-center rounded-lg border border-input bg-background px-3 py-2">

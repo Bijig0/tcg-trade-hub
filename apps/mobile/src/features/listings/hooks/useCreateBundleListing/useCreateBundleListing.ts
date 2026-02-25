@@ -5,13 +5,14 @@ import { feedKeys } from '../../../feed/queryKeys';
 import { collectionKeys } from '../../../collection/queryKeys';
 import generateBundleTitle from '../../utils/generateBundleTitle/generateBundleTitle';
 import type { SelectedCard } from '../../schemas';
-import type { ListingRow, ListingType, ListingItemInsert } from '@tcg-trade-hub/database';
+import type { ListingRow, ListingType, ListingItemInsert, TradeWant } from '@tcg-trade-hub/database';
 
 type BundleListingInput = {
   type: ListingType;
   selectedCards: SelectedCard[];
   cashAmount: number;
   description: string | null;
+  tradeWants?: TradeWant[];
 };
 
 /**
@@ -23,7 +24,7 @@ const useCreateBundleListing = () => {
   const queryClient = useQueryClient();
 
   return useMutation<ListingRow, Error, BundleListingInput>({
-    mutationFn: async ({ type, selectedCards, cashAmount, description }) => {
+    mutationFn: async ({ type, selectedCards, cashAmount, description, tradeWants }) => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -52,6 +53,7 @@ const useCreateBundleListing = () => {
           total_value: totalValue,
           description,
           photos: [],
+          trade_wants: JSON.stringify(tradeWants ?? []),
         })
         .select()
         .single();

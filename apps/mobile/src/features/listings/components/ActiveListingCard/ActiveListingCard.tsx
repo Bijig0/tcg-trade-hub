@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Trash2, Clock } from 'lucide-react-native';
+import { Trash2, Clock, Zap } from 'lucide-react-native';
 import ListingTypeBadge from '../ListingTypeBadge/ListingTypeBadge';
 import BundlePreview from '../BundlePreview/BundlePreview';
 import formatListingDate from '../../utils/formatListingDate/formatListingDate';
@@ -36,6 +36,14 @@ const ActiveListingCard = ({ listing, onDelete }: ActiveListingCardProps) => {
               <View className="rounded-full bg-primary px-2 py-0.5">
                 <Text className="text-xs font-semibold text-primary-foreground">
                   {listing.offer_count} offer{listing.offer_count !== 1 ? 's' : ''}
+                </Text>
+              </View>
+            )}
+            {listing.type === 'wtt' && listing.trade_wants.length > 0 && (
+              <View className="flex-row items-center gap-0.5 rounded-full bg-amber-500/10 px-2 py-0.5">
+                <Zap size={10} color="#f59e0b" />
+                <Text className="text-xs font-semibold text-amber-500">
+                  Trades
                 </Text>
               </View>
             )}

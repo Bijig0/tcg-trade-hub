@@ -12,6 +12,7 @@ const makeListing = (overrides: Partial<ListingRow> = {}): ListingRow => ({
   total_value: 150,
   description: null,
   photos: [],
+  trade_wants: [],
   status: 'active',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),

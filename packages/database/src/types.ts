@@ -20,6 +20,7 @@ export type Database = {
           rating_score: number;
           total_trades: number;
           expo_push_token: string | null;
+          auto_match: boolean;
           deleted_at: string | null;
           created_at: string;
           updated_at: string;
@@ -35,6 +36,7 @@ export type Database = {
           rating_score?: number;
           total_trades?: number;
           expo_push_token?: string | null;
+          auto_match?: boolean;
           deleted_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -50,6 +52,7 @@ export type Database = {
           rating_score?: number;
           total_trades?: number;
           expo_push_token?: string | null;
+          auto_match?: boolean;
           deleted_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -80,6 +83,7 @@ export type Database = {
           photos: string[];
           notes: string | null;
           acquired_at: string | null;
+          is_tradeable: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -106,6 +110,7 @@ export type Database = {
           photos?: string[];
           notes?: string | null;
           acquired_at?: string | null;
+          is_tradeable?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -132,6 +137,7 @@ export type Database = {
           photos?: string[];
           notes?: string | null;
           acquired_at?: string | null;
+          is_tradeable?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -148,6 +154,7 @@ export type Database = {
           total_value: number;
           description: string | null;
           photos: string[];
+          trade_wants: Json;
           status: ListingStatus;
           created_at: string;
           updated_at: string;
@@ -162,6 +169,7 @@ export type Database = {
           total_value?: number;
           description?: string | null;
           photos?: string[];
+          trade_wants?: Json;
           status?: ListingStatus;
           created_at?: string;
           updated_at?: string;
@@ -176,6 +184,7 @@ export type Database = {
           total_value?: number;
           description?: string | null;
           photos?: string[];
+          trade_wants?: Json;
           status?: ListingStatus;
           created_at?: string;
           updated_at?: string;

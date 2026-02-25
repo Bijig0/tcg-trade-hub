@@ -4,8 +4,9 @@ import {
   CardConditionSchema,
   NormalizedCardSchema,
   OfferStatusSchema,
+  TradeWantSchema,
 } from '@tcg-trade-hub/database';
-import type { ListingRow, ListingItemRow, OfferRow, OfferItemRow } from '@tcg-trade-hub/database';
+import type { ListingRow, ListingItemRow, OfferRow, OfferItemRow, TradeWant } from '@tcg-trade-hub/database';
 
 // --- Bundle listing creation types ---
 
@@ -32,6 +33,7 @@ export const BundleListingFormSchema = z.object({
   selectedCards: z.array(SelectedCardSchema).min(1, 'Select at least one card'),
   cashAmount: z.string().default('0'),
   description: z.string().max(500).nullable().optional(),
+  tradeWants: z.array(TradeWantSchema).default([]),
 });
 
 export type BundleListingForm = z.infer<typeof BundleListingFormSchema>;
@@ -59,9 +61,34 @@ export type MatchedUserInfo = {
 export type MyListingWithOffers = ListingRow & {
   items: ListingItemRow[];
   offer_count: number;
+  trade_wants: TradeWant[];
   match_id: string | null;
   matched_user: MatchedUserInfo | null;
   conversation_id: string | null;
+};
+
+// --- Trade opportunity types ---
+
+export type ListingWithItems = ListingRow & {
+  items: ListingItemRow[];
+};
+
+export type TradeOpportunityOwner = {
+  id: string;
+  display_name: string;
+  avatar_url: string | null;
+  rating_score: number;
+  total_trades: number;
+};
+
+export type TradeOpportunityMatchType = 'has_what_you_want' | 'wants_what_you_have' | 'mutual';
+
+export type TradeOpportunity = {
+  listing: ListingWithItems;
+  owner: TradeOpportunityOwner;
+  matchType: TradeOpportunityMatchType;
+  matchedCardIds: string[];
+  score: number;
 };
 
 export const LISTING_TABS = ['active', 'matched', 'history'] as const;
