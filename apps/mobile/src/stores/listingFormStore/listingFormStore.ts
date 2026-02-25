@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { TcgType, ListingType, CardCondition, NormalizedCard } from '@tcg-trade-hub/database';
+import type { TcgType, ListingType, CardCondition, NormalizedCard, TradeWant } from '@tcg-trade-hub/database';
 import type { SelectedCard } from '@/features/listings/schemas';
 
 type ListingFormState = {
@@ -13,6 +13,9 @@ type ListingFormState = {
   tcgFilter: TcgType | null;
   cashAmount: string;
   description: string;
+
+  // Trade wants (WTT listings)
+  tradeWants: TradeWant[];
 
   // Shared actions
   setStep: (step: number) => void;
@@ -29,6 +32,10 @@ type ListingFormState = {
   // Cash & description actions
   setCashAmount: (amount: string) => void;
   setDescription: (desc: string) => void;
+
+  // Trade wants actions
+  addTradeWant: (want: TradeWant) => void;
+  removeTradeWant: (index: number) => void;
 };
 
 const INITIAL_STATE = {
@@ -38,6 +45,7 @@ const INITIAL_STATE = {
   tcgFilter: null as TcgType | null,
   cashAmount: '0',
   description: '',
+  tradeWants: [] as TradeWant[],
 };
 
 export const useListingFormStore = create<ListingFormState>()(
@@ -92,5 +100,15 @@ export const useListingFormStore = create<ListingFormState>()(
     // Cash & description actions
     setCashAmount: (amount) => set((s) => { s.cashAmount = amount; }),
     setDescription: (desc) => set((s) => { s.description = desc; }),
+
+    // Trade wants actions
+    addTradeWant: (want) =>
+      set((s) => {
+        s.tradeWants.push(want);
+      }),
+    removeTradeWant: (index) =>
+      set((s) => {
+        s.tradeWants.splice(index, 1);
+      }),
   })),
 );

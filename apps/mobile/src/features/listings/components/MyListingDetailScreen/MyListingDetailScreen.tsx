@@ -7,26 +7,31 @@ import BottomSheet, { BottomSheetFlatList, BottomSheetScrollView, type BottomShe
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react-native';
 
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
+import SegmentedFilter from '@/components/ui/SegmentedFilter/SegmentedFilter';
 import useListingDetail from '@/features/feed/hooks/useListingDetail/useListingDetail';
 import useListingOffers from '../../hooks/useListingOffers/useListingOffers';
 import useRespondToOffer from '../../hooks/useRespondToOffer/useRespondToOffer';
 import useDeleteListing from '../../hooks/useDeleteListing/useDeleteListing';
 import useRealtimeOfferUpdates from '../../hooks/useRealtimeOfferUpdates/useRealtimeOfferUpdates';
+import useTradeOpportunities from '../../hooks/useTradeOpportunities/useTradeOpportunities';
 import MyBundleSummary from '../MyBundleSummary/MyBundleSummary';
 import ReceivedOfferCard from '../ReceivedOfferCard/ReceivedOfferCard';
+import TradeOpportunityCard from '../TradeOpportunityCard/TradeOpportunityCard';
 import ShopMarker from '../ShopMarker/ShopMarker';
 import OfferDetailSheet from '../OfferDetailSheet/OfferDetailSheet';
 import CardDetailSheet from '../CardDetailSheet/CardDetailSheet';
 import type { CardDetailSheetItem } from '../CardDetailSheet/CardDetailSheet';
-import type { OfferWithItems } from '../../schemas';
+import type { OfferWithItems, TradeOpportunity } from '../../schemas';
 import type { OfferItemRow, ListingItemRow } from '@tcg-trade-hub/database';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+type DetailTab = 'offers' | 'opportunities';
+
 /**
  * Owner-facing listing detail screen with map and bottom sheet
- * showing received offers. Supports stacked sheets for offer detail
- * and card detail views.
+ * showing received offers and trade opportunities.
+ * Supports stacked sheets for offer detail and card detail views.
  */
 const MyListingDetailScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -38,9 +43,11 @@ const MyListingDetailScreen = () => {
 
   const [selectedOffer, setSelectedOffer] = useState<OfferWithItems | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardDetailSheetItem | null>(null);
+  const [detailTab, setDetailTab] = useState<DetailTab>('offers');
 
   const { data: listing, isLoading: isListingLoading } = useListingDetail(id ?? '');
   const { data: offerData, isLoading: isOffersLoading } = useListingOffers(id ?? '');
+  const { data: opportunities, isLoading: isOpportunitiesLoading } = useTradeOpportunities(id ?? '');
   const respondToOffer = useRespondToOffer();
   const deleteListing = useDeleteListing();
   useRealtimeOfferUpdates(id ?? '');
@@ -126,6 +133,21 @@ const MyListingDetailScreen = () => {
     setSelectedCard(null);
   }, []);
 
+  // --- Trade opportunity handlers ---
+
+  const handleMatch = useCallback((opportunity: TradeOpportunity) => {
+    // Navigate to trade builder with match mode (auto-filled)
+    router.push(
+      `/(tabs)/(listings)/trade-builder?myListingId=${id}&theirListingId=${opportunity.listing.id}&mode=match`,
+    );
+  }, [id, router]);
+
+  const handleOffer = useCallback((opportunity: TradeOpportunity) => {
+    router.push(
+      `/(tabs)/(listings)/trade-builder?myListingId=${id}&theirListingId=${opportunity.listing.id}&mode=offer`,
+    );
+  }, [id, router]);
+
   // Map region from shops
   const initialRegion = useMemo(() => {
     const shops = offerData?.shops ?? [];
@@ -179,6 +201,12 @@ const MyListingDetailScreen = () => {
   const offers = offerData?.offers ?? [];
   const shops = offerData?.shops ?? [];
   const offerCount = offers.length;
+  const opportunityCount = opportunities?.length ?? 0;
+
+  const tabItems = [
+    { value: 'offers' as DetailTab, label: 'Offers', count: offerCount },
+    { value: 'opportunities' as DetailTab, label: 'Opportunities', count: opportunityCount },
+  ];
 
   const renderOfferItem = ({ item }: { item: OfferWithItems }) => (
     <ReceivedOfferCard
@@ -189,6 +217,77 @@ const MyListingDetailScreen = () => {
       onPress={handleOfferPress}
     />
   );
+
+  const renderOpportunityItem = ({ item }: { item: TradeOpportunity }) => (
+    <TradeOpportunityCard
+      opportunity={item}
+      onMatch={handleMatch}
+      onOffer={handleOffer}
+    />
+  );
+
+  const renderListHeader = () => (
+    <>
+      <MyBundleSummary listing={listing} onCardPress={handleListingCardPress} />
+      <SegmentedFilter
+        items={tabItems}
+        value={detailTab}
+        onValueChange={setDetailTab}
+        className="mx-4"
+      />
+    </>
+  );
+
+  const renderOffersContent = () => {
+    if (isOffersLoading) {
+      return (
+        <View className="gap-3 px-4 pt-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={`skel-${i}`} className="h-28 w-full rounded-xl" />
+          ))}
+        </View>
+      );
+    }
+
+    if (offerCount === 0) {
+      return (
+        <View className="items-center px-4 py-10">
+          <Text className="text-center text-sm text-muted-foreground">
+            No offers received yet.{'\n'}Share your listing to attract offers.
+          </Text>
+        </View>
+      );
+    }
+
+    return null; // FlatList handles rendering
+  };
+
+  const renderOpportunitiesContent = () => {
+    if (isOpportunitiesLoading) {
+      return (
+        <View className="gap-3 px-4 pt-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={`opp-skel-${i}`} className="h-28 w-full rounded-xl" />
+          ))}
+        </View>
+      );
+    }
+
+    if (opportunityCount === 0) {
+      return (
+        <View className="items-center px-4 py-10">
+          <Text className="text-center text-sm text-muted-foreground">
+            No trade opportunities found yet.{'\n'}Add trade wants to your listing to find matches.
+          </Text>
+        </View>
+      );
+    }
+
+    return null; // FlatList handles rendering
+  };
+
+  const showOffersList = detailTab === 'offers' && offerCount > 0 && !isOffersLoading;
+  const showOpportunitiesList = detailTab === 'opportunities' && opportunityCount > 0 && !isOpportunitiesLoading;
 
   return (
     <View className="flex-1 bg-background">
@@ -236,7 +335,7 @@ const MyListingDetailScreen = () => {
         </View>
       </SafeAreaView>
 
-      {/* Main bottom sheet — offers list */}
+      {/* Main bottom sheet */}
       <BottomSheet
         ref={bottomSheetRef}
         index={1}
@@ -246,49 +345,27 @@ const MyListingDetailScreen = () => {
         backgroundStyle={{ borderRadius: 20, backgroundColor: '#0f0f13' }}
         handleIndicatorStyle={{ backgroundColor: '#a1a1aa', width: 40 }}
       >
-        {offerCount > 0 && !isOffersLoading ? (
+        {showOffersList ? (
           <BottomSheetFlatList
             ref={flatListRef}
             data={offers}
             keyExtractor={(item: OfferWithItems) => item.id}
             renderItem={renderOfferItem}
             contentContainerStyle={{ paddingBottom: 20 }}
-            ListHeaderComponent={
-              <>
-                <MyBundleSummary listing={listing} onCardPress={handleListingCardPress} />
-                <View className="border-t border-border px-4 pb-2 pt-3">
-                  <Text className="text-sm font-semibold text-muted-foreground">
-                    {offerCount} Offer{offerCount !== 1 ? 's' : ''}
-                  </Text>
-                </View>
-              </>
-            }
+            ListHeaderComponent={renderListHeader}
+          />
+        ) : showOpportunitiesList ? (
+          <BottomSheetFlatList
+            data={opportunities ?? []}
+            keyExtractor={(item: TradeOpportunity) => item.listing.id}
+            renderItem={renderOpportunityItem}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            ListHeaderComponent={renderListHeader}
           />
         ) : (
           <BottomSheetScrollView>
-            <MyBundleSummary listing={listing} onCardPress={handleListingCardPress} />
-            <View className="border-t border-border px-4 pb-2 pt-3">
-              {isOffersLoading ? (
-                <Skeleton className="h-5 w-32 rounded" />
-              ) : (
-                <Text className="text-sm font-semibold text-muted-foreground">
-                  No offers yet
-                </Text>
-              )}
-            </View>
-            {isOffersLoading ? (
-              <View className="gap-3 px-4 pt-2">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={`skel-${i}`} className="h-28 w-full rounded-xl" />
-                ))}
-              </View>
-            ) : (
-              <View className="items-center px-4 py-10">
-                <Text className="text-center text-sm text-muted-foreground">
-                  No offers received yet.{'\n'}Share your listing to attract offers.
-                </Text>
-              </View>
-            )}
+            {renderListHeader()}
+            {detailTab === 'offers' ? renderOffersContent() : renderOpportunitiesContent()}
           </BottomSheetScrollView>
         )}
       </BottomSheet>

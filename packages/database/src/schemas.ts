@@ -57,6 +57,7 @@ export const UserRowSchema = z.object({
   rating_score: z.number(),
   total_trades: z.number().int(),
   expo_push_token: z.string().nullable(),
+  auto_match: z.boolean(),
   deleted_at: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
@@ -72,6 +73,7 @@ export const UserInsertSchema = UserRowSchema.omit({
   radius_km: z.number().int().min(5).max(100).default(25),
   preferred_tcgs: z.array(TcgTypeSchema).default([]),
   expo_push_token: z.string().nullable().optional(),
+  auto_match: z.boolean().default(false),
   avatar_url: z.string().nullable().optional(),
   location: z.unknown().nullable().optional(),
 });
@@ -99,6 +101,7 @@ export const CollectionItemRowSchema = z.object({
   photos: z.array(z.string()),
   notes: z.string().nullable(),
   acquired_at: z.string().nullable(),
+  is_tradeable: z.boolean(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -120,9 +123,62 @@ export const CollectionItemInsertSchema = CollectionItemRowSchema.omit({
   photos: z.array(z.string()).default([]),
   notes: z.string().nullable().optional(),
   acquired_at: z.string().nullable().optional(),
+  is_tradeable: z.boolean().default(true),
 });
 
 export const OfferStatusSchema = z.enum(['pending', 'accepted', 'declined', 'countered', 'withdrawn']);
+
+// --- Trade want schemas (discriminated union for WTT listing wants) ---
+
+const TradeWantSpecificCardSchema = z.object({
+  type: z.literal('specific_card'),
+  card_external_id: z.string(),
+  card_name: z.string(),
+  card_image_url: z.string().nullable().optional(),
+  tcg: TcgTypeSchema,
+});
+
+const TradeWantSealedSchema = z.object({
+  type: z.literal('sealed'),
+  product_type: SealedProductTypeSchema.nullable(),
+});
+
+const TradeWantSlabSchema = z.object({
+  type: z.literal('slab'),
+  grading_company: GradingCompanySchema.nullable(),
+  min_grade: z.number().min(1).max(10).nullable(),
+});
+
+const TradeWantRawCardsSchema = z.object({
+  type: z.literal('raw_cards'),
+  min_condition: CardConditionSchema.nullable(),
+});
+
+const TradeWantCashSchema = z.object({
+  type: z.literal('cash'),
+  min_amount: z.number().nullable(),
+});
+
+const TradeWantOpenSchema = z.object({
+  type: z.literal('open_to_offers'),
+});
+
+const TradeWantCustomSchema = z.object({
+  type: z.literal('custom'),
+  label: z.string().max(50),
+});
+
+export const TradeWantSchema = z.discriminatedUnion('type', [
+  TradeWantSpecificCardSchema,
+  TradeWantSealedSchema,
+  TradeWantSlabSchema,
+  TradeWantRawCardsSchema,
+  TradeWantCashSchema,
+  TradeWantOpenSchema,
+  TradeWantCustomSchema,
+]);
+
+export type TradeWant = z.infer<typeof TradeWantSchema>;
 
 export const ListingRowSchema = z.object({
   id: z.string().uuid(),
@@ -134,6 +190,7 @@ export const ListingRowSchema = z.object({
   total_value: z.number(),
   description: z.string().nullable(),
   photos: z.array(z.string()),
+  trade_wants: z.array(TradeWantSchema),
   status: ListingStatusSchema,
   created_at: z.string(),
   updated_at: z.string(),
@@ -149,6 +206,7 @@ export const ListingInsertSchema = ListingRowSchema.omit({
   total_value: z.number().default(0),
   description: z.string().nullable().optional(),
   photos: z.array(z.string()).default([]),
+  trade_wants: z.array(TradeWantSchema).default([]),
 });
 
 export const ListingItemRowSchema = z.object({

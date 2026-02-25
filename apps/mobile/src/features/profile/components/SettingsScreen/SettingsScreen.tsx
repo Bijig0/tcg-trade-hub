@@ -28,6 +28,7 @@ const SettingsScreen = () => {
   const updateProfile = useUpdateProfile();
   const [radiusKm, setRadiusKm] = useState(profile?.radius_km ?? 25);
   const [showApproxDistance, setShowApproxDistance] = useState(true);
+  const [autoMatch, setAutoMatch] = useState(profile?.auto_match ?? false);
   const [notifications, setNotifications] = useState<NotificationPrefs>({
     new_matches: true,
     messages: true,
@@ -38,6 +39,7 @@ const SettingsScreen = () => {
   useEffect(() => {
     if (profile) {
       setRadiusKm(profile.radius_km);
+      setAutoMatch(profile.auto_match ?? false);
     }
   }, [profile]);
 
@@ -198,6 +200,25 @@ const SettingsScreen = () => {
                 />
               </View>
             ))}
+          </View>
+
+          <View>
+            <Text className="mb-2 text-sm font-medium text-foreground">Trading</Text>
+            <View className="flex-row items-center justify-between rounded-lg border border-border bg-card p-3">
+              <View className="flex-1 pr-3">
+                <Text className="text-sm text-foreground">Auto-send Matches</Text>
+                <Text className="text-xs text-muted-foreground">
+                  Tapping Match sends immediately without review
+                </Text>
+              </View>
+              <Switch
+                value={autoMatch}
+                onValueChange={(value) => {
+                  setAutoMatch(value);
+                  updateProfile.mutate({ auto_match: value });
+                }}
+              />
+            </View>
           </View>
         </View>
       </View>

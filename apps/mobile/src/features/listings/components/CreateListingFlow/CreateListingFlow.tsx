@@ -18,14 +18,21 @@ import TypeSelectStep from '../TypeSelectStep/TypeSelectStep';
 import MultiCardSelector from '../MultiCardSelector/MultiCardSelector';
 import BulkPricingStep from '../BulkPricingStep/BulkPricingStep';
 import BundleConfirmStep from '../BundleConfirmStep/BundleConfirmStep';
+import TradeWantsStep from '../TradeWantsStep/TradeWantsStep';
 
-const TOTAL_STEPS = 4;
-
-const STEP_LABELS: Record<number, string> = {
+const STEP_LABELS_DEFAULT: Record<number, string> = {
   1: 'Listing Type',
   2: 'Select Cards',
   3: 'Set Price',
   4: 'Review',
+};
+
+const STEP_LABELS_WTT: Record<number, string> = {
+  1: 'Listing Type',
+  2: 'Select Cards',
+  3: 'Looking For',
+  4: 'Cash & Details',
+  5: 'Review',
 };
 
 const CASH_LABELS: Record<string, { label: string; placeholder: string }> = {
@@ -34,12 +41,10 @@ const CASH_LABELS: Record<string, { label: string; placeholder: string }> = {
 };
 
 /**
- * Unified 4-step create listing flow for all types (WTS, WTB, WTT).
+ * Unified create listing flow for all types (WTS, WTB, WTT).
  *
- * Step 1: Type Selection
- * Step 2: Select Cards (from collection or search)
- * Step 3: Pricing — WTS: per-card pricing, WTB: budget, WTT: cash sweetener
- * Step 4: Review & Publish
+ * WTS/WTB: 4 steps — Type → Cards → Pricing → Review
+ * WTT: 5 steps — Type → Cards → Trade Wants → Cash/Description → Review
  */
 const CreateListingFlow = () => {
   const router = useRouter();
@@ -47,8 +52,22 @@ const CreateListingFlow = () => {
   const createBundleListing = useCreateBundleListing();
   const [isPublishing, setIsPublishing] = useState(false);
 
+  const isWtt = store.type === 'wtt';
+  const totalSteps = isWtt ? 5 : 4;
+  const stepLabels = isWtt ? STEP_LABELS_WTT : STEP_LABELS_DEFAULT;
+
   const canProceed = (): boolean => {
     if (store.step === 1) return store.type !== null;
+
+    if (isWtt) {
+      switch (store.step) {
+        case 2: return store.selectedCards.length > 0;
+        case 3: return true; // Trade wants are optional but encouraged
+        case 4: return true; // Cash is optional
+        case 5: return true;
+        default: return false;
+      }
+    }
 
     switch (store.step) {
       case 2: return store.selectedCards.length > 0;
@@ -56,14 +75,14 @@ const CreateListingFlow = () => {
         if (store.type === 'wts') {
           return store.selectedCards.every((sc) => sc.askingPrice.length > 0);
         }
-        return true; // Cash is optional for WTB/WTT
+        return true;
       case 4: return true;
       default: return false;
     }
   };
 
   const handleNext = () => {
-    if (store.step < TOTAL_STEPS) {
+    if (store.step < totalSteps) {
       store.setStep(store.step + 1);
     }
   };
@@ -97,6 +116,7 @@ const CreateListingFlow = () => {
         selectedCards: store.selectedCards,
         cashAmount: parseFloat(store.cashAmount) || 0,
         description: store.description || null,
+        tradeWants: store.tradeWants,
       },
       {
         onSuccess: () => {
@@ -129,15 +149,79 @@ const CreateListingFlow = () => {
       );
     }
 
-    switch (store.step) {
-      case 2:
-        return (
-          <MultiCardSelector
-            selectedCards={store.selectedCards}
-            onToggle={store.toggleSelectedCard}
-          />
-        );
+    if (store.step === 2) {
+      return (
+        <MultiCardSelector
+          selectedCards={store.selectedCards}
+          onToggle={store.toggleSelectedCard}
+        />
+      );
+    }
 
+    if (isWtt) {
+      switch (store.step) {
+        case 3:
+          return (
+            <TradeWantsStep
+              tradeWants={store.tradeWants}
+              onAdd={store.addTradeWant}
+              onRemove={store.removeTradeWant}
+            />
+          );
+        case 4: {
+          const cashConfig = CASH_LABELS.wtt;
+          return (
+            <View className="gap-4">
+              <Text className="text-base text-muted-foreground">
+                {cashConfig.label}
+              </Text>
+              <View className="flex-row items-center rounded-lg border border-input bg-background px-3 py-3">
+                <DollarSign size={18} className="text-muted-foreground" />
+                <TextInput
+                  value={store.cashAmount}
+                  onChangeText={store.setCashAmount}
+                  keyboardType="decimal-pad"
+                  placeholder={cashConfig.placeholder}
+                  className="flex-1 text-lg text-foreground"
+                  placeholderTextColor="#a1a1aa"
+                />
+              </View>
+              <Text className="text-base text-muted-foreground">
+                Notes (optional)
+              </Text>
+              <TextInput
+                value={store.description}
+                onChangeText={store.setDescription}
+                placeholder="Any additional details..."
+                multiline
+                numberOfLines={4}
+                maxLength={500}
+                textAlignVertical="top"
+                className="min-h-[100px] rounded-lg border border-input bg-background px-4 py-3 text-base text-foreground"
+                placeholderTextColor="#a1a1aa"
+              />
+              <Text className="text-right text-xs text-muted-foreground">
+                {store.description.length}/500
+              </Text>
+            </View>
+          );
+        }
+        case 5:
+          return (
+            <BundleConfirmStep
+              type={store.type!}
+              selectedCards={store.selectedCards}
+              cashAmount={store.cashAmount}
+              description={store.description || null}
+            />
+          );
+        default:
+          return null;
+      }
+    }
+
+    // WTS / WTB flow
+    switch (store.step) {
       case 3:
         if (store.type === 'wts') {
           return (
@@ -148,13 +232,12 @@ const CreateListingFlow = () => {
             />
           );
         }
-        // WTB/WTT: simple cash input
         {
-          const cashConfig = CASH_LABELS[store.type ?? 'wtb'];
+          const cashConfig = CASH_LABELS[store.type ?? 'wtb'] ?? { label: 'Set cash amount', placeholder: '0.00' };
           return (
             <View className="gap-4">
               <Text className="text-base text-muted-foreground">
-                {cashConfig?.label ?? 'Set cash amount'}
+                {cashConfig.label}
               </Text>
               <View className="flex-row items-center rounded-lg border border-input bg-background px-3 py-3">
                 <DollarSign size={18} className="text-muted-foreground" />
@@ -162,7 +245,7 @@ const CreateListingFlow = () => {
                   value={store.cashAmount}
                   onChangeText={store.setCashAmount}
                   keyboardType="decimal-pad"
-                  placeholder={cashConfig?.placeholder ?? '0.00'}
+                  placeholder={cashConfig.placeholder}
                   className="flex-1 text-lg text-foreground"
                   placeholderTextColor="#a1a1aa"
                 />
@@ -212,17 +295,17 @@ const CreateListingFlow = () => {
         </Pressable>
         <View className="flex-1">
           <Text className="text-lg font-semibold text-foreground">
-            {STEP_LABELS[store.step] ?? ''}
+            {stepLabels[store.step] ?? ''}
           </Text>
           <Text className="text-xs text-muted-foreground">
-            Step {store.step} of {TOTAL_STEPS}
+            Step {store.step} of {totalSteps}
           </Text>
         </View>
       </View>
 
       {/* Step indicator */}
       <View className="flex-row gap-1 px-4 py-3">
-        {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+        {Array.from({ length: totalSteps }).map((_, i) => (
           <View
             key={`step-${i}`}
             className={cn(
@@ -244,7 +327,7 @@ const CreateListingFlow = () => {
 
       {/* Bottom navigation */}
       <View className="border-t border-border bg-background px-4 pb-6 pt-3">
-        {store.step === TOTAL_STEPS && store.type ? (
+        {store.step === totalSteps && store.type ? (
           <Button
             size="lg"
             onPress={handlePublish}

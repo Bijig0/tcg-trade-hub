@@ -16,6 +16,7 @@ const makeItem = (overrides: Partial<CollectionItemRow> = {}): CollectionItemRow
   condition: 'nm',
   quantity: 1,
   is_wishlist: false,
+  is_tradeable: true,
   market_price: 12.5,
   grading_company: null,
   grading_score: null,
