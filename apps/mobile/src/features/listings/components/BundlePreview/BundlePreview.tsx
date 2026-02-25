@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, Image } from 'react-native';
 import { cn } from '@/lib/cn';
 import type { ListingItemRow } from '@tcg-trade-hub/database';
@@ -15,9 +15,36 @@ const SIZE_CLASSES = {
   lg: { image: 'h-20 w-14', gap: 'gap-2', badge: 'text-sm' },
 } as const;
 
+type CardThumbnailProps = {
+  item: ListingItemRow;
+  sizeClass: string;
+};
+
+const CardThumbnail = ({ item, sizeClass }: CardThumbnailProps) => {
+  const [hasError, setHasError] = useState(false);
+  const handleError = useCallback(() => setHasError(true), []);
+
+  const hasValidUri = item.card_image_url && item.card_image_url.length > 0;
+  const showImage = hasValidUri && !hasError;
+
+  return (
+    <View className={cn(sizeClass, 'overflow-hidden rounded-md bg-muted')}>
+      {showImage && (
+        <Image
+          source={{ uri: item.card_image_url }}
+          className="h-full w-full"
+          resizeMode="cover"
+          onError={handleError}
+        />
+      )}
+    </View>
+  );
+};
+
 /**
  * Reusable card thumbnail grid showing up to 4 card images.
  * Displays a "+N more" badge when there are more than 4 items.
+ * Each thumbnail reserves block spacing even when the image fails to load.
  */
 const BundlePreview = ({ items, size = 'md', className }: BundlePreviewProps) => {
   const sizeConfig = SIZE_CLASSES[size];
@@ -28,11 +55,10 @@ const BundlePreview = ({ items, size = 'md', className }: BundlePreviewProps) =>
   return (
     <View className={cn('flex-row items-center', sizeConfig.gap, className)}>
       {displayItems.map((item, index) => (
-        <Image
+        <CardThumbnail
           key={item.id ?? `item-${index}`}
-          source={{ uri: item.card_image_url }}
-          className={cn(sizeConfig.image, 'rounded-md bg-muted')}
-          resizeMode="cover"
+          item={item}
+          sizeClass={sizeConfig.image}
         />
       ))}
       {remaining > 0 && (
