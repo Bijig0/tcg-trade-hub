@@ -1,21 +1,14 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, FlatList, RefreshControl, ScrollView, Pressable, Image, Alert, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
-<<<<<<< HEAD
-import { Search, X, Eye, EyeOff } from 'lucide-react-native';
-=======
 import { useQueryClient } from '@tanstack/react-query';
-import { Search, X } from 'lucide-react-native';
->>>>>>> feature/refreshable-screen
+import { Search, X, Eye, EyeOff } from 'lucide-react-native';
 import useMyCollection from '../../hooks/useMyCollection/useMyCollection';
 import useMySealedProducts from '../../hooks/useMySealedProducts/useMySealedProducts';
 import usePortfolioValue from '../../hooks/usePortfolioValue/usePortfolioValue';
 import useRemoveCollectionItem from '../../hooks/useRemoveCollectionItem/useRemoveCollectionItem';
-<<<<<<< HEAD
 import useUpdateCollectionVisibility from '../../hooks/useUpdateCollectionVisibility/useUpdateCollectionVisibility';
-=======
 import { collectionKeys } from '../../queryKeys';
->>>>>>> feature/refreshable-screen
 import groupCollectionItems from '../../utils/groupCollectionItems/groupCollectionItems';
 import CollectionCardGroup from '../CollectionCardGroup/CollectionCardGroup';
 import Button from '@/components/ui/Button/Button';
