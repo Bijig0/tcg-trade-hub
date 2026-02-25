@@ -26,7 +26,7 @@ const ActiveListingCard = ({ listing, onDelete }: ActiveListingCardProps) => {
       onPress={() => router.push(`/(tabs)/(listings)/listing/${listing.id}`)}
       className="mx-4 mb-3 flex-row rounded-xl border border-border bg-card p-3 active:bg-accent"
     >
-      <BundlePreview items={listing.items} size="md" />
+      <BundlePreview items={listing.items ?? []} size="md" />
 
       <View className="ml-3 flex-1 justify-between">
         <View>
@@ -39,7 +39,7 @@ const ActiveListingCard = ({ listing, onDelete }: ActiveListingCardProps) => {
                 </Text>
               </View>
             )}
-            {listing.type === 'wtt' && listing.trade_wants.length > 0 && (
+            {listing.type === 'wtt' && (listing.trade_wants ?? []).length > 0 && (
               <View className="flex-row items-center gap-0.5 rounded-full bg-amber-500/10 px-2 py-0.5">
                 <Zap size={10} color="#f59e0b" />
                 <Text className="text-xs font-semibold text-amber-500">

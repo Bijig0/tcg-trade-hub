@@ -32,7 +32,7 @@ const MatchedListingCard = ({ listing }: MatchedListingCardProps) => {
       onPress={() => router.push(`/(tabs)/(listings)/listing/${listing.id}`)}
       className="mx-4 mb-3 flex-row rounded-xl border border-border border-l-4 border-l-primary bg-card p-3 active:bg-accent"
     >
-      <BundlePreview items={listing.items} size="md" />
+      <BundlePreview items={listing.items ?? []} size="md" />
 
       <View className="ml-3 flex-1 justify-between">
         <View>
