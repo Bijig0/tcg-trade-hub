@@ -29,6 +29,8 @@ export { default as useDeleteListing } from './hooks/useDeleteListing/useDeleteL
 export { default as useListingOffers } from './hooks/useListingOffers/useListingOffers';
 export { default as useCreateOffer } from './hooks/useCreateOffer/useCreateOffer';
 export { default as useRespondToOffer } from './hooks/useRespondToOffer/useRespondToOffer';
+export { default as useRealtimeOfferUpdates } from './hooks/useRealtimeOfferUpdates/useRealtimeOfferUpdates';
+export { default as useRealtimeMatchUpdates } from './hooks/useRealtimeMatchUpdates/useRealtimeMatchUpdates';
 
 // Query keys
 export { listingKeys } from './queryKeys';

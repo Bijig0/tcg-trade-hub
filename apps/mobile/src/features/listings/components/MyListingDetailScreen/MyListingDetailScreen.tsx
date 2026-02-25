@@ -11,6 +11,7 @@ import useListingDetail from '@/features/feed/hooks/useListingDetail/useListingD
 import useListingOffers from '../../hooks/useListingOffers/useListingOffers';
 import useRespondToOffer from '../../hooks/useRespondToOffer/useRespondToOffer';
 import useDeleteListing from '../../hooks/useDeleteListing/useDeleteListing';
+import useRealtimeOfferUpdates from '../../hooks/useRealtimeOfferUpdates/useRealtimeOfferUpdates';
 import MyBundleSummary from '../MyBundleSummary/MyBundleSummary';
 import ReceivedOfferCard from '../ReceivedOfferCard/ReceivedOfferCard';
 import ShopMarker from '../ShopMarker/ShopMarker';
@@ -42,6 +43,7 @@ const MyListingDetailScreen = () => {
   const { data: offerData, isLoading: isOffersLoading } = useListingOffers(id ?? '');
   const respondToOffer = useRespondToOffer();
   const deleteListing = useDeleteListing();
+  useRealtimeOfferUpdates(id ?? '');
 
   const snapPoints = useMemo(() => ['20%', '55%', '92%'], []);
 

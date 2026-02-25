@@ -3,6 +3,8 @@ import { Alert } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthProvider';
 import { meetupKeys } from '../../queryKeys';
+import { assertTransition } from '@tcg-trade-hub/database';
+import type { MeetupStatus } from '@tcg-trade-hub/database';
 
 type CancelMeetupParams = {
   meetupId: string;
@@ -20,6 +22,17 @@ const useCancelMeetup = () => {
   return useMutation({
     mutationFn: async ({ meetupId, conversationId }: CancelMeetupParams) => {
       if (!user) throw new Error('Not authenticated');
+
+      // Fetch current meetup to validate transition
+      const { data: currentMeetup, error: fetchError } = await supabase
+        .from('meetups')
+        .select('status')
+        .eq('id', meetupId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      assertTransition('meetup', currentMeetup.status as MeetupStatus, 'cancelled');
 
       // Update meetup status to cancelled
       const { error: meetupError } = await supabase

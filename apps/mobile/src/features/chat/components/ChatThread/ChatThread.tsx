@@ -19,6 +19,7 @@ import useMessages, {
 } from '../../hooks/useMessages/useMessages';
 import useSendMessage from '../../hooks/useSendMessage/useSendMessage';
 import useRealtimeChat from '../../hooks/useRealtimeChat/useRealtimeChat';
+import useRealtimeMatchUpdates from '@/features/listings/hooks/useRealtimeMatchUpdates/useRealtimeMatchUpdates';
 import MessageBubble from '../MessageBubble/MessageBubble';
 import OfferCard from '../OfferCard/OfferCard';
 import MeetupProposalCard from '../MeetupProposalCard/MeetupProposalCard';
@@ -45,7 +46,7 @@ export type ChatThreadProps = {
 /** Full chat screen with message list, input bar, and toolbar */
 const ChatThread = ({
   conversationId,
-  matchId: _matchId,
+  matchId,
   otherUser,
   onOpenOfferModal,
   onOpenMeetupModal,
@@ -64,6 +65,9 @@ const ChatThread = ({
 
   // Subscribe to realtime messages
   useRealtimeChat(conversationId);
+
+  // Subscribe to realtime match/meetup updates
+  useRealtimeMatchUpdates(matchId);
 
   const messages = useMemo(
     () => data?.pages.flatMap((page) => page) ?? [],
