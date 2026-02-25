@@ -2,7 +2,9 @@ import React from 'react';
 import { View, Text, SectionList, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
+import RefreshableScreen from '@/components/ui/RefreshableScreen/RefreshableScreen';
 import useMeetups, { type MeetupWithDetails } from '../../hooks/useMeetups/useMeetups';
+import { meetupKeys } from '../../queryKeys';
 import MeetupCard from '../MeetupCard/MeetupCard';
 
 type MeetupSection = {
@@ -15,7 +17,7 @@ type MeetupSection = {
  * Shows an empty state when the user has no meetups.
  */
 const MeetupsScreen = () => {
-  const { data, isLoading, isError, refetch } = useMeetups();
+  const { data, isLoading, isError } = useMeetups();
 
   if (isLoading) {
     return (
@@ -73,18 +75,20 @@ const MeetupsScreen = () => {
   const keyExtractor = (item: MeetupWithDetails) => item.id;
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <SectionList
-        sections={sections}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        renderSectionHeader={renderSectionHeader}
-        onRefresh={refetch}
-        refreshing={isLoading}
-        contentContainerClassName="pb-8"
-        stickySectionHeadersEnabled={false}
-      />
-    </SafeAreaView>
+    <RefreshableScreen queryKeys={[meetupKeys.all]}>
+      {({ onRefresh, isRefreshing }) => (
+        <SectionList
+          sections={sections}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          renderSectionHeader={renderSectionHeader}
+          onRefresh={onRefresh}
+          refreshing={isRefreshing}
+          contentContainerClassName="pb-8"
+          stickySectionHeadersEnabled={false}
+        />
+      )}
+    </RefreshableScreen>
   );
 };
 

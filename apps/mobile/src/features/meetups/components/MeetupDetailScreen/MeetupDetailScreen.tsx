@@ -1,14 +1,15 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, ScrollView, RefreshControl, Alert, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Badge from '@/components/ui/Badge/Badge';
 import Button from '@/components/ui/Button/Button';
+import RefreshableScreen from '@/components/ui/RefreshableScreen/RefreshableScreen';
 import Separator from '@/components/ui/Separator/Separator';
 import useMeetupDetail from '../../hooks/useMeetupDetail/useMeetupDetail';
 import useCompleteMeetup from '../../hooks/useCompleteMeetup/useCompleteMeetup';
 import useCancelMeetup from '../../hooks/useCancelMeetup/useCancelMeetup';
+import { meetupKeys } from '../../queryKeys';
 import RatingModal from '../RatingModal/RatingModal';
 
 /**
@@ -134,9 +135,16 @@ const MeetupDetailScreen = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <ScrollView contentContainerClassName="pb-8">
-        {/* Map placeholder */}
+    <RefreshableScreen queryKeys={[meetupKeys.detail(id ?? '')]}>
+      {({ onRefresh, isRefreshing }) => (
+        <View className="flex-1">
+          <ScrollView
+            contentContainerClassName="pb-8"
+            refreshControl={
+              <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+            }
+          >
+            {/* Map placeholder */}
         {meetup.location_coords ? (
           <View className="h-48 w-full items-center justify-center bg-muted">
             <Text className="text-sm text-muted-foreground">
@@ -239,15 +247,17 @@ const MeetupDetailScreen = () => {
             </Button>
           ) : null}
         </View>
-      </ScrollView>
+          </ScrollView>
 
-      <RatingModal
-        visible={ratingVisible}
-        onClose={() => setRatingVisible(false)}
-        meetupId={meetup.id}
-        rateeId={rateeId}
-      />
-    </SafeAreaView>
+          <RatingModal
+            visible={ratingVisible}
+            onClose={() => setRatingVisible(false)}
+            meetupId={meetup.id}
+            rateeId={rateeId}
+          />
+        </View>
+      )}
+    </RefreshableScreen>
   );
 };
 

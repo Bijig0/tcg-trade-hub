@@ -3,9 +3,11 @@ import { View, Text, SectionList, Pressable, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Plus, ArrowRight, Package, Handshake, Archive } from 'lucide-react-native';
 import SegmentedFilter from '@/components/ui/SegmentedFilter/SegmentedFilter';
+import RefreshableScreen from '@/components/ui/RefreshableScreen/RefreshableScreen';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import useMyListings from '../../hooks/useMyListings/useMyListings';
 import useDeleteListing from '../../hooks/useDeleteListing/useDeleteListing';
+import { listingKeys } from '../../queryKeys';
 import groupListingsByTab from '../../utils/groupListingsByTab/groupListingsByTab';
 import ActiveListingCard from '../ActiveListingCard/ActiveListingCard';
 import MatchedListingCard from '../MatchedListingCard/MatchedListingCard';
@@ -76,7 +78,7 @@ const EMPTY_STATE_CONFIG: Record<ListingTab, { icon: typeof Package; title: stri
  */
 const MyListingsScreen = () => {
   const router = useRouter();
-  const { data: listings, isLoading, refetch, isRefetching } = useMyListings();
+  const { data: listings, isLoading } = useMyListings();
   const deleteListing = useDeleteListing();
   const [activeTab, setActiveTab] = useState<ListingTab>('active');
 
@@ -229,33 +231,37 @@ const MyListingsScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-background">
-      <SegmentedFilter
-        items={tabItems}
-        value={activeTab}
-        onValueChange={setActiveTab}
-      />
+    <RefreshableScreen queryKeys={[listingKeys.myListings()]}>
+      {({ onRefresh, isRefreshing }) => (
+        <View className="flex-1 bg-background">
+          <SegmentedFilter
+            items={tabItems}
+            value={activeTab}
+            onValueChange={setActiveTab}
+          />
 
-      <SectionList
-        sections={sections}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        renderSectionHeader={renderSectionHeader}
-        ListEmptyComponent={renderEmptyState}
-        refreshing={isRefetching}
-        onRefresh={refetch}
-        contentContainerClassName="pb-24"
-        contentContainerStyle={sections.length === 0 ? { flex: 1 } : undefined}
-        stickySectionHeadersEnabled={false}
-      />
+          <SectionList
+            sections={sections}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            renderSectionHeader={renderSectionHeader}
+            ListEmptyComponent={renderEmptyState}
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            contentContainerClassName="pb-24"
+            contentContainerStyle={sections.length === 0 ? { flex: 1 } : undefined}
+            stickySectionHeadersEnabled={false}
+          />
 
-      <Pressable
-        onPress={handleCreatePress}
-        className="absolute bottom-8 right-6 h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg active:bg-primary/90"
-      >
-        <Plus size={24} color="white" />
-      </Pressable>
-    </View>
+          <Pressable
+            onPress={handleCreatePress}
+            className="absolute bottom-8 right-6 h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg active:bg-primary/90"
+          >
+            <Plus size={24} color="white" />
+          </Pressable>
+        </View>
+      )}
+    </RefreshableScreen>
   );
 };
 

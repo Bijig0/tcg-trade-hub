@@ -1,14 +1,16 @@
 import React from 'react';
-import { View, Text, ScrollView, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthProvider';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Badge from '@/components/ui/Badge/Badge';
 import Button from '@/components/ui/Button/Button';
+import RefreshableScreen from '@/components/ui/RefreshableScreen/RefreshableScreen';
 import Separator from '@/components/ui/Separator/Separator';
 import { TCG_LABELS } from '@/config/constants';
 import useUserRatings, { type UserRating } from '../../hooks/useUserRatings/useUserRatings';
+import { profileKeys } from '../../queryKeys';
 import type { TcgType } from '@tcg-trade-hub/database';
 
 /**
@@ -62,8 +64,7 @@ const MyProfileScreen = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <ScrollView className="flex-1" contentContainerClassName="pb-8">
+    <RefreshableScreen queryKeys={[profileKeys.ratings(profile.id)]}>
       {/* Profile header */}
       <View className="items-center px-6 pt-8">
         <Avatar uri={profile.avatar_url} fallback={initials} size="lg" className="h-20 w-20" />
@@ -137,8 +138,7 @@ const MyProfileScreen = () => {
           />
         )}
       </View>
-      </ScrollView>
-    </SafeAreaView>
+    </RefreshableScreen>
   );
 };
 
