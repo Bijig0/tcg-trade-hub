@@ -19,8 +19,6 @@ import ReceivedOfferCard from '../ReceivedOfferCard/ReceivedOfferCard';
 import TradeOpportunityCard from '../TradeOpportunityCard/TradeOpportunityCard';
 import ShopMarker from '../ShopMarker/ShopMarker';
 import OfferDetailSheet from '../OfferDetailSheet/OfferDetailSheet';
-import CardDetailSheet from '../CardDetailSheet/CardDetailSheet';
-import type { CardDetailSheetItem } from '../CardDetailSheet/CardDetailSheet';
 import DevListingActions from '../DevListingActions/DevListingActions';
 import type { OfferWithItems, TradeOpportunity } from '../../schemas';
 import type { OfferItemRow, ListingItemRow } from '@tcg-trade-hub/database';
@@ -40,10 +38,8 @@ const MyListingDetailScreen = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const flatListRef = useRef<BottomSheetFlatListMethods>(null);
   const offerDetailRef = useRef<BottomSheet>(null);
-  const cardDetailRef = useRef<BottomSheet>(null);
 
   const [selectedOffer, setSelectedOffer] = useState<OfferWithItems | null>(null);
-  const [selectedCard, setSelectedCard] = useState<CardDetailSheetItem | null>(null);
   const [detailTab, setDetailTab] = useState<DetailTab>('offers');
 
   const { data: listing, isLoading: isListingLoading } = useListingDetail(id ?? '');

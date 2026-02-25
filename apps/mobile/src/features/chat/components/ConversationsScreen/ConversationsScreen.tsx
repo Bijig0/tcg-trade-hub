@@ -23,7 +23,9 @@ type ConversationItemProps = {
 const ConversationItem = ({ conversation, onPress }: ConversationItemProps) => {
   const { otherUser, lastMessage, unreadCount, negotiationStatus, listingThumbnails } = conversation;
 
-  const initials = otherUser.name
+  const displayName = otherUser?.name ?? 'Unknown';
+
+  const initials = displayName
     .split(' ')
     .map((w) => w[0])
     .join('')
@@ -44,8 +46,8 @@ const ConversationItem = ({ conversation, onPress }: ConversationItemProps) => {
       className="flex-row items-center gap-3 border-b border-border px-4 py-3 active:bg-accent"
     >
       <View className="relative">
-        <Avatar uri={otherUser.avatar} fallback={initials} size="lg" />
-        {unreadCount > 0 ? (
+        <Avatar uri={otherUser?.avatar ?? null} fallback={initials} size="lg" />
+        {(unreadCount ?? 0) > 0 ? (
           <View className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full bg-primary" />
         ) : null}
       </View>
@@ -74,9 +76,9 @@ const ConversationItem = ({ conversation, onPress }: ConversationItemProps) => {
               )}
               numberOfLines={1}
             >
-              {otherUser.name}
+              {displayName}
             </Text>
-            {negotiationStatus !== 'chatting' && (
+            {negotiationStatus && negotiationStatus !== 'chatting' && (
               <NegotiationStatusBadge status={negotiationStatus} />
             )}
           </View>
