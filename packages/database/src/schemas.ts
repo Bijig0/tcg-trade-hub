@@ -311,11 +311,29 @@ export const MatchRowSchema = z.object({
   updated_at: z.string(),
 });
 
+export const NegotiationStatusSchema = z.enum([
+  'chatting',
+  'offer_pending',
+  'offer_accepted',
+  'meetup_proposed',
+  'meetup_confirmed',
+  'completed',
+  'cancelled',
+]);
+
 export const ConversationRowSchema = z.object({
   id: z.string().uuid(),
   match_id: z.string().uuid(),
+  negotiation_status: NegotiationStatusSchema,
   created_at: z.string(),
   updated_at: z.string(),
+});
+
+export const ConversationReadsRowSchema = z.object({
+  conversation_id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  last_read_message_id: z.string().uuid().nullable(),
+  last_read_at: z.string(),
 });
 
 export const MessageRowSchema = z.object({

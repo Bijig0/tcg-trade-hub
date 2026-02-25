@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, FlatList, Pressable } from 'react-native';
+import { View, Text, FlatList, Pressable, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MessageSquare } from 'lucide-react-native';
@@ -8,6 +8,7 @@ import Avatar from '@/components/ui/Avatar/Avatar';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
 import RefreshableScreen from '@/components/ui/RefreshableScreen/RefreshableScreen';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
+import NegotiationStatusBadge from '../NegotiationStatusBadge/NegotiationStatusBadge';
 import useConversations, {
   type ConversationPreview,
 } from '../../hooks/useConversations/useConversations';
@@ -20,7 +21,7 @@ type ConversationItemProps = {
 };
 
 const ConversationItem = ({ conversation, onPress }: ConversationItemProps) => {
-  const { otherUser, lastMessage, unreadCount } = conversation;
+  const { otherUser, lastMessage, unreadCount, negotiationStatus, listingThumbnails } = conversation;
 
   const initials = otherUser.name
     .split(' ')
@@ -49,19 +50,38 @@ const ConversationItem = ({ conversation, onPress }: ConversationItemProps) => {
         ) : null}
       </View>
 
+      {/* Card thumbnails */}
+      {listingThumbnails.length > 0 && (
+        <View className="flex-row gap-0.5">
+          {listingThumbnails.map((url, i) => (
+            <Image
+              key={i}
+              source={{ uri: url }}
+              className="h-7 w-5 rounded"
+              resizeMode="cover"
+            />
+          ))}
+        </View>
+      )}
+
       <View className="flex-1">
         <View className="flex-row items-center justify-between">
-          <Text
-            className={cn(
-              'text-base text-foreground',
-              unreadCount > 0 ? 'font-bold' : 'font-medium',
+          <View className="flex-1 flex-row items-center gap-1.5">
+            <Text
+              className={cn(
+                'text-base text-foreground',
+                unreadCount > 0 ? 'font-bold' : 'font-medium',
+              )}
+              numberOfLines={1}
+            >
+              {otherUser.name}
+            </Text>
+            {negotiationStatus !== 'chatting' && (
+              <NegotiationStatusBadge status={negotiationStatus} />
             )}
-            numberOfLines={1}
-          >
-            {otherUser.name}
-          </Text>
+          </View>
           {timeLabel ? (
-            <Text className="text-xs text-muted-foreground">{timeLabel}</Text>
+            <Text className="ml-2 text-xs text-muted-foreground">{timeLabel}</Text>
           ) : null}
         </View>
         <Text
