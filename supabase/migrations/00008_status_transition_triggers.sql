@@ -157,7 +157,17 @@ CREATE TRIGGER trg_report_status_transition
 -- ---------------------------------------------------------------------------
 -- Enable Realtime for tables that need live updates between peers
 -- ---------------------------------------------------------------------------
-ALTER PUBLICATION supabase_realtime ADD TABLE offers;
-ALTER PUBLICATION supabase_realtime ADD TABLE matches;
-ALTER PUBLICATION supabase_realtime ADD TABLE meetups;
-ALTER PUBLICATION supabase_realtime ADD TABLE listings;
+DO $$
+DECLARE
+  tbl TEXT;
+BEGIN
+  FOREACH tbl IN ARRAY ARRAY['offers', 'matches', 'meetups', 'listings']
+  LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_publication_tables
+      WHERE pubname = 'supabase_realtime' AND tablename = tbl
+    ) THEN
+      EXECUTE format('ALTER PUBLICATION supabase_realtime ADD TABLE %I', tbl);
+    END IF;
+  END LOOP;
+END $$;
