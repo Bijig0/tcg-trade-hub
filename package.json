@@ -5,13 +5,13 @@
     "dev": "turbo dev",
     "dev:site": "pnpm --filter web dev",
     "dev:shop": "pnpm --filter @tcg-trade-hub/shop dev",
-    "dev:admin": "pnpm --filter admin dev",
+    "dev:admin": "npx tsx packages/api/src/graph-sync.ts && (npx tsx packages/api/src/graph/serve.ts & pnpm --filter admin dev)",
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
     "clean": "turbo clean",
     "graph:sync": "npx tsx packages/api/src/graph-sync.ts",
-    "dev:graph": "npx tsx packages/api/src/graph-sync.ts && bun packages/api/node_modules/flow-graph/src/server/serve.ts"
+    "dev:graph": "npx tsx packages/api/src/graph-sync.ts && npx tsx packages/api/src/graph/serve.ts"
   },
   "devDependencies": {
     "turbo": "^2.3.0"
