@@ -45,7 +45,8 @@ const useConversations = () => {
         `,
         )
         .or(
-          `matches.user_a_id.eq.${user.id},matches.user_b_id.eq.${user.id}`,
+          `user_a_id.eq.${user.id},user_b_id.eq.${user.id}`,
+          { referencedTable: 'matches' },
         );
 
       if (error) throw error;
