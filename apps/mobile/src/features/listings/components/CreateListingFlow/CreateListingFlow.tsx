@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, DollarSign } from 'lucide-react-native';
 import { Pressable, ScrollView } from 'react-native';
 import { cn } from '@/lib/cn';
@@ -48,9 +48,18 @@ const CASH_LABELS: Record<string, { label: string; placeholder: string }> = {
  */
 const CreateListingFlow = () => {
   const router = useRouter();
+  const params = useLocalSearchParams<{ type?: string }>();
   const store = useListingFormStore();
   const createBundleListing = useCreateBundleListing();
   const [isPublishing, setIsPublishing] = useState(false);
+
+  useEffect(() => {
+    const validTypes = ['wts', 'wtb', 'wtt'];
+    if (params.type && validTypes.includes(params.type) && store.step === 1 && !store.type) {
+      store.setType(params.type as 'wts' | 'wtb' | 'wtt');
+      store.setStep(2);
+    }
+  }, []);
 
   const isWtt = store.type === 'wtt';
   const totalSteps = isWtt ? 5 : 4;
@@ -89,7 +98,11 @@ const CreateListingFlow = () => {
 
   const handleBack = () => {
     if (store.step > 1) {
-      if (store.step === 2) {
+      if (store.step === 2 && params.type) {
+        // Came from empty state with pre-selected type — go back to listings
+        store.reset();
+        router.back();
+      } else if (store.step === 2) {
         const currentType = store.type;
         store.reset();
         if (currentType) store.setType(currentType);

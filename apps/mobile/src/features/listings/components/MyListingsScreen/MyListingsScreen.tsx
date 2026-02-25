@@ -83,8 +83,12 @@ const MyListingsScreen = () => {
   const deleteListing = useDeleteListing();
   const [activeTab, setActiveTab] = useState<ListingTab>('active');
 
-  const handleCreatePress = () => {
-    router.push('/(tabs)/(listings)/new');
+  const handleCreatePress = (type?: ListingType) => {
+    if (type) {
+      router.push({ pathname: '/(tabs)/(listings)/new', params: { type } });
+    } else {
+      router.push('/(tabs)/(listings)/new');
+    }
   };
 
   const handleDeletePress = useCallback(
@@ -211,7 +215,7 @@ const MyListingsScreen = () => {
             {LISTING_TYPE_DESCRIPTIONS.map((item) => (
               <Pressable
                 key={item.type}
-                onPress={handleCreatePress}
+                onPress={() => handleCreatePress(item.type.toLowerCase() as ListingType)}
                 className="flex-row items-center rounded-xl border border-border bg-card p-4 active:bg-accent"
               >
                 <View className="flex-1">
@@ -255,7 +259,7 @@ const MyListingsScreen = () => {
           />
 
           <Pressable
-            onPress={handleCreatePress}
+            onPress={() => handleCreatePress()}
             className="absolute bottom-8 right-6 h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg active:bg-primary/90"
           >
             <Plus size={24} color="white" />
