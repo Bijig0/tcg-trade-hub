@@ -11,6 +11,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider, useAuth } from '@/context/AuthProvider';
 import { ThemeProvider } from '@/context/ThemeProvider';
+import ErrorToast from '@/components/ui/ErrorToast/ErrorToast';
 
 // Log all errors to console with full stack traces
 const originalConsoleError = console.error;
@@ -80,6 +81,7 @@ const RootLayout = () => {
           <SafeAreaProvider>
             <ThemeProvider>
               <RootNavigator />
+              <ErrorToast />
             </ThemeProvider>
           </SafeAreaProvider>
         </AuthProvider>

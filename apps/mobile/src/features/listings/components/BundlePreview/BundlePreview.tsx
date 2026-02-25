@@ -3,6 +3,7 @@ import { View, Text } from 'react-native';
 import { Image } from 'expo-image';
 import { ImageOff } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
+import { useErrorToastStore } from '@/stores/errorToastStore/errorToastStore';
 import type { ListingItemRow } from '@tcg-trade-hub/database';
 
 type BundlePreviewProps = {
@@ -24,7 +25,12 @@ type CardThumbnailProps = {
 
 const CardThumbnail = ({ item, sizeClass }: CardThumbnailProps) => {
   const [hasError, setHasError] = useState(false);
-  const handleError = useCallback(() => setHasError(true), []);
+  const handleError = useCallback(() => {
+    useErrorToastStore
+      .getState()
+      .addToast(`Image failed: ${item.card_name ?? item.card_image_url}`);
+    setHasError(true);
+  }, [item.card_name, item.card_image_url]);
 
   const hasValidUri = item.card_image_url && item.card_image_url.length > 0;
   const showImage = hasValidUri && !hasError;
