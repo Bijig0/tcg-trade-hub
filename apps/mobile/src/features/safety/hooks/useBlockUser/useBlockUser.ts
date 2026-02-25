@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthProvider';
 import { feedKeys } from '../../../feed/queryKeys';
+import { chatKeys } from '../../../chat/queryKeys';
 
 type BlockUserParams = {
   blockedId: string;
@@ -34,6 +35,7 @@ const useBlockUser = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: feedKeys.all });
       queryClient.invalidateQueries({ queryKey: ['blocked-users'] });
+      queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
     },
     onError: (error: Error) => {
       Alert.alert('Error', error.message ?? 'Failed to block user');

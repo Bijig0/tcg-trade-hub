@@ -1,11 +1,14 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { cn } from '@/lib/cn';
+import ReadReceipt from '../ReadReceipt/ReadReceipt';
 import type { MessageRow } from '@tcg-trade-hub/database';
 
 export type MessageBubbleProps = {
   message: MessageRow;
   isOwnMessage: boolean;
+  isLastOwnMessage?: boolean;
+  isSeen?: boolean;
   className?: string;
 };
 
@@ -13,6 +16,8 @@ export type MessageBubbleProps = {
 const MessageBubble = ({
   message,
   isOwnMessage,
+  isLastOwnMessage = false,
+  isSeen = false,
   className,
 }: MessageBubbleProps) => {
   const timestamp = new Date(message.created_at).toLocaleTimeString([], {
@@ -53,6 +58,7 @@ const MessageBubble = ({
       >
         {timestamp}
       </Text>
+      <ReadReceipt isLastOwnMessage={isLastOwnMessage} isSeen={isSeen} />
     </View>
   );
 };

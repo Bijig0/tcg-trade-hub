@@ -7,11 +7,29 @@ import type { MessageRow, UserRow } from '@tcg-trade-hub/database';
 import type { MessageWithSender } from '../useMessages/useMessages';
 import type { InfiniteData } from '@tanstack/react-query';
 
+const NEGOTIATION_MESSAGE_TYPES = new Set([
+  'card_offer',
+  'card_offer_response',
+  'meetup_proposal',
+  'meetup_response',
+]);
+
+type UseRealtimeChatOptions = {
+  /** Called when a new message from the other user arrives. */
+  onNewMessage?: (message: MessageRow) => void;
+};
+
 /**
  * Subscribes to Supabase Realtime for new messages in a conversation.
  * On INSERT, adds the message to the TanStack Query cache.
+ *
+ * Also invalidates trade context when negotiation-related messages arrive,
+ * and calls an optional onNewMessage callback for read tracking.
  */
-const useRealtimeChat = (conversationId: string) => {
+const useRealtimeChat = (
+  conversationId: string,
+  options?: UseRealtimeChatOptions,
+) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -33,6 +51,9 @@ const useRealtimeChat = (conversationId: string) => {
 
           // Don't duplicate our own optimistically-added messages
           if (newMessage.sender_id === user?.id) return;
+
+          // Notify caller (for read tracking)
+          options?.onNewMessage?.(newMessage);
 
           // Fetch the sender info
           const { data: senderData } = await supabase
@@ -85,6 +106,13 @@ const useRealtimeChat = (conversationId: string) => {
           queryClient.invalidateQueries({
             queryKey: chatKeys.conversations(),
           });
+
+          // Invalidate trade context for negotiation-related messages
+          if (NEGOTIATION_MESSAGE_TYPES.has(newMessage.type)) {
+            queryClient.invalidateQueries({
+              queryKey: chatKeys.tradeContext(conversationId),
+            });
+          }
         },
       )
       .subscribe();
@@ -92,7 +120,7 @@ const useRealtimeChat = (conversationId: string) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId, queryClient, user?.id]);
+  }, [conversationId, queryClient, user?.id, options]);
 };
 
 export default useRealtimeChat;

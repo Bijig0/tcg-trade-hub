@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,25 +11,36 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Send, Handshake, MapPin } from 'lucide-react-native';
+import { Send, Handshake, MapPin, Ban } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/context/AuthProvider';
 import Avatar from '@/components/ui/Avatar/Avatar';
+import ReportModal from '@/features/safety/components/ReportModal/ReportModal';
 import useMessages, {
   type MessageWithSender,
 } from '../../hooks/useMessages/useMessages';
 import useSendMessage from '../../hooks/useSendMessage/useSendMessage';
 import useRealtimeChat from '../../hooks/useRealtimeChat/useRealtimeChat';
 import useRealtimeMatchUpdates from '@/features/listings/hooks/useRealtimeMatchUpdates/useRealtimeMatchUpdates';
+import useTradeContext from '../../hooks/useTradeContext/useTradeContext';
+import useMarkAsRead from '../../hooks/useMarkAsRead/useMarkAsRead';
+import useTypingIndicator from '../../hooks/useTypingIndicator/useTypingIndicator';
+import useNegotiationStatus from '../../hooks/useNegotiationStatus/useNegotiationStatus';
+import useChatBlockCheck from '../../hooks/useChatBlockCheck/useChatBlockCheck';
+import useLongPressMessage from '../../hooks/useLongPressMessage/useLongPressMessage';
 import MessageBubble from '../MessageBubble/MessageBubble';
 import OfferCard from '../OfferCard/OfferCard';
 import MeetupProposalCard from '../MeetupProposalCard/MeetupProposalCard';
 import SystemMessage from '../SystemMessage/SystemMessage';
 import DevChatActions from '../DevChatActions/DevChatActions';
+import TradeContextHeader from '../TradeContextHeader/TradeContextHeader';
+import TypingIndicator from '../TypingIndicator/TypingIndicator';
+import ChatHeaderActions from '../ChatHeaderActions/ChatHeaderActions';
 import type {
   CardOfferResponsePayload,
   MeetupResponsePayload,
   CardOfferPayload,
+  MessageRow,
 } from '@tcg-trade-hub/database';
 
 export type ChatThreadProps = {
@@ -65,16 +76,47 @@ const ChatThread = ({
   } = useMessages(conversationId);
   const sendMessage = useSendMessage();
 
-  // Subscribe to realtime messages
-  useRealtimeChat(conversationId);
+  // New hooks
+  const { data: tradeContext } = useTradeContext(conversationId);
+  const { markAsRead } = useMarkAsRead(conversationId);
+  const { isOtherUserTyping, sendTypingStart, sendTypingStop } =
+    useTypingIndicator(conversationId);
+  const { data: blockState } = useChatBlockCheck(otherUser.id);
+  const { handleLongPress, reportTarget, clearReportTarget } =
+    useLongPressMessage(user?.id);
+
+  // Subscribe to realtime messages (with read tracking callback)
+  useRealtimeChat(conversationId, {
+    onNewMessage: (msg: MessageRow) => {
+      markAsRead(msg.id);
+    },
+  });
 
   // Subscribe to realtime match/meetup updates
   useRealtimeMatchUpdates(matchId);
+
+  // Subscribe to realtime negotiation status changes
+  useNegotiationStatus(conversationId);
 
   const messages = useMemo(
     () => data?.pages.flatMap((page) => page) ?? [],
     [data],
   );
+
+  // Mark as read on mount
+  useEffect(() => {
+    if (messages.length > 0) {
+      markAsRead(messages[0]?.id);
+    }
+  }, [messages.length > 0]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Determine "seen" state: other user's read_at vs our last message
+  const lastOwnMessageId = useMemo(() => {
+    for (const msg of messages) {
+      if (msg.sender_id === user?.id) return msg.id;
+    }
+    return null;
+  }, [messages, user?.id]);
 
   // Collect all card_offer_response and meetup_response message IDs that reference
   // an original offer/proposal so we know which ones have been responded to
@@ -93,17 +135,32 @@ const ChatThread = ({
     return ids;
   }, [messages]);
 
+  const isBlocked = blockState?.isBlocked ?? false;
+
   const handleSend = useCallback(() => {
     const trimmed = text.trim();
     if (!trimmed) return;
 
+    sendTypingStop();
     sendMessage.mutate({
       conversationId,
       type: 'text',
       body: trimmed,
     });
     setText('');
-  }, [text, conversationId, sendMessage]);
+  }, [text, conversationId, sendMessage, sendTypingStop]);
+
+  const handleTextChange = useCallback(
+    (value: string) => {
+      setText(value);
+      if (value.trim()) {
+        sendTypingStart();
+      } else {
+        sendTypingStop();
+      }
+    },
+    [sendTypingStart, sendTypingStop],
+  );
 
   const handleAcceptOffer = useCallback(
     (messageId: string) => {
@@ -183,103 +240,124 @@ const ChatThread = ({
   const renderMessage = useCallback(
     ({ item }: { item: MessageWithSender }) => {
       const isOwn = item.sender_id === user?.id;
+      const isLastOwn = item.id === lastOwnMessageId;
 
-      switch (item.type) {
-        case 'text':
-          return <MessageBubble message={item} isOwnMessage={isOwn} />;
-
-        case 'image':
-          return (
-            <View
-              className={cn(
-                'mb-2 max-w-[75%] px-3',
-                isOwn ? 'self-end' : 'self-start',
-              )}
-            >
-              <Image
-                source={{
-                  uri:
-                    (item.payload as { url?: string } | null)?.url ??
-                    item.body ??
-                    '',
-                }}
-                className="h-48 w-48 rounded-xl"
-                resizeMode="cover"
+      const messageContent = (() => {
+        switch (item.type) {
+          case 'text':
+            return (
+              <MessageBubble
+                message={item}
+                isOwnMessage={isOwn}
+                isLastOwnMessage={isLastOwn}
+                isSeen={false} // TODO: wire to conversation_reads when subscribed
               />
-            </View>
-          );
+            );
 
-        case 'card_offer':
-          return (
-            <OfferCard
-              message={item}
-              isOwnMessage={isOwn}
-              hasResponse={respondedOfferIds.has(item.id)}
-              onAccept={() => handleAcceptOffer(item.id)}
-              onDecline={() => handleDeclineOffer(item.id)}
-              onCounter={() => handleCounterOffer(item)}
-            />
-          );
+          case 'image':
+            return (
+              <View
+                className={cn(
+                  'mb-2 max-w-[75%] px-3',
+                  isOwn ? 'self-end' : 'self-start',
+                )}
+              >
+                <Image
+                  source={{
+                    uri:
+                      (item.payload as { url?: string } | null)?.url ??
+                      item.body ??
+                      '',
+                  }}
+                  className="h-48 w-48 rounded-xl"
+                  resizeMode="cover"
+                />
+              </View>
+            );
 
-        case 'card_offer_response': {
-          const action = (
-            item.payload as unknown as CardOfferResponsePayload | null
-          )?.action;
-          return (
-            <SystemMessage
-              body={
-                isOwn
-                  ? `You ${action} the trade offer`
-                  : `${otherUser.name} ${action} the trade offer`
-              }
-            />
-          );
+          case 'card_offer':
+            return (
+              <OfferCard
+                message={item}
+                isOwnMessage={isOwn}
+                hasResponse={respondedOfferIds.has(item.id)}
+                onAccept={() => handleAcceptOffer(item.id)}
+                onDecline={() => handleDeclineOffer(item.id)}
+                onCounter={() => handleCounterOffer(item)}
+              />
+            );
+
+          case 'card_offer_response': {
+            const action = (
+              item.payload as unknown as CardOfferResponsePayload | null
+            )?.action;
+            return (
+              <SystemMessage
+                body={
+                  isOwn
+                    ? `You ${action} the trade offer`
+                    : `${otherUser.name} ${action} the trade offer`
+                }
+              />
+            );
+          }
+
+          case 'meetup_proposal':
+            return (
+              <MeetupProposalCard
+                message={item}
+                isOwnMessage={isOwn}
+                hasResponse={respondedOfferIds.has(item.id)}
+                onAccept={() => handleAcceptMeetup(item.id)}
+                onDecline={() => handleDeclineMeetup(item.id)}
+              />
+            );
+
+          case 'meetup_response': {
+            const action = (
+              item.payload as unknown as MeetupResponsePayload | null
+            )?.action;
+            return (
+              <SystemMessage
+                body={
+                  isOwn
+                    ? `You ${action} the meetup proposal`
+                    : `${otherUser.name} ${action} the meetup proposal`
+                }
+              />
+            );
+          }
+
+          case 'system':
+            return (
+              <SystemMessage body={item.body ?? 'System notification'} />
+            );
+
+          default:
+            return null;
         }
+      })();
 
-        case 'meetup_proposal':
-          return (
-            <MeetupProposalCard
-              message={item}
-              isOwnMessage={isOwn}
-              hasResponse={respondedOfferIds.has(item.id)}
-              onAccept={() => handleAcceptMeetup(item.id)}
-              onDecline={() => handleDeclineMeetup(item.id)}
-            />
-          );
-
-        case 'meetup_response': {
-          const action = (
-            item.payload as unknown as MeetupResponsePayload | null
-          )?.action;
-          return (
-            <SystemMessage
-              body={
-                isOwn
-                  ? `You ${action} the meetup proposal`
-                  : `${otherUser.name} ${action} the meetup proposal`
-              }
-            />
-          );
-        }
-
-        case 'system':
-          return (
-            <SystemMessage body={item.body ?? 'System notification'} />
-          );
-
-        default:
-          return null;
-      }
+      return (
+        <Pressable
+          onLongPress={() => handleLongPress(item)}
+          delayLongPress={500}
+        >
+          {messageContent}
+        </Pressable>
+      );
     },
     [
       user?.id,
       otherUser.name,
+      lastOwnMessageId,
       respondedOfferIds,
       handleAcceptOffer,
       handleDeclineOffer,
       handleCounterOffer,
       handleAcceptMeetup,
       handleDeclineMeetup,
+      handleLongPress,
     ],
   );
 
@@ -290,6 +368,9 @@ const ChatThread = ({
     .slice(0, 2)
     .toUpperCase();
 
+  const isCurrentUserListingOwner =
+    tradeContext?.listingOwnerId === user?.id;
+
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
     <KeyboardAvoidingView
@@ -298,12 +379,26 @@ const ChatThread = ({
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       {/* Header */}
-      <View className="flex-row items-center gap-3 border-b border-border px-4 py-3">
-        <Avatar uri={otherUser.avatar} fallback={otherInitials} size="md" />
-        <Text className="text-lg font-semibold text-foreground">
-          {otherUser.name}
-        </Text>
+      <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
+        <View className="flex-1 flex-row items-center gap-3">
+          <Avatar uri={otherUser.avatar} fallback={otherInitials} size="md" />
+          <Text className="text-lg font-semibold text-foreground">
+            {otherUser.name}
+          </Text>
+        </View>
+        <ChatHeaderActions
+          otherUserId={otherUser.id}
+          otherUserName={otherUser.name}
+        />
       </View>
+
+      {/* Trade context header */}
+      {tradeContext && (
+        <TradeContextHeader
+          tradeContext={tradeContext}
+          isCurrentUserListingOwner={isCurrentUserListingOwner}
+        />
+      )}
 
       {/* Messages */}
       {isLoading ? (
@@ -331,63 +426,92 @@ const ChatThread = ({
         />
       )}
 
-      {/* Dev actions (dev mode only) */}
-      {__DEV__ && (
-        <DevChatActions
-          conversationId={conversationId}
-          otherUserId={otherUser.id}
-          matchId={matchId}
-        />
+      {/* Typing indicator */}
+      <TypingIndicator
+        isVisible={isOtherUserTyping}
+        userName={otherUser.name}
+      />
+
+      {/* Blocked banner */}
+      {isBlocked ? (
+        <View className="flex-row items-center justify-center gap-2 border-t border-border bg-destructive/10 px-4 py-4">
+          <Ban size={16} color="#ef4444" />
+          <Text className="text-sm font-medium text-destructive">
+            {blockState?.blockedByMe
+              ? 'You blocked this user'
+              : 'This user has blocked you'}
+          </Text>
+        </View>
+      ) : (
+        <>
+          {/* Dev actions (dev mode only) */}
+          {__DEV__ && (
+            <DevChatActions
+              conversationId={conversationId}
+              otherUserId={otherUser.id}
+              matchId={matchId}
+            />
+          )}
+
+          {/* Toolbar */}
+          <View className="flex-row border-t border-border px-4 py-1.5">
+            <Pressable
+              onPress={onOpenOfferModal}
+              className="flex-row items-center gap-1 rounded-full bg-accent px-3 py-1.5 active:opacity-70"
+            >
+              <Handshake size={14} color="#6b7280" />
+              <Text className="text-xs font-medium text-muted-foreground">
+                Make Offer
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={onOpenMeetupModal}
+              className="ml-2 flex-row items-center gap-1 rounded-full bg-accent px-3 py-1.5 active:opacity-70"
+            >
+              <MapPin size={14} color="#6b7280" />
+              <Text className="text-xs font-medium text-muted-foreground">
+                Plan Meetup
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* Input bar */}
+          <View className="flex-row items-end gap-2 border-t border-border px-4 py-2">
+            <TextInput
+              value={text}
+              onChangeText={handleTextChange}
+              placeholder="Type a message..."
+              placeholderTextColor="#9ca3af"
+              multiline
+              className="max-h-24 flex-1 rounded-2xl border border-input bg-background px-4 py-2.5 text-base text-foreground"
+              onSubmitEditing={handleSend}
+              blurOnSubmit={false}
+              onBlur={sendTypingStop}
+            />
+            <Pressable
+              onPress={handleSend}
+              disabled={!text.trim() || sendMessage.isPending}
+              className={cn(
+                'mb-0.5 items-center justify-center rounded-full p-2.5',
+                text.trim() ? 'bg-primary' : 'bg-muted',
+              )}
+            >
+              <Send
+                size={18}
+                color={text.trim() ? '#ffffff' : '#9ca3af'}
+              />
+            </Pressable>
+          </View>
+        </>
       )}
 
-      {/* Toolbar */}
-      <View className="flex-row border-t border-border px-4 py-1.5">
-        <Pressable
-          onPress={onOpenOfferModal}
-          className="flex-row items-center gap-1 rounded-full bg-accent px-3 py-1.5 active:opacity-70"
-        >
-          <Handshake size={14} color="#6b7280" />
-          <Text className="text-xs font-medium text-muted-foreground">
-            Make Offer
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={onOpenMeetupModal}
-          className="ml-2 flex-row items-center gap-1 rounded-full bg-accent px-3 py-1.5 active:opacity-70"
-        >
-          <MapPin size={14} color="#6b7280" />
-          <Text className="text-xs font-medium text-muted-foreground">
-            Plan Meetup
-          </Text>
-        </Pressable>
-      </View>
-
-      {/* Input bar */}
-      <View className="flex-row items-end gap-2 border-t border-border px-4 py-2">
-        <TextInput
-          value={text}
-          onChangeText={setText}
-          placeholder="Type a message..."
-          placeholderTextColor="#9ca3af"
-          multiline
-          className="max-h-24 flex-1 rounded-2xl border border-input bg-background px-4 py-2.5 text-base text-foreground"
-          onSubmitEditing={handleSend}
-          blurOnSubmit={false}
-        />
-        <Pressable
-          onPress={handleSend}
-          disabled={!text.trim() || sendMessage.isPending}
-          className={cn(
-            'mb-0.5 items-center justify-center rounded-full p-2.5',
-            text.trim() ? 'bg-primary' : 'bg-muted',
-          )}
-        >
-          <Send
-            size={18}
-            color={text.trim() ? '#ffffff' : '#9ca3af'}
-          />
-        </Pressable>
-      </View>
+      {/* Report modal from long-press */}
+      <ReportModal
+        visible={!!reportTarget}
+        onClose={clearReportTarget}
+        reportedUserId={reportTarget?.userId ?? ''}
+        reportedMessageId={reportTarget?.messageId}
+      />
     </KeyboardAvoidingView>
     </SafeAreaView>
   );

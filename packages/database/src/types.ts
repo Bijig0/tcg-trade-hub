@@ -390,20 +390,44 @@ export type Database = {
         Row: {
           id: string;
           match_id: string;
+          negotiation_status: NegotiationStatus;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           match_id: string;
+          negotiation_status?: NegotiationStatus;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           match_id?: string;
+          negotiation_status?: NegotiationStatus;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      conversation_reads: {
+        Row: {
+          conversation_id: string;
+          user_id: string;
+          last_read_message_id: string | null;
+          last_read_at: string;
+        };
+        Insert: {
+          conversation_id: string;
+          user_id: string;
+          last_read_message_id?: string | null;
+          last_read_at?: string;
+        };
+        Update: {
+          conversation_id?: string;
+          user_id?: string;
+          last_read_message_id?: string | null;
+          last_read_at?: string;
         };
         Relationships: [];
       };
@@ -769,7 +793,14 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      get_unread_counts: {
+        Args: { p_user_id: string };
+        Returns: Array<{ conversation_id: string; unread_count: number }>;
+      };
+      is_blocked_between: {
+        Args: { p_other_user_id: string };
+        Returns: Array<{ blocked_by_me: boolean; blocked_by_them: boolean }>;
+      };
     };
     Enums: {
       tcg_type: TcgType;
@@ -781,6 +812,7 @@ export type Database = {
       message_type: MessageType;
       meetup_status: MeetupStatus;
       offer_status: OfferStatus;
+      negotiation_status: NegotiationStatus;
       report_category: ReportCategory;
       report_status: ReportStatus;
       shop_event_status: ShopEventStatus;
@@ -804,6 +836,7 @@ export type ReportCategory = 'inappropriate_content' | 'scam' | 'counterfeit' | 
 export type ReportStatus = 'pending' | 'reviewed' | 'resolved';
 export type GradingCompany = 'psa' | 'cgc' | 'bgs';
 export type SealedProductType = 'booster_box' | 'etb' | 'booster_pack' | 'tin' | 'collection_box' | 'blister';
+export type NegotiationStatus = 'chatting' | 'offer_pending' | 'offer_accepted' | 'meetup_proposed' | 'meetup_confirmed' | 'completed' | 'cancelled';
 export type ShopEventStatus = 'draft' | 'published' | 'cancelled' | 'completed';
 
 // Convenience row types
@@ -828,6 +861,7 @@ export type SwipeInsert = Database['public']['Tables']['swipes']['Insert'];
 export type MatchRow = Database['public']['Tables']['matches']['Row'];
 export type MatchInsert = Database['public']['Tables']['matches']['Insert'];
 export type ConversationRow = Database['public']['Tables']['conversations']['Row'];
+export type ConversationReadsRow = Database['public']['Tables']['conversation_reads']['Row'];
 export type MessageRow = Database['public']['Tables']['messages']['Row'];
 export type MessageInsert = Database['public']['Tables']['messages']['Insert'];
 export type MeetupRow = Database['public']['Tables']['meetups']['Row'];
