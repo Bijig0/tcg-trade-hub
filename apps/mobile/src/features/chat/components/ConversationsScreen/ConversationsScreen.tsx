@@ -81,11 +81,31 @@ const ConversationItem = ({ conversation, onPress }: ConversationItemProps) => {
 /** Screen showing all conversation previews sorted by most recent message */
 const ConversationsScreen = () => {
   const router = useRouter();
-  const { data: conversations, isLoading, refetch } = useConversations();
+  const { data: conversations, isLoading, isError, error, refetch } = useConversations();
 
   const handlePress = (conversationId: string) => {
     router.push(`/(tabs)/(messages)/chat/${conversationId}`);
   };
+
+  if (isError) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-6" edges={['top']}>
+        <MessageSquare size={48} color="#9ca3af" />
+        <Text className="mt-4 text-center text-base font-medium text-destructive">
+          Failed to load conversations
+        </Text>
+        <Text className="mt-1 text-center text-sm text-muted-foreground">
+          {error?.message ?? 'Something went wrong'}
+        </Text>
+        <Pressable
+          onPress={() => refetch()}
+          className="mt-4 rounded-lg bg-primary px-6 py-2"
+        >
+          <Text className="font-medium text-primary-foreground">Retry</Text>
+        </Pressable>
+      </SafeAreaView>
+    );
+  }
 
   if (isLoading) {
     return (
