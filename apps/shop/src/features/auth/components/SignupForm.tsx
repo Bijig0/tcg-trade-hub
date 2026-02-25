@@ -1,0 +1,77 @@
+import { useState } from 'react';
+import { getSupabaseBrowserClient } from '@/lib/supabase.client';
+
+type SignupFormProps = {
+  onSuccess: () => void;
+};
+
+export const SignupForm = ({ onSuccess }: SignupFormProps) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    const supabase = getSupabaseBrowserClient();
+    const { error } = await supabase.auth.signUp({ email, password });
+
+    setIsLoading(false);
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    onSuccess();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+      <div>
+        <label htmlFor="email" className="mb-1 block text-sm font-medium text-foreground">
+          Email
+        </label>
+        <input
+          id="email"
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          placeholder="shop@example.com"
+        />
+      </div>
+      <div>
+        <label htmlFor="password" className="mb-1 block text-sm font-medium text-foreground">
+          Password
+        </label>
+        <input
+          id="password"
+          type="password"
+          required
+          minLength={6}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          placeholder="At least 6 characters"
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+      >
+        {isLoading ? 'Creating account...' : 'Create Account'}
+      </button>
+    </form>
+  );
+};

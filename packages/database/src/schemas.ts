@@ -343,6 +343,9 @@ export const MeetupRowSchema = z.object({
   updated_at: z.string(),
 });
 
+export const ShopEventStatusSchema = z.enum(['draft', 'published', 'cancelled', 'completed']);
+export const ShopEventTypeSchema = z.enum(['tournament', 'league', 'prerelease', 'casual', 'draft', 'sealed', 'other']);
+
 export const ShopRowSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
@@ -353,8 +356,88 @@ export const ShopRowSchema = z.object({
   phone: z.string().nullable(),
   supported_tcgs: z.array(TcgTypeSchema),
   verified: z.boolean(),
+  owner_id: z.string().uuid().nullable(),
+  description: z.string().nullable(),
+  email: z.string().nullable(),
+  logo_url: z.string().nullable(),
+  cover_photo_url: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
+});
+
+export const ShopInsertSchema = ShopRowSchema.omit({
+  id: true,
+  verified: true,
+  created_at: true,
+  updated_at: true,
+}).extend({
+  hours: z.unknown().nullable().optional(),
+  website: z.string().nullable().optional(),
+  phone: z.string().nullable().optional(),
+  supported_tcgs: z.array(TcgTypeSchema).default([]),
+  owner_id: z.string().uuid().nullable().optional(),
+  description: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+  logo_url: z.string().nullable().optional(),
+  cover_photo_url: z.string().nullable().optional(),
+});
+
+export const ShopUpdateSchema = ShopRowSchema.omit({
+  id: true,
+  owner_id: true,
+  verified: true,
+  created_at: true,
+  updated_at: true,
+}).partial();
+
+export const ShopEventRowSchema = z.object({
+  id: z.string().uuid(),
+  shop_id: z.string().uuid(),
+  title: z.string(),
+  description: z.string().nullable(),
+  event_type: z.string(),
+  tcg: TcgTypeSchema.nullable(),
+  starts_at: z.string(),
+  ends_at: z.string().nullable(),
+  max_participants: z.number().int().positive().nullable(),
+  entry_fee: z.number().nullable(),
+  image_url: z.string().nullable(),
+  status: ShopEventStatusSchema,
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export const ShopEventInsertSchema = ShopEventRowSchema.omit({
+  id: true,
+  status: true,
+  created_at: true,
+  updated_at: true,
+}).extend({
+  description: z.string().nullable().optional(),
+  tcg: TcgTypeSchema.nullable().optional(),
+  ends_at: z.string().nullable().optional(),
+  max_participants: z.number().int().positive().nullable().optional(),
+  entry_fee: z.number().nullable().optional(),
+  image_url: z.string().nullable().optional(),
+});
+
+export const ShopEventUpdateSchema = ShopEventRowSchema.omit({
+  id: true,
+  shop_id: true,
+  status: true,
+  created_at: true,
+  updated_at: true,
+}).partial();
+
+export const ShopNotificationRowSchema = z.object({
+  id: z.string().uuid(),
+  shop_id: z.string().uuid(),
+  type: z.string(),
+  title: z.string(),
+  body: z.string().nullable(),
+  payload: z.unknown().nullable(),
+  read: z.boolean(),
+  created_at: z.string(),
 });
 
 export const RatingRowSchema = z.object({
