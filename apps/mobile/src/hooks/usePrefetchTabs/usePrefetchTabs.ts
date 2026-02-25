@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthProvider';
-import { listingKeys } from '@/features/listings/queryKeys';
 import { chatKeys } from '@/features/chat/queryKeys';
 import { meetupKeys } from '@/features/meetups/queryKeys';
 import { profileKeys } from '@/features/profile/queryKeys';
@@ -55,21 +54,10 @@ const usePrefetchTabs = () => {
   useEffect(() => {
     if (!user) return;
 
-    // Listings tab
-    queryClient.prefetchQuery<ListingRow[]>({
-      queryKey: listingKeys.myListings(),
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from('listings')
-          .select('*')
-          .eq('user_id', user.id)
-          .in('status', ['active', 'matched'])
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        return data as ListingRow[];
-      },
-    });
+    // NOTE: Listings tab is NOT prefetched here because useMyListings
+    // enriches raw rows with items, offer_count, and trade_wants.
+    // Prefetching raw ListingRow[] into the same cache key causes crashes
+    // when components expect the enriched MyListingWithOffers shape.
 
     // Conversations tab
     queryClient.prefetchQuery<ConversationPreview[]>({
