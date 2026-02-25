@@ -12,7 +12,7 @@ export type FeedSort = z.infer<typeof FeedSortSchema>;
 
 export const FeedFiltersSchema = z.object({
   tcg: TcgTypeSchema.nullable().default(null),
-  listingType: ListingTypeSchema.nullable().default(null),
+  listingTypes: z.array(ListingTypeSchema).default([]),
   condition: CardConditionSchema.nullable().default(null),
   sort: FeedSortSchema.default('relevance'),
 });

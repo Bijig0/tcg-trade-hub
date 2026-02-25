@@ -80,8 +80,8 @@ const useFeedListings = () => {
       if (filters.tcg) {
         query = query.eq('tcg', filters.tcg);
       }
-      if (filters.listingType) {
-        query = query.eq('type', filters.listingType);
+      if (filters.listingTypes.length > 0) {
+        query = query.in('type', filters.listingTypes);
       }
 
       // Cursor-based pagination

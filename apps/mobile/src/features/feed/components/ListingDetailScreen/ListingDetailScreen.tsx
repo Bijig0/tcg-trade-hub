@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, Image, ScrollView, RefreshControl, Pressable, ActivityIndicator } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, Image, ScrollView, RefreshControl, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Star, Send, User } from 'lucide-react-native';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 import Badge from '@/components/ui/Badge/Badge';
 import Avatar from '@/components/ui/Avatar/Avatar';
@@ -11,8 +12,8 @@ import RefreshableScreen from '@/components/ui/RefreshableScreen/RefreshableScre
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import { ListingTypeBadge } from '@/features/listings';
 import BundlePreview from '@/features/listings/components/BundlePreview/BundlePreview';
+import OfferCreationSheet from '@/features/listings/components/OfferCreationSheet/OfferCreationSheet';
 import useListingDetail from '../../hooks/useListingDetail/useListingDetail';
-import useRecordSwipe from '../../hooks/useRecordSwipe/useRecordSwipe';
 import { feedKeys } from '../../queryKeys';
 import formatDistance from '../../utils/formatDistance/formatDistance';
 
@@ -34,27 +35,18 @@ const CONDITION_LABELS: Record<string, string> = {
  * Full listing detail screen for bundle-based listings.
  *
  * Shows bundle preview, all items with their details, description,
- * owner profile snippet, and a "Make Offer" button.
+ * owner profile snippet, and a "Make Offer" button that opens the
+ * OfferCreationSheet.
  */
 const ListingDetailScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { data: listing, isLoading, error } = useListingDetail(id ?? '');
-  const recordSwipe = useRecordSwipe();
+  const bottomSheetRef = useRef<BottomSheet>(null);
 
   const handleMakeOffer = () => {
     if (!listing) return;
-    // Record a like swipe for now; the offer sheet will be built in Phase 5
-    recordSwipe.mutate(
-      { listingId: listing.id, direction: 'like' },
-      {
-        onSuccess: (response) => {
-          if (response.match) {
-            // Could navigate to chat or show match modal
-          }
-        },
-      },
-    );
+    bottomSheetRef.current?.snapToIndex(0);
   };
 
   const handleBack = () => {
@@ -262,21 +254,22 @@ const ListingDetailScreen = () => {
             <Button
               size="lg"
               onPress={handleMakeOffer}
-              disabled={recordSwipe.isPending}
               className="w-full"
             >
-              {recordSwipe.isPending ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <View className="flex-row items-center gap-2">
-                  <Send size={18} color="white" />
-                  <Text className="text-base font-semibold text-primary-foreground">
-                    Make Offer
-                  </Text>
-                </View>
-              )}
+              <View className="flex-row items-center gap-2">
+                <Send size={18} color="white" />
+                <Text className="text-base font-semibold text-primary-foreground">
+                  Make Offer
+                </Text>
+              </View>
             </Button>
           </View>
+
+          {/* Offer creation sheet */}
+          <OfferCreationSheet
+            listing={listing}
+            bottomSheetRef={bottomSheetRef}
+          />
         </View>
       )}
     </RefreshableScreen>

@@ -11,8 +11,7 @@ const TCG_OPTIONS: { label: string; value: TcgType | null }[] = [
   { label: 'Yu-Gi-Oh', value: 'yugioh' },
 ];
 
-const TYPE_OPTIONS: { label: string; value: ListingType | null }[] = [
-  { label: 'All Types', value: null },
+const TYPE_OPTIONS: { label: string; value: ListingType }[] = [
   { label: 'WTS', value: 'wts' },
   { label: 'WTB', value: 'wtb' },
   { label: 'WTT', value: 'wtt' },
@@ -68,10 +67,13 @@ export type FilterBarProps = {
 /**
  * Horizontal scrollable row of filter chips for TCG, listing type, condition,
  * and sort order. Reads and updates filters via useFeedStore.
+ *
+ * Listing type uses multi-select toggle: empty = show all, any selected = show only those.
  */
 const FilterBar = ({ className }: FilterBarProps) => {
   const filters = useFeedStore((s) => s.filters);
   const setFilter = useFeedStore((s) => s.setFilter);
+  const toggleListingType = useFeedStore((s) => s.toggleListingType);
 
   return (
     <View className={cn('gap-2', className)}>
@@ -95,8 +97,8 @@ const FilterBar = ({ className }: FilterBarProps) => {
           <FilterChip
             key={`type-${opt.value}`}
             label={opt.label}
-            active={filters.listingType === opt.value}
-            onPress={() => setFilter('listingType', opt.value)}
+            active={filters.listingTypes.includes(opt.value)}
+            onPress={() => toggleListingType(opt.value)}
           />
         ))}
       </ScrollView>

@@ -10,6 +10,8 @@ export { default as FeedSwipeView } from './components/FeedSwipeView/FeedSwipeVi
 export { default as SwipeCard } from './components/SwipeCard/SwipeCard';
 export { default as ListingCard } from './components/ListingCard/ListingCard';
 export { default as FilterBar } from './components/FilterBar/FilterBar';
+export { default as InterestedScreen } from './components/InterestedScreen/InterestedScreen';
+export { default as InterestedListingCard } from './components/InterestedListingCard/InterestedListingCard';
 
 // Hooks
 export { default as useFeedListings } from './hooks/useFeedListings/useFeedListings';
@@ -18,6 +20,7 @@ export { default as useListingDetail } from './hooks/useListingDetail/useListing
 export { default as useHasActiveListings } from './hooks/useHasActiveListings/useHasActiveListings';
 export { default as useBrowseShops } from './hooks/useBrowseShops/useBrowseShops';
 export { default as useUserLocation } from './hooks/useUserLocation/useUserLocation';
+export { default as useLikedListings } from './hooks/useLikedListings/useLikedListings';
 
 // Utils
 export { default as formatDistance } from './utils/formatDistance/formatDistance';
