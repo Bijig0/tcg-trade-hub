@@ -1,0 +1,4 @@
+appId: com.tcgtradehub.app
+env:
+  EMAIL: "e2e@test.dev"
+  PASSWORD: "e2etestpass"

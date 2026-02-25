@@ -1,0 +1,19 @@
+appId: com.tcgtradehub.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- assertVisible:
+    id: "auth-login-title"
+# Submit empty form
+- tapOn:
+    id: "auth-sign-in-button"
+- assertVisible: "Invalid email"
+# Enter invalid email only
+- tapOn:
+    id: "auth-email-input"
+- inputText: "not-an-email"
+- hideKeyboard
+- tapOn:
+    id: "auth-sign-in-button"
+- assertVisible: "Invalid email"

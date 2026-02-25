@@ -1,0 +1,9 @@
+appId: com.tcgtradehub.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: "../_subflows/login.yaml"
+- runFlow: "../_subflows/navigate-to-listings.yaml"
+- assertVisible:
+    id: "listings-screen"

@@ -47,7 +47,7 @@ const LoginScreen: React.FC = () => {
   const isLoading = login.isPending || signIn.isPending;
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']} testID="auth-login-screen">
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1"
@@ -57,7 +57,7 @@ const LoginScreen: React.FC = () => {
         keyboardShouldPersistTaps="handled"
       >
         <View className="mb-12 items-center">
-          <Text className="text-4xl font-bold text-foreground">TCG Trade Hub</Text>
+          <Text testID="auth-login-title" className="text-4xl font-bold text-foreground">TCG Trade Hub</Text>
           <Text className="mt-2 text-lg text-muted-foreground">
             Trade cards locally
           </Text>
@@ -65,6 +65,7 @@ const LoginScreen: React.FC = () => {
 
         <View className="gap-3">
           <Button
+            testID="auth-google-button"
             variant="outline"
             size="lg"
             onPress={() => handleOAuth('google')}
@@ -75,6 +76,7 @@ const LoginScreen: React.FC = () => {
 
           {Platform.OS === 'ios' && (
             <Button
+              testID="auth-apple-button"
               variant="outline"
               size="lg"
               onPress={() => handleOAuth('apple')}
@@ -93,6 +95,7 @@ const LoginScreen: React.FC = () => {
 
         <View className="gap-4">
           <Input
+            testID="auth-email-input"
             label="Email"
             placeholder="you@example.com"
             value={email}
@@ -103,6 +106,7 @@ const LoginScreen: React.FC = () => {
           />
 
           <Input
+            testID="auth-password-input"
             label="Password"
             placeholder="Enter your password"
             value={password}
@@ -111,12 +115,12 @@ const LoginScreen: React.FC = () => {
             error={errors.password}
           />
 
-          <Button size="lg" onPress={handleEmailLogin} disabled={isLoading}>
+          <Button testID="auth-sign-in-button" size="lg" onPress={handleEmailLogin} disabled={isLoading}>
             <Text className="text-base font-semibold text-primary-foreground">Sign In</Text>
           </Button>
         </View>
 
-        <Pressable onPress={() => router.push('/(auth)/register')} className="mt-6 items-center">
+        <Pressable testID="auth-register-link" onPress={() => router.push('/(auth)/register')} className="mt-6 items-center">
           <Text className="text-sm text-muted-foreground">
             Don't have an account?{' '}
             <Text className="font-semibold text-primary">Sign up</Text>
@@ -124,6 +128,7 @@ const LoginScreen: React.FC = () => {
         </Pressable>
 
         <Pressable
+          testID="auth-demo-autofill"
           onPress={fillDemoCredentials}
           className="mt-8 rounded-xl border border-border bg-card p-4"
         >

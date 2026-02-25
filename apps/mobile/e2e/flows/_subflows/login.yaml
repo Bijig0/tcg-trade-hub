@@ -1,0 +1,12 @@
+appId: com.tcgtradehub.app
+---
+- tapOn:
+    id: "auth-email-input"
+- inputText: ${EMAIL}
+- tapOn:
+    id: "auth-password-input"
+- inputText: ${PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth-sign-in-button"
+- waitForAnimationToEnd

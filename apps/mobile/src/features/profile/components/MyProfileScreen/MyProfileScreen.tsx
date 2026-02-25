@@ -64,7 +64,7 @@ const MyProfileScreen = () => {
   );
 
   return (
-    <RefreshableScreen queryKeys={[profileKeys.ratings(profile.id)]}>
+    <RefreshableScreen testID="profile-screen" queryKeys={[profileKeys.ratings(profile.id)]}>
       {/* Profile header */}
       <View className="items-center px-6 pt-8">
         <Avatar uri={profile.avatar_url} fallback={initials} size="lg" className="h-20 w-20" />
@@ -105,10 +105,10 @@ const MyProfileScreen = () => {
 
       {/* Action buttons */}
       <View className="mt-6 gap-3 px-6">
-        <Button variant="outline" onPress={() => router.push('/(tabs)/(profile)/edit')}>
+        <Button testID="profile-edit-button" variant="outline" onPress={() => router.push('/(tabs)/(profile)/edit')}>
           <Text className="text-base font-medium text-foreground">Edit Profile</Text>
         </Button>
-        <Button variant="outline" onPress={() => router.push('/(tabs)/(profile)/settings')}>
+        <Button testID="profile-settings-button" variant="outline" onPress={() => router.push('/(tabs)/(profile)/settings')}>
           <Text className="text-base font-medium text-foreground">Settings</Text>
         </Button>
       </View>

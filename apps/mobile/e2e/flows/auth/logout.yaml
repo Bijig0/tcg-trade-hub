@@ -1,0 +1,9 @@
+appId: com.tcgtradehub.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: "../_subflows/login.yaml"
+- runFlow: "../_subflows/logout.yaml"
+- assertVisible:
+    id: "auth-login-title"

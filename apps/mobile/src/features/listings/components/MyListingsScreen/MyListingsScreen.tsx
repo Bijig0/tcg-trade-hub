@@ -116,9 +116,9 @@ const MyListingsScreen = () => {
 
   const tabItems: SegmentedFilterItem<ListingTab>[] = useMemo(
     () => [
-      { value: 'active', label: 'Active', count: counts.active },
-      { value: 'matched', label: 'Matched', count: counts.matched },
-      { value: 'history', label: 'History', count: counts.history },
+      { value: 'active', label: 'Active', count: counts.active, testID: 'listings-tab-active' },
+      { value: 'matched', label: 'Matched', count: counts.matched, testID: 'listings-tab-matched' },
+      { value: 'history', label: 'History', count: counts.history, testID: 'listings-tab-history' },
     ],
     [counts],
   );
@@ -238,7 +238,7 @@ const MyListingsScreen = () => {
   return (
     <RefreshableScreen queryKeys={[listingKeys.myListings()]}>
       {({ onRefresh, isRefreshing }) => (
-        <View className="flex-1 bg-background">
+        <View testID="listings-screen" className="flex-1 bg-background">
           <SegmentedFilter
             items={tabItems}
             value={activeTab}
@@ -259,6 +259,7 @@ const MyListingsScreen = () => {
           />
 
           <Pressable
+            testID="listings-create-fab"
             onPress={() => handleCreatePress()}
             className="absolute bottom-8 right-6 h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg active:bg-primary/90"
           >

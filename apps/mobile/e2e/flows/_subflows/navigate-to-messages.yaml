@@ -1,0 +1,5 @@
+appId: com.tcgtradehub.app
+---
+- tapOn:
+    id: "tab-messages"
+- waitForAnimationToEnd

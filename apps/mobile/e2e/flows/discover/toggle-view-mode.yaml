@@ -1,0 +1,17 @@
+appId: com.tcgtradehub.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: "../_subflows/login.yaml"
+- runFlow: "../_subflows/navigate-to-discover.yaml"
+- assertVisible:
+    id: "discover-feed-screen"
+# Toggle from list to swipe view
+- tapOn:
+    id: "feed-view-toggle"
+- waitForAnimationToEnd
+# Toggle back to list view
+- tapOn:
+    id: "feed-view-toggle"
+- waitForAnimationToEnd

@@ -1,0 +1,13 @@
+appId: com.tcgtradehub.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: "../_subflows/login.yaml"
+- runFlow: "../_subflows/navigate-to-profile.yaml"
+- assertVisible:
+    id: "profile-screen"
+- assertVisible:
+    id: "profile-edit-button"
+- assertVisible:
+    id: "profile-settings-button"

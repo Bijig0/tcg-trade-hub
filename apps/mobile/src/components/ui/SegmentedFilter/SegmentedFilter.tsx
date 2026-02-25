@@ -6,6 +6,7 @@ export type SegmentedFilterItem<T extends string> = {
   value: T;
   label: string;
   count?: number;
+  testID?: string;
 };
 
 export type SegmentedFilterProps<T extends string> = {
@@ -46,6 +47,7 @@ const SegmentedFilter = <T extends string>({
         return (
           <Pressable
             key={item.value}
+            testID={item.testID}
             onPress={() => onValueChange(item.value)}
             className={cn(
               'flex-1 items-center pb-2.5 pt-3',
