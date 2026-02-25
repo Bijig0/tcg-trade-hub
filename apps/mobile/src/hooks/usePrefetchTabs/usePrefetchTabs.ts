@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthProvider';
 import { chatKeys } from '@/features/chat/queryKeys';
 import { meetupKeys } from '@/features/meetups/queryKeys';
 import { profileKeys } from '@/features/profile/queryKeys';
-import type { ListingRow, MeetupRow, ShopRow, UserRow, MessageType } from '@tcg-trade-hub/database';
+import type { MeetupRow, ShopRow, UserRow, MessageType } from '@tcg-trade-hub/database';
 
 type ConversationPreview = {
   conversationId: string;
@@ -56,8 +56,8 @@ const usePrefetchTabs = () => {
 
     // NOTE: Listings tab is NOT prefetched here because useMyListings
     // enriches raw rows with items, offer_count, and trade_wants.
-    // Prefetching raw ListingRow[] into the same cache key causes crashes
-    // when components expect the enriched MyListingWithOffers shape.
+    // Prefetching raw data into the same cache key causes crashes
+    // when components expect the enriched shape.
 
     // Conversations tab
     queryClient.prefetchQuery<ConversationPreview[]>({
