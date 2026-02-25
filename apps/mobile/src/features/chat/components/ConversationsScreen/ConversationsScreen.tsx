@@ -51,7 +51,7 @@ const ConversationItem = ({ conversation, onPress }: ConversationItemProps) => {
       </View>
 
       {/* Card thumbnails */}
-      {listingThumbnails.length > 0 && (
+      {listingThumbnails && listingThumbnails.length > 0 && (
         <View className="flex-row gap-0.5">
           {listingThumbnails.map((url, i) => (
             <Image
