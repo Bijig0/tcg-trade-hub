@@ -493,6 +493,11 @@ export type Database = {
           phone: string | null;
           supported_tcgs: TcgType[];
           verified: boolean;
+          owner_id: string | null;
+          description: string | null;
+          email: string | null;
+          logo_url: string | null;
+          cover_photo_url: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -506,6 +511,11 @@ export type Database = {
           phone?: string | null;
           supported_tcgs?: TcgType[];
           verified?: boolean;
+          owner_id?: string | null;
+          description?: string | null;
+          email?: string | null;
+          logo_url?: string | null;
+          cover_photo_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -519,8 +529,97 @@ export type Database = {
           phone?: string | null;
           supported_tcgs?: TcgType[];
           verified?: boolean;
+          owner_id?: string | null;
+          description?: string | null;
+          email?: string | null;
+          logo_url?: string | null;
+          cover_photo_url?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      shop_events: {
+        Row: {
+          id: string;
+          shop_id: string;
+          title: string;
+          description: string | null;
+          event_type: string;
+          tcg: TcgType | null;
+          starts_at: string;
+          ends_at: string | null;
+          max_participants: number | null;
+          entry_fee: number | null;
+          image_url: string | null;
+          status: ShopEventStatus;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          shop_id: string;
+          title: string;
+          description?: string | null;
+          event_type: string;
+          tcg?: TcgType | null;
+          starts_at: string;
+          ends_at?: string | null;
+          max_participants?: number | null;
+          entry_fee?: number | null;
+          image_url?: string | null;
+          status?: ShopEventStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          shop_id?: string;
+          title?: string;
+          description?: string | null;
+          event_type?: string;
+          tcg?: TcgType | null;
+          starts_at?: string;
+          ends_at?: string | null;
+          max_participants?: number | null;
+          entry_fee?: number | null;
+          image_url?: string | null;
+          status?: ShopEventStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      shop_notifications: {
+        Row: {
+          id: string;
+          shop_id: string;
+          type: string;
+          title: string;
+          body: string | null;
+          payload: Json | null;
+          read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          shop_id: string;
+          type: string;
+          title: string;
+          body?: string | null;
+          payload?: Json | null;
+          read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          shop_id?: string;
+          type?: string;
+          title?: string;
+          body?: string | null;
+          payload?: Json | null;
+          read?: boolean;
+          created_at?: string;
         };
         Relationships: [];
       };
@@ -684,6 +783,7 @@ export type Database = {
       offer_status: OfferStatus;
       report_category: ReportCategory;
       report_status: ReportStatus;
+      shop_event_status: ShopEventStatus;
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -704,6 +804,7 @@ export type ReportCategory = 'inappropriate_content' | 'scam' | 'counterfeit' | 
 export type ReportStatus = 'pending' | 'reviewed' | 'resolved';
 export type GradingCompany = 'psa' | 'cgc' | 'bgs';
 export type SealedProductType = 'booster_box' | 'etb' | 'booster_pack' | 'tin' | 'collection_box' | 'blister';
+export type ShopEventStatus = 'draft' | 'published' | 'cancelled' | 'completed';
 
 // Convenience row types
 export type UserRow = Database['public']['Tables']['users']['Row'];
@@ -732,6 +833,12 @@ export type MessageInsert = Database['public']['Tables']['messages']['Insert'];
 export type MeetupRow = Database['public']['Tables']['meetups']['Row'];
 export type MeetupUpdate = Database['public']['Tables']['meetups']['Update'];
 export type ShopRow = Database['public']['Tables']['shops']['Row'];
+export type ShopInsert = Database['public']['Tables']['shops']['Insert'];
+export type ShopUpdate = Database['public']['Tables']['shops']['Update'];
+export type ShopEventRow = Database['public']['Tables']['shop_events']['Row'];
+export type ShopEventInsert = Database['public']['Tables']['shop_events']['Insert'];
+export type ShopEventUpdate = Database['public']['Tables']['shop_events']['Update'];
+export type ShopNotificationRow = Database['public']['Tables']['shop_notifications']['Row'];
 export type RatingRow = Database['public']['Tables']['ratings']['Row'];
 export type RatingInsert = Database['public']['Tables']['ratings']['Insert'];
 export type BlockRow = Database['public']['Tables']['blocks']['Row'];

@@ -12,6 +12,7 @@ import type {
   MatchStatus,
   MeetupStatus,
   ReportStatus,
+  ShopEventStatus,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -51,11 +52,18 @@ export const REPORT_TRANSITIONS = {
   resolved: [],
 } as const satisfies Record<ReportStatus, readonly ReportStatus[]>;
 
+export const SHOP_EVENT_TRANSITIONS = {
+  draft: ['published', 'cancelled'],
+  published: ['cancelled', 'completed'],
+  cancelled: [],
+  completed: [],
+} as const satisfies Record<ShopEventStatus, readonly ShopEventStatus[]>;
+
 // ---------------------------------------------------------------------------
 // Entity → transition map lookup
 // ---------------------------------------------------------------------------
 
-type EntityName = 'listing' | 'offer' | 'match' | 'meetup' | 'report';
+type EntityName = 'listing' | 'offer' | 'match' | 'meetup' | 'report' | 'shop_event';
 
 type StatusForEntity<E extends EntityName> = E extends 'listing'
   ? ListingStatus
@@ -67,7 +75,9 @@ type StatusForEntity<E extends EntityName> = E extends 'listing'
         ? MeetupStatus
         : E extends 'report'
           ? ReportStatus
-          : never;
+          : E extends 'shop_event'
+            ? ShopEventStatus
+            : never;
 
 const TRANSITION_MAPS: Record<EntityName, Record<string, readonly string[]>> = {
   listing: LISTING_TRANSITIONS,
@@ -75,6 +85,7 @@ const TRANSITION_MAPS: Record<EntityName, Record<string, readonly string[]>> = {
   match: MATCH_TRANSITIONS,
   meetup: MEETUP_TRANSITIONS,
   report: REPORT_TRANSITIONS,
+  shop_event: SHOP_EVENT_TRANSITIONS,
 };
 
 // ---------------------------------------------------------------------------
@@ -156,3 +167,9 @@ export const isActionableListing = (status: ListingStatus): boolean =>
  */
 export const isActionableMeetup = (status: MeetupStatus): boolean =>
   status === 'confirmed';
+
+/**
+ * Returns true if the shop event can still be modified.
+ */
+export const isActionableShopEvent = (status: ShopEventStatus): boolean =>
+  status === 'draft' || status === 'published';
