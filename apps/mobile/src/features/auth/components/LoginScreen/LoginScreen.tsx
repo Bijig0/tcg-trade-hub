@@ -14,6 +14,11 @@ const LoginScreen: React.FC = () => {
   const { signIn } = useOAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const fillDemoCredentials = () => {
+    setEmail('test123@gmail.com');
+    setPassword('12345678');
+  };
   const [errors, setErrors] = useState<Partial<Record<keyof LoginForm, string>>>({});
 
   const handleEmailLogin = () => {
@@ -115,6 +120,26 @@ const LoginScreen: React.FC = () => {
           <Text className="text-sm text-muted-foreground">
             Don't have an account?{' '}
             <Text className="font-semibold text-primary">Sign up</Text>
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={fillDemoCredentials}
+          className="mt-8 rounded-xl border border-border bg-card p-4"
+        >
+          <Text className="mb-2 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Demo Account
+          </Text>
+          <View className="flex-row justify-between">
+            <Text className="text-sm text-muted-foreground">Email</Text>
+            <Text className="text-sm font-medium text-foreground">test123@gmail.com</Text>
+          </View>
+          <View className="mt-1 flex-row justify-between">
+            <Text className="text-sm text-muted-foreground">Password</Text>
+            <Text className="text-sm font-medium text-foreground">12345678</Text>
+          </View>
+          <Text className="mt-2 text-center text-xs text-muted-foreground">
+            Tap to auto-fill
           </Text>
         </Pressable>
       </ScrollView>
