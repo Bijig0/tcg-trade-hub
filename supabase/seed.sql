@@ -457,7 +457,7 @@ BEGIN
     -- Current user
     (my_l1, 'Charizard VMAX',              'https://images.pokemontcg.io/swsh3/20_hires.png',      'swsh3-20',  'pokemon', 'Darkness Ablaze',     '020/189', 'VMAX',             'nm', 45.00,  42.00, 1),
     (my_l2, 'Dark Magician',               'https://images.ygoprodeck.com/images/cards_small/46986414.jpg', 'LOB-005', 'yugioh', 'Legend of Blue Eyes', 'LOB-005', 'Ultra Rare', 'lp', 25.00, 20.00, 1),
-    (my_l3, 'Force of Will',               'https://cards.scryfall.io/normal/front/c/9/c9c7cf66-5a68-4834-98ea-47a25e46f4ed.jpg', 'ALL-42', 'mtg', 'Alliances', '42', 'Uncommon', 'lp', 85.00, NULL, 1),
+    (my_l3, 'Force of Will',               'https://cards.scryfall.io/normal/front/9/a/9a879b60-4381-447d-8a5a-8e0b6a1d49ca.jpg', 'ALL-42', 'mtg', 'Alliances', '42', 'Uncommon', 'lp', 85.00, NULL, 1),
     (my_l4, 'Pikachu VMAX',                'https://images.pokemontcg.io/swsh4/44_hires.png',      'swsh4-44',  'pokemon', 'Vivid Voltage',       '044/185', 'VMAX',             'nm', 18.50,  16.00, 1),
 
     -- my_l5: Evolving Skies Bundle (3 items)
@@ -471,7 +471,7 @@ BEGIN
 
     -- Alex Chen
     (u1_l1, 'Umbreon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/215_hires.png',    'swsh7-215', 'pokemon', 'Evolving Skies',      '215/203', 'Secret Rare',      'nm', 180.00, 170.00, 1),
-    (u1_l2, 'Charizard ex SAR',             'https://images.pokemontcg.io/sv3/234_hires.png',      'sv3-234',   'pokemon', 'Obsidian Flames',     '234/197', 'Special Art Rare', 'nm', 95.00,  80.00,  1),
+    (u1_l2, 'Charizard ex SAR',             'https://images.pokemontcg.io/sv3/223.png',      'sv3-223',   'pokemon', 'Obsidian Flames',     '223/197', 'Special Art Rare', 'nm', 95.00,  80.00,  1),
     (u1_l3, 'Rayquaza VMAX Alt Art',        'https://images.pokemontcg.io/swsh7/218_hires.png',    'swsh7-218', 'pokemon', 'Evolving Skies',      '218/203', 'Secret Rare',      'nm', 125.00, 120.00, 1),
 
     -- Sarah Mitchell
@@ -581,7 +581,7 @@ BEGIN
   INSERT INTO public.offer_items (offer_id, card_name, card_image_url, card_external_id, tcg, card_set, card_number, condition, market_price, quantity)
   VALUES
     -- Offer 1: Alex trading Charizard ex SAR
-    (offer_1, 'Charizard ex SAR', 'https://images.pokemontcg.io/sv3/234_hires.png', 'sv3-234', 'pokemon', 'Obsidian Flames', '234/197', 'nm', 95.00, 1),
+    (offer_1, 'Charizard ex SAR', 'https://images.pokemontcg.io/sv3/223.png', 'sv3-223', 'pokemon', 'Obsidian Flames', '223/197', 'nm', 95.00, 1),
     -- Offer 2: Sarah trading The One Ring
     (offer_2, 'The One Ring', 'https://cards.scryfall.io/normal/front/d/5/d5806e68-1054-458e-866d-1f2470f682b2.jpg', 'LTR-246', 'mtg', 'Tales of Middle-earth', '246', 'nm', 65.00, 1),
     -- Offer 9: Ethan trading Solitude
@@ -638,7 +638,7 @@ BEGIN
           jsonb_build_object('externalId', 'LTR-246', 'tcg', 'mtg', 'name', 'The One Ring', 'imageUrl', 'https://cards.scryfall.io/normal/front/d/5/d5806e68-1054-458e-866d-1f2470f682b2.jpg', 'condition', 'nm', 'quantity', 1)
         ),
         'requesting', jsonb_build_array(
-          jsonb_build_object('externalId', 'ALL-42', 'tcg', 'mtg', 'name', 'Force of Will', 'imageUrl', 'https://cards.scryfall.io/normal/front/c/9/c9c7cf66-5a68-4834-98ea-47a25e46f4ed.jpg', 'condition', 'lp', 'quantity', 1)
+          jsonb_build_object('externalId', 'ALL-42', 'tcg', 'mtg', 'name', 'Force of Will', 'imageUrl', 'https://cards.scryfall.io/normal/front/9/a/9a879b60-4381-447d-8a5a-8e0b6a1d49ca.jpg', 'condition', 'lp', 'quantity', 1)
         ),
         'cash_amount', 10,
         'cash_direction', 'offering',
@@ -758,7 +758,7 @@ BEGIN
     (me, 'pokemon', 'swsh3-20',   'Charizard VMAX',         'Darkness Ablaze',   'swsh3',  '020/189', 'https://images.pokemontcg.io/swsh3/20_hires.png',   'VMAX',             'nm', 1, false, 45.00,  NULL,  NULL,  false, NULL, NULL),
     (me, 'pokemon', 'swsh3-20',   'Charizard VMAX',         'Darkness Ablaze',   'swsh3',  '020/189', 'https://images.pokemontcg.io/swsh3/20_hires.png',   'VMAX',             'lp', 1, false, 42.00,  NULL,  NULL,  false, NULL, 40.00),
     (me, 'pokemon', 'swsh7-215',  'Umbreon VMAX Alt Art',   'Evolving Skies',    'swsh7',  '215/203', 'https://images.pokemontcg.io/swsh7/215_hires.png',  'Secret Rare',      'nm', 1, false, 180.00, 'psa', '10',  false, NULL, NULL),
-    (me, 'pokemon', 'sv3-234',    'Charizard ex SAR',       'Obsidian Flames',   'sv3',    '234/197', 'https://images.pokemontcg.io/sv3/234_hires.png',    'Special Art Rare', 'nm', 1, false, 95.00,  NULL,  NULL,  false, NULL, NULL),
+    (me, 'pokemon', 'sv3-223',    'Charizard ex SAR',       'Obsidian Flames',   'sv3',    '223/197', 'https://images.pokemontcg.io/sv3/223.png',    'Special Art Rare', 'nm', 1, false, 95.00,  NULL,  NULL,  false, NULL, NULL),
     (me, 'pokemon', 'swsh4-44',   'Pikachu VMAX',           'Vivid Voltage',     'swsh4',  '044/185', 'https://images.pokemontcg.io/swsh4/44_hires.png',   'VMAX',             'lp', 1, false, 18.50,  NULL,  NULL,  false, NULL, NULL),
     (me, 'pokemon', 'swsh8-268',  'Mew VMAX Alt Art',       'Fusion Strike',     'swsh8',  '268/264', 'https://images.pokemontcg.io/swsh8/268_hires.png',  'Secret Rare',      'nm', 1, false, 55.00,  'cgc', '9.5', false, NULL, NULL),
     (me, 'pokemon', 'swsh7-203',  'Dragonite V Alt Art',    'Evolving Skies',    'swsh7',  '203/203', 'https://images.pokemontcg.io/swsh7/203_hires.png',  'Secret Rare',      'nm', 1, false, 45.00,  NULL,  NULL,  false, NULL, 38.00),
@@ -771,7 +771,7 @@ BEGIN
     -- MTG
     (me, 'mtg', 'MH2-138', 'Ragavan, Nimble Pilferer',  'Modern Horizons 2',    'MH2', '138', 'https://cards.scryfall.io/normal/front/a/9/a9738cda-adb1-47fb-9f4c-ecd930228c4d.jpg', 'Mythic Rare', 'nm', 1, false, 55.00,  NULL,  NULL,  false, NULL, NULL),
     (me, 'mtg', 'MH2-138', 'Ragavan, Nimble Pilferer',  'Modern Horizons 2',    'MH2', '138', 'https://cards.scryfall.io/normal/front/a/9/a9738cda-adb1-47fb-9f4c-ecd930228c4d.jpg', 'Mythic Rare', 'nm', 1, false, 60.00,  'psa', '9',   false, NULL, 50.00),
-    (me, 'mtg', 'ALL-42',  'Force of Will',             'Alliances',            'ALL', '42',  'https://cards.scryfall.io/normal/front/c/9/c9c7cf66-5a68-4834-98ea-47a25e46f4ed.jpg', 'Uncommon',    'lp', 1, false, 85.00,  NULL,  NULL,  false, NULL, NULL),
+    (me, 'mtg', 'ALL-42',  'Force of Will',             'Alliances',            'ALL', '42',  'https://cards.scryfall.io/normal/front/9/a/9a879b60-4381-447d-8a5a-8e0b6a1d49ca.jpg', 'Uncommon',    'lp', 1, false, 85.00,  NULL,  NULL,  false, NULL, NULL),
     (me, 'mtg', 'MH2-254', 'Scalding Tarn',             'Modern Horizons 2',    'MH2', '254', 'https://cards.scryfall.io/normal/front/7/1/71e491c5-8c07-449b-b2f1-ffa052f6d636.jpg', 'Rare',        'nm', 1, false, 28.00,  NULL,  NULL,  false, NULL, 22.00),
     (me, 'mtg', 'MH2-254', 'Scalding Tarn',             'Modern Horizons 2',    'MH2', '254', 'https://cards.scryfall.io/normal/front/7/1/71e491c5-8c07-449b-b2f1-ffa052f6d636.jpg', 'Rare',        'nm', 1, false, 28.00,  NULL,  NULL,  false, NULL, 22.00),
     (me, 'mtg', 'DMU-107', 'Sheoldred, the Apocalypse', 'Dominaria United',     'DMU', '107', 'https://cards.scryfall.io/normal/front/d/6/d67be074-cdd4-41d9-ac89-0a0456c4e4b2.jpg', 'Mythic Rare', 'nm', 1, false, 75.00,  NULL,  NULL,  false, NULL, 60.00),

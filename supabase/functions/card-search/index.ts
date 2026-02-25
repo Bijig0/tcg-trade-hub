@@ -13,6 +13,7 @@ import {
   normalizeMtgCard,
   normalizeYugiohCard,
 } from '../_shared/normalizeCard.ts';
+import { cacheCardImages } from '../_shared/cacheCardImage.ts';
 
 const VALID_TCGS = ['pokemon', 'mtg', 'yugioh'] as const;
 type TcgType = (typeof VALID_TCGS)[number];
@@ -125,7 +126,16 @@ Deno.serve(async (req: Request) => {
         cards = [];
     }
 
-    return jsonResponse({ cards });
+    // Cache card images into Supabase Storage
+    const urlMap = await cacheCardImages(
+      cards.map((c) => ({ tcg: c.tcg, externalId: c.externalId, imageUrl: c.imageUrl })),
+    );
+    const cachedCards = cards.map((card) => ({
+      ...card,
+      imageUrl: urlMap.get(card.externalId) ?? card.imageUrl,
+    }));
+
+    return jsonResponse({ cards: cachedCards });
   } catch (err) {
     console.error('card-search error:', err);
     const message = err instanceof Error ? err.message : 'Internal server error';

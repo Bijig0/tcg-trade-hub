@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, Image } from 'react-native';
+import { ImageOff } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import type { ListingItemRow } from '@tcg-trade-hub/database';
 
@@ -29,13 +30,17 @@ const CardThumbnail = ({ item, sizeClass }: CardThumbnailProps) => {
 
   return (
     <View className={cn(sizeClass, 'overflow-hidden rounded-md bg-muted')}>
-      {showImage && (
+      {showImage ? (
         <Image
           source={{ uri: item.card_image_url }}
           className="h-full w-full"
           resizeMode="cover"
           onError={handleError}
         />
+      ) : (
+        <View className="h-full w-full items-center justify-center">
+          <ImageOff size={14} className="text-muted-foreground" />
+        </View>
       )}
     </View>
   );
