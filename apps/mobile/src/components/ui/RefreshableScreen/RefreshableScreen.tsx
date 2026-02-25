@@ -18,6 +18,8 @@ type RefreshableScreenProps = {
   className?: string;
   /** ScrollView contentContainer className (only used when children is ReactNode) */
   contentClassName?: string;
+  /** Test ID for E2E testing */
+  testID?: string;
 };
 
 /**
@@ -34,6 +36,7 @@ const RefreshableScreen = ({
   edges = ['top'],
   className = 'flex-1 bg-background',
   contentClassName = 'pb-8',
+  testID,
 }: RefreshableScreenProps) => {
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -52,7 +55,7 @@ const RefreshableScreen = ({
   const isRenderProp = typeof children === 'function';
 
   return (
-    <SafeAreaView className={className} edges={edges}>
+    <SafeAreaView testID={testID} className={className} edges={edges}>
       {isRenderProp ? (
         (children as (props: RenderProps) => React.ReactNode)({
           onRefresh,

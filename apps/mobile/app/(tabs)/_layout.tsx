@@ -18,6 +18,7 @@ const TabsLayout = () => {
         name="(discover)"
         options={{
           title: 'Discover',
+          tabBarTestID: 'tab-discover',
           tabBarIcon: ({ color, size }) => <Compass size={size} color={color} />,
         }}
       />
@@ -25,6 +26,7 @@ const TabsLayout = () => {
         name="(listings)"
         options={{
           title: 'Listings',
+          tabBarTestID: 'tab-listings',
           tabBarIcon: ({ color, size }) => <Layers size={size} color={color} />,
         }}
       />
@@ -32,6 +34,7 @@ const TabsLayout = () => {
         name="(messages)"
         options={{
           title: 'Messages',
+          tabBarTestID: 'tab-messages',
           tabBarIcon: ({ color, size }) => <MessageCircle size={size} color={color} />,
         }}
       />
@@ -39,6 +42,7 @@ const TabsLayout = () => {
         name="(meetups)"
         options={{
           title: 'Meetups',
+          tabBarTestID: 'tab-meetups',
           tabBarIcon: ({ color, size }) => <Calendar size={size} color={color} />,
         }}
       />
@@ -46,6 +50,7 @@ const TabsLayout = () => {
         name="(profile)"
         options={{
           title: 'Profile',
+          tabBarTestID: 'tab-profile',
           tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
         }}
       />

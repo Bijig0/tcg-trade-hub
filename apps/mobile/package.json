@@ -11,7 +11,11 @@
     "test:watch": "vitest",
     "clean": "rm -rf .expo dist node_modules",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "e2e": "maestro test e2e/flows/",
+    "e2e:auth": "maestro test e2e/flows/auth/",
+    "e2e:smoke": "maestro test e2e/flows/auth/login-happy-path.yaml",
+    "e2e:studio": "maestro studio"
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^5.1.1",

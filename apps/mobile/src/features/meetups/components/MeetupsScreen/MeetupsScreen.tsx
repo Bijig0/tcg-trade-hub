@@ -75,7 +75,7 @@ const MeetupsScreen = () => {
   const keyExtractor = (item: MeetupWithDetails) => item.id;
 
   return (
-    <RefreshableScreen queryKeys={[meetupKeys.all]}>
+    <RefreshableScreen testID="meetups-screen" queryKeys={[meetupKeys.all]}>
       {({ onRefresh, isRefreshing }) => (
         <SectionList
           sections={sections}

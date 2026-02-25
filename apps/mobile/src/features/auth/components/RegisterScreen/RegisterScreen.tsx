@@ -52,6 +52,7 @@ const RegisterScreen: React.FC = () => {
 
         <View className="gap-4">
           <Input
+            testID="auth-display-name-input"
             label="Display Name"
             placeholder="Your trader name"
             value={displayName}
@@ -61,6 +62,7 @@ const RegisterScreen: React.FC = () => {
           />
 
           <Input
+            testID="auth-register-email-input"
             label="Email"
             placeholder="you@example.com"
             value={email}
@@ -71,6 +73,7 @@ const RegisterScreen: React.FC = () => {
           />
 
           <Input
+            testID="auth-register-password-input"
             label="Password"
             placeholder="At least 8 characters"
             value={password}
@@ -79,12 +82,12 @@ const RegisterScreen: React.FC = () => {
             error={errors.password}
           />
 
-          <Button size="lg" onPress={handleRegister} disabled={register.isPending}>
+          <Button testID="auth-register-button" size="lg" onPress={handleRegister} disabled={register.isPending}>
             <Text className="text-base font-semibold text-primary-foreground">Create Account</Text>
           </Button>
         </View>
 
-        <Pressable onPress={() => router.back()} className="mt-6 items-center">
+        <Pressable testID="auth-login-link" onPress={() => router.back()} className="mt-6 items-center">
           <Text className="text-sm text-muted-foreground">
             Already have an account?{' '}
             <Text className="font-semibold text-primary">Sign in</Text>

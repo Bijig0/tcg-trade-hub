@@ -33,12 +33,13 @@ const FeedScreen = ({ hasActiveListings = true }: FeedScreenProps) => {
   }, [viewMode, setViewMode]);
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView testID="discover-feed-screen" className="flex-1 bg-background" edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center justify-between border-b border-border px-4 pb-2 pt-2">
         <Text className="text-xl font-bold text-foreground">Feed</Text>
 
         <Pressable
+          testID="feed-view-toggle"
           onPress={toggleViewMode}
           className="flex-row items-center gap-1.5 rounded-lg bg-muted px-3 py-1.5 active:bg-accent"
         >

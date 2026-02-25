@@ -1,0 +1,12 @@
+appId: com.tcgtradehub.app
+---
+- tapOn:
+    id: "tab-profile"
+- waitForAnimationToEnd
+- tapOn:
+    id: "profile-settings-button"
+- waitForAnimationToEnd
+- tapOn:
+    id: "settings-sign-out-button"
+- tapOn: "Sign Out"
+- waitForAnimationToEnd

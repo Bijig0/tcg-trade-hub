@@ -154,7 +154,7 @@ const ConversationsScreen = () => {
   }
 
   return (
-    <RefreshableScreen queryKeys={[chatKeys.conversations()]}>
+    <RefreshableScreen testID="messages-screen" queryKeys={[chatKeys.conversations()]}>
       {({ onRefresh, isRefreshing }) => (
         <FlatList
           data={conversations}

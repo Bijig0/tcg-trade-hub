@@ -309,7 +309,7 @@ const SettingsScreen = () => {
 
       {/* Sign out */}
       <View className="px-4">
-        <Button variant="outline" onPress={handleSignOut}>
+        <Button testID="settings-sign-out-button" variant="outline" onPress={handleSignOut}>
           <Text className="text-base font-medium text-destructive">Sign Out</Text>
         </Button>
       </View>

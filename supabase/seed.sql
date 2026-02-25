@@ -1226,3 +1226,138 @@ BEGIN
 
   RAISE NOTICE 'Test user seed data inserted successfully for user %', t;
 END $$;
+
+-- =============================================================================
+-- E2E TEST USER (e2e@test.dev) — used exclusively by Maestro E2E tests
+-- =============================================================================
+
+INSERT INTO auth.users (
+  id, instance_id, aud, role, email, encrypted_password,
+  email_confirmed_at, created_at, updated_at,
+  confirmation_token, recovery_token,
+  raw_app_meta_data, raw_user_meta_data
+)
+SELECT
+  'e2e00000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000',
+  'authenticated', 'authenticated',
+  'e2e@test.dev',
+  crypt('e2etestpass', gen_salt('bf')),
+  now(), now(), now(), '', '',
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{"display_name":"E2E Tester"}'::jsonb
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'e2e@test.dev'
+);
+
+-- =============================================================================
+-- E2E TEST USER FULL SEED DATA
+-- =============================================================================
+
+DO $$
+DECLARE
+  e uuid;
+
+  -- Existing fake user references (reuse for matches/conversations)
+  u1  uuid := 'a1111111-1111-1111-1111-111111111111';
+  u4  uuid := 'a4444444-4444-4444-4444-444444444444';
+
+  -- E2E user listing UUIDs
+  e_l1 uuid := 'b5000001-0000-0000-0000-000000000001';
+  e_l2 uuid := 'b5000001-0000-0000-0000-000000000002';
+
+  -- Offer UUIDs
+  off_e1 uuid := 'c4000001-0000-0000-0000-000000000001';
+
+  -- Match UUIDs
+  e_m1 uuid := 'd4000001-0000-0000-0000-000000000001';
+
+  -- Conversation UUIDs
+  e_conv1 uuid := 'e4000001-0000-0000-0000-000000000001';
+
+  -- Message UUIDs
+  e_msg01 uuid := 'f4000001-0000-0000-0000-000000000001';
+  e_msg02 uuid := 'f4000001-0000-0000-0000-000000000002';
+  e_msg03 uuid := 'f4000001-0000-0000-0000-000000000003';
+
+  -- Meetup UUIDs
+  e_meet1 uuid := 'ac000001-0000-0000-0000-000000000001';
+
+  -- Shop ID (looked up dynamically)
+  shop_good_games uuid;
+
+BEGIN
+  -- Look up the E2E user from auth
+  SELECT id INTO e FROM auth.users WHERE email = 'e2e@test.dev' LIMIT 1;
+
+  IF e IS NULL THEN
+    RAISE NOTICE 'E2E user (e2e@test.dev) not found in auth.users. Skipping seed.';
+    RETURN;
+  END IF;
+
+  -- Look up shop ID
+  SELECT id INTO shop_good_games FROM public.shops WHERE name = 'Good Games Melbourne' LIMIT 1;
+
+  -- PUBLIC USER
+  INSERT INTO public.users (id, email, display_name)
+  VALUES (e, 'e2e@test.dev', 'E2E Tester')
+  ON CONFLICT (id) DO NOTHING;
+
+  UPDATE public.users
+  SET
+    location = ST_SetSRID(ST_MakePoint(144.9700, -37.8200), 4326),
+    radius_km = 25,
+    preferred_tcgs = ARRAY['pokemon', 'mtg']::public.tcg_type[],
+    rating_score = 4.00,
+    total_trades = 1
+  WHERE id = e;
+
+  -- LISTINGS (2: 1 WTS active, 1 WTB active)
+  INSERT INTO public.listings (id, user_id, type, tcg, title, cash_amount, total_value, description, status, created_at)
+  VALUES
+    (e_l1, e, 'wts', 'pokemon', 'Pikachu V',       15.00, 30.00, 'E2E test listing - Want to Sell.',  'active', now() - interval '3 days'),
+    (e_l2, e, 'wtb', 'mtg',     'Lightning Bolt',   2.00,  5.00, 'E2E test listing - Want to Buy.',   'active', now() - interval '2 days')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- LISTING ITEMS
+  INSERT INTO public.listing_items (listing_id, card_name, card_image_url, card_external_id, tcg, card_set, card_number, card_rarity, condition, market_price, asking_price, quantity)
+  VALUES
+    (e_l1, 'Pikachu V',       'https://images.pokemontcg.io/swsh4/170.png', 'swsh4-170', 'pokemon', 'Vivid Voltage', '170/185', 'Ultra Rare', 'nm', 18.00, 15.00, 1),
+    (e_l2, 'Lightning Bolt',  'https://cards.scryfall.io/normal/front/e/3/e3285e6b-3e79-4d7c-bf96-d920f973b122.jpg', 'A25-141', 'mtg', 'Masters 25', '141', 'Uncommon', 'nm', 3.00, 2.00, 1)
+  ON CONFLICT DO NOTHING;
+
+  -- OFFER (1 accepted -> match)
+  INSERT INTO public.offers (id, listing_id, offerer_id, status, cash_amount, message, created_at)
+  VALUES
+    (off_e1, e_l1, u1, 'accepted', 14.00, 'I will take the Pikachu V!', now() - interval '2 days')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- MATCH (1 active)
+  INSERT INTO public.matches (id, user_a_id, user_b_id, listing_id, offer_id, status, created_at)
+  VALUES
+    (e_m1, e, u1, e_l1, off_e1, 'active', now() - interval '2 days')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- CONVERSATION (1)
+  INSERT INTO public.conversations (id, match_id, created_at)
+  VALUES
+    (e_conv1, e_m1, now() - interval '2 days')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- MESSAGES (3 text messages)
+  INSERT INTO public.messages (id, conversation_id, sender_id, type, body, payload, created_at)
+  VALUES
+    (e_msg01, e_conv1, u1, 'text', 'Hey! Is the Pikachu V still available?', NULL, now() - interval '2 days'),
+    (e_msg02, e_conv1, e,  'text', 'Yes it is! Want to meet up?',            NULL, now() - interval '1 day 22 hours'),
+    (e_msg03, e_conv1, u1, 'meetup_proposal', 'Good Games Melbourne on Saturday?',
+      jsonb_build_object('shop_id', shop_good_games, 'location_name', 'Good Games Melbourne', 'proposed_time', (now() + interval '3 days')::text),
+      now() - interval '1 day 20 hours')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- MEETUP (1 upcoming)
+  INSERT INTO public.meetups (id, match_id, proposal_message_id, shop_id, location_name, proposed_time, status, user_a_completed, user_b_completed, created_at)
+  VALUES
+    (e_meet1, e_m1, e_msg03, shop_good_games, 'Good Games Melbourne', now() + interval '3 days', 'confirmed', false, false, now() - interval '1 day 20 hours')
+  ON CONFLICT (id) DO NOTHING;
+
+  RAISE NOTICE 'E2E test user seed data inserted successfully for user %', e;
+END $$;

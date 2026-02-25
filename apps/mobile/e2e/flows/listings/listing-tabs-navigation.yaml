@@ -1,0 +1,21 @@
+appId: com.tcgtradehub.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: "../_subflows/login.yaml"
+- runFlow: "../_subflows/navigate-to-listings.yaml"
+- assertVisible:
+    id: "listings-screen"
+# Switch to Matched tab
+- tapOn:
+    id: "listings-tab-matched"
+- waitForAnimationToEnd
+# Switch to History tab
+- tapOn:
+    id: "listings-tab-history"
+- waitForAnimationToEnd
+# Switch back to Active tab
+- tapOn:
+    id: "listings-tab-active"
+- waitForAnimationToEnd
