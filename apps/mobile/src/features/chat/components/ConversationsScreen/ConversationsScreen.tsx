@@ -6,10 +6,12 @@ import { MessageSquare } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
+import RefreshableScreen from '@/components/ui/RefreshableScreen/RefreshableScreen';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import useConversations, {
   type ConversationPreview,
 } from '../../hooks/useConversations/useConversations';
+import { chatKeys } from '../../queryKeys';
 import formatMessage from '../../utils/formatMessage/formatMessage';
 
 type ConversationItemProps = {
@@ -124,32 +126,34 @@ const ConversationsScreen = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <FlatList
-        data={conversations}
-        keyExtractor={(item) => item.conversationId}
-        renderItem={({ item }) => (
-          <ConversationItem
-            conversation={item}
-            onPress={() => handlePress(item.conversationId)}
-          />
-        )}
-        ListEmptyComponent={
-          <EmptyState
-            icon={
-              <MessageSquare
-                size={48}
-                color="#9ca3af"
-              />
-            }
-            title="No conversations yet"
-            description="Match with traders to start chatting!"
-          />
-        }
-        onRefresh={refetch}
-        refreshing={isLoading}
-      />
-    </SafeAreaView>
+    <RefreshableScreen queryKeys={[chatKeys.conversations()]}>
+      {({ onRefresh, isRefreshing }) => (
+        <FlatList
+          data={conversations}
+          keyExtractor={(item) => item.conversationId}
+          renderItem={({ item }) => (
+            <ConversationItem
+              conversation={item}
+              onPress={() => handlePress(item.conversationId)}
+            />
+          )}
+          ListEmptyComponent={
+            <EmptyState
+              icon={
+                <MessageSquare
+                  size={48}
+                  color="#9ca3af"
+                />
+              }
+              title="No conversations yet"
+              description="Match with traders to start chatting!"
+            />
+          }
+          onRefresh={onRefresh}
+          refreshing={isRefreshing}
+        />
+      )}
+    </RefreshableScreen>
   );
 };
 

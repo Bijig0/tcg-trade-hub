@@ -1,12 +1,21 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, FlatList, ScrollView, Pressable, Image, Alert, TextInput } from 'react-native';
+import { View, Text, FlatList, RefreshControl, ScrollView, Pressable, Image, Alert, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
+<<<<<<< HEAD
 import { Search, X, Eye, EyeOff } from 'lucide-react-native';
+=======
+import { useQueryClient } from '@tanstack/react-query';
+import { Search, X } from 'lucide-react-native';
+>>>>>>> feature/refreshable-screen
 import useMyCollection from '../../hooks/useMyCollection/useMyCollection';
 import useMySealedProducts from '../../hooks/useMySealedProducts/useMySealedProducts';
 import usePortfolioValue from '../../hooks/usePortfolioValue/usePortfolioValue';
 import useRemoveCollectionItem from '../../hooks/useRemoveCollectionItem/useRemoveCollectionItem';
+<<<<<<< HEAD
 import useUpdateCollectionVisibility from '../../hooks/useUpdateCollectionVisibility/useUpdateCollectionVisibility';
+=======
+import { collectionKeys } from '../../queryKeys';
+>>>>>>> feature/refreshable-screen
 import groupCollectionItems from '../../utils/groupCollectionItems/groupCollectionItems';
 import CollectionCardGroup from '../CollectionCardGroup/CollectionCardGroup';
 import Button from '@/components/ui/Button/Button';
@@ -35,6 +44,7 @@ const TABS: { key: Tab; label: string }[] = [
 
 const CollectionScreen: React.FC = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: collection } = useMyCollection();
   const { data: sealed } = useMySealedProducts();
   const portfolio = usePortfolioValue();
@@ -44,6 +54,16 @@ const CollectionScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('cards');
   const [filterTcg, setFilterTcg] = useState<FilterTcg>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await queryClient.invalidateQueries({ queryKey: collectionKeys.all });
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [queryClient]);
 
   const currentItems = activeTab === 'cards' ? collection : sealed;
 
@@ -305,7 +325,12 @@ const CollectionScreen: React.FC = () => {
           action={{ label: addLabel, onPress: handleAddPress }}
         />
       ) : activeTab === 'cards' ? (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          }
+        >
           {groupedCards.map((group) => (
             <CollectionCardGroup key={group.groupKey} group={group} />
           ))}
@@ -315,6 +340,8 @@ const CollectionScreen: React.FC = () => {
           data={filteredItems}
           keyExtractor={(item) => item.id}
           renderItem={renderFlatItem}
+          onRefresh={onRefresh}
+          refreshing={isRefreshing}
         />
       )}
     </View>
