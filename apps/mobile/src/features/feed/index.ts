@@ -2,6 +2,7 @@
 export { default as FeedScreen } from './components/FeedScreen/FeedScreen';
 export { default as DiscoverScreen } from './components/DiscoverScreen/DiscoverScreen';
 export { default as ListingDetailScreen } from './components/ListingDetailScreen/ListingDetailScreen';
+export { default as BrowseMapScreen } from './components/BrowseMapScreen/BrowseMapScreen';
 
 // Components
 export { default as FeedListView } from './components/FeedListView/FeedListView';
@@ -15,6 +16,8 @@ export { default as useFeedListings } from './hooks/useFeedListings/useFeedListi
 export { default as useRecordSwipe } from './hooks/useRecordSwipe/useRecordSwipe';
 export { default as useListingDetail } from './hooks/useListingDetail/useListingDetail';
 export { default as useHasActiveListings } from './hooks/useHasActiveListings/useHasActiveListings';
+export { default as useBrowseShops } from './hooks/useBrowseShops/useBrowseShops';
+export { default as useUserLocation } from './hooks/useUserLocation/useUserLocation';
 
 // Utils
 export { default as formatDistance } from './utils/formatDistance/formatDistance';

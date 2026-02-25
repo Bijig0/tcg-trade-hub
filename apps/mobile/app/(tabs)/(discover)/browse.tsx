@@ -1,3 +1,3 @@
-import { FeedScreen } from '@/features/feed';
+import { BrowseMapScreen } from '@/features/feed';
 
-export default FeedScreen;
+export default BrowseMapScreen;
