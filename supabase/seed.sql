@@ -467,7 +467,7 @@ BEGIN
 
     -- my_l6: Modern Staples Bundle (2 items)
     (my_l6, 'Lightning Bolt',              'https://cards.scryfall.io/normal/front/f/2/f29ba16f-c8fb-42fe-aabf-87089cb214a7.jpg', 'A25-141', 'mtg', 'Masters 25', '141', 'Uncommon', 'nm', 3.00, NULL, 4),
-    (my_l6, 'Path to Exile',               'https://cards.scryfall.io/normal/front/f/b/fbc09b16-2e8e-4ed2-8668-30f6d1510669.jpg', 'E01-17', 'mtg', 'Archenemy: Nicol Bolas', '17', 'Uncommon', 'nm', 4.00, NULL, 4),
+    (my_l6, 'Path to Exile',               'https://cards.scryfall.io/normal/front/3/5/35649ef0-b2fd-429f-be5f-766d5cea5994.jpg', 'E01-17', 'mtg', 'Archenemy: Nicol Bolas', '17', 'Uncommon', 'nm', 4.00, NULL, 4),
 
     -- Alex Chen
     (u1_l1, 'Umbreon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/215_hires.png',    'swsh7-215', 'pokemon', 'Evolving Skies',      '215/203', 'Secret Rare',      'nm', 180.00, 170.00, 1),
@@ -477,7 +477,7 @@ BEGIN
     -- Sarah Mitchell
     (u2_l1, 'Ragavan, Nimble Pilferer',     'https://cards.scryfall.io/normal/front/a/9/a9738cda-adb1-47fb-9f4c-ecd930228c4d.jpg', 'MH2-138', 'mtg', 'Modern Horizons 2', '138', 'Mythic Rare', 'nm', 55.00, 50.00, 1),
     (u2_l2, 'The One Ring',                 'https://cards.scryfall.io/normal/front/d/5/d5806e68-1054-458e-866d-1f2470f682b2.jpg', 'LTR-246', 'mtg', 'Tales of Middle-earth', '246', 'Mythic Rare', 'nm', 65.00, NULL, 1),
-    (u2_l3, 'Atraxa, Grand Unifier',       'https://cards.scryfall.io/normal/front/4/a/4a1f905f-1d55-4d02-9d24-e58070f1b1d3.jpg', 'ONE-196', 'mtg', 'Phyrexia: All Will Be One', '196', 'Mythic Rare', 'nm', 30.00, 28.00, 1),
+    (u2_l3, 'Atraxa, Grand Unifier',       'https://cards.scryfall.io/normal/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.jpg', 'ONE-196', 'mtg', 'Phyrexia: All Will Be One', '196', 'Mythic Rare', 'nm', 30.00, 28.00, 1),
 
     -- James Wilson
     (u3_l1, 'Blue-Eyes White Dragon',       'https://images.ygoprodeck.com/images/cards_small/89631139.jpg', 'LOB-001', 'yugioh', 'Legend of Blue Eyes', 'LOB-001', 'Ultra Rare', 'lp', 40.00, 35.00, 1),
@@ -500,19 +500,19 @@ BEGIN
 
     -- Mia Zhang
     (u6_l1, 'Giratina VSTAR Alt Art',       'https://images.pokemontcg.io/swsh11/131_hires.png',   'swsh11-131','pokemon', 'Lost Origin',          '131/196', 'Secret Rare',      'nm', 70.00,  65.00, 1),
-    (u6_l2, 'Liliana of the Veil',          'https://cards.scryfall.io/normal/front/d/1/d12c8c97-6491-452c-811d-943571a0d346.jpg', 'DMU-97', 'mtg', 'Dominaria United', '97', 'Mythic Rare', 'nm', 22.00, NULL, 1),
+    (u6_l2, 'Liliana of the Veil',          'https://cards.scryfall.io/normal/front/d/1/d12c8c97-6491-452c-811d-943441a7ef9f.jpg', 'DMU-97', 'mtg', 'Dominaria United', '97', 'Mythic Rare', 'nm', 22.00, NULL, 1),
     (u6_l3, 'Umbreon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/215_hires.png',    'swsh7-215', 'pokemon', 'Evolving Skies',      '215/203', 'Secret Rare',      'nm', 180.00, 160.00, 1),
 
     -- Noah Patel
     (u7_l1, 'Wrenn and Six',                'https://cards.scryfall.io/normal/front/5/b/5bd498cc-a609-4457-9325-6888d59ca36f.jpg', 'MH1-217', 'mtg', 'Modern Horizons', '217', 'Mythic Rare', 'nm', 60.00, 55.00, 1),
     -- u7_l2: Fetchland Bundle (2 items)
-    (u7_l2, 'Scalding Tarn',                'https://cards.scryfall.io/normal/front/7/1/71e491c5-8c07-449b-b2f1-ffa052f6d636.jpg', 'MH2-254', 'mtg', 'Modern Horizons 2', '254', 'Rare', 'nm', 28.00, 25.00, 4),
-    (u7_l2, 'Misty Rainforest',             'https://cards.scryfall.io/normal/front/c/5/c5cd0d88-53b5-4560-bce0-910b3b7571a0.jpg', 'MH2-250', 'mtg', 'Modern Horizons 2', '250', 'Rare', 'nm', 22.00, 20.00, 2),
+    (u7_l2, 'Scalding Tarn',                'https://cards.scryfall.io/normal/front/7/1/71e491c5-8c07-449b-b2f1-ffa052e6d311.jpg', 'MH2-254', 'mtg', 'Modern Horizons 2', '254', 'Rare', 'nm', 28.00, 25.00, 4),
+    (u7_l2, 'Misty Rainforest',             'https://cards.scryfall.io/normal/front/8/8/88231c0d-0cc8-44ec-bf95-81d1710ac141.jpg', 'MH2-250', 'mtg', 'Modern Horizons 2', '250', 'Rare', 'nm', 22.00, 20.00, 2),
     (u7_l3, 'Doubling Season',              'https://cards.scryfall.io/normal/front/8/6/8676d164-c76e-402b-a649-6ded3f549b6e.jpg', 'RAV-158', 'mtg', 'Ravnica', '158', 'Rare', 'nm', 45.00, NULL, 1),
 
     -- Olivia Kim
     (u8_l1, 'Accesscode Talker',            'https://images.ygoprodeck.com/images/cards_small/86066372.jpg', 'ETCO-086', 'yugioh', 'Eternity Code', 'ETCO-086', 'Ultra Rare', 'nm', 20.00, 18.00, 1),
-    (u8_l2, 'Lugia VSTAR Alt Art',          'https://images.pokemontcg.io/swsh12pt5/186_hires.png', 'swsh12pt5-186', 'pokemon', 'Silver Tempest', '186/195', 'Secret Rare', 'nm', 60.00, 55.00, 1),
+    (u8_l2, 'Lugia VSTAR Alt Art',          'https://images.pokemontcg.io/swsh12pt5/139_hires.png', 'swsh12pt5-186', 'pokemon', 'Silver Tempest', '186/195', 'Secret Rare', 'nm', 60.00, 55.00, 1),
     -- u8_l3: Ghost Rare Collection (3 items)
     (u8_l3, 'Stardust Dragon (Ghost)',       'https://images.ygoprodeck.com/images/cards_small/44508094.jpg', 'TDGS-040', 'yugioh', 'The Duelist Genesis', 'TDGS-040', 'Ghost Rare', 'lp', 85.00, NULL, 1),
     (u8_l3, 'Rainbow Dragon (Ghost)',        'https://images.ygoprodeck.com/images/cards_small/95744531.jpg', 'TAEV-098', 'yugioh', 'Tactical Evolution', 'TAEV-098', 'Ghost Rare', 'lp', 95.00, NULL, 1),
@@ -538,7 +538,7 @@ BEGIN
     -- u12_l1: Eeveelution Bundle (3 items)
     (u12_l1, 'Umbreon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/215_hires.png',   'swsh7-215', 'pokemon', 'Evolving Skies',      '215/203', 'Secret Rare',      'nm', 180.00, 170.00, 1),
     (u12_l1, 'Glaceon VMAX Alt Art',         'https://images.pokemontcg.io/swsh7/209_hires.png',   'swsh7-209', 'pokemon', 'Evolving Skies',      '209/203', 'Secret Rare',      'nm', 80.00,  75.00,  1),
-    (u12_l1, 'Espeon VMAX Alt Art',          'https://images.pokemontcg.io/swsh7/270_hires.png',   'swsh7-270', 'pokemon', 'Evolving Skies',      '270/203', 'Secret Rare',      'nm', 65.00,  60.00,  1),
+    (u12_l1, 'Espeon VMAX Alt Art',          'https://images.pokemontcg.io/swsh7/65_hires.png',   'swsh7-270', 'pokemon', 'Evolving Skies',      '270/203', 'Secret Rare',      'nm', 65.00,  60.00,  1),
     -- u12_l2: Radiant Collection (3 sample items)
     (u12_l2, 'Radiant Charizard',            'https://images.pokemontcg.io/pgo/11_hires.png',      'pgo-11',    'pokemon', 'Pokemon GO',           '011/078', 'Radiant Rare',     'nm', 12.00, NULL, 1),
     (u12_l2, 'Radiant Blastoise',            'https://images.pokemontcg.io/pgo/18_hires.png',      'pgo-18',    'pokemon', 'Pokemon GO',           '018/078', 'Radiant Rare',     'nm', 6.00,  NULL, 1),
@@ -547,8 +547,8 @@ BEGIN
 
     -- Daniel Lee
     -- u13_l1: Snake-Eyes Core (2 items)
-    (u13_l1, 'Snake-Eye Ash',                'https://images.ygoprodeck.com/images/cards_small/96451900.jpg', 'AGOV-088', 'yugioh', 'Age of Overlord', 'AGOV-088', 'Super Rare', 'nm', 25.00, 22.00, 3),
-    (u13_l1, 'Snake-Eyes Flamberge Dragon',  'https://images.ygoprodeck.com/images/cards_small/71646338.jpg', 'PHNI-099', 'yugioh', 'Phantom Nightmare', 'PHNI-099', 'Ultra Rare', 'nm', 20.00, 18.00, 1),
+    (u13_l1, 'Snake-Eye Ash',                'https://images.ygoprodeck.com/images/cards_small/9674034.jpg', 'AGOV-088', 'yugioh', 'Age of Overlord', 'AGOV-088', 'Super Rare', 'nm', 25.00, 22.00, 3),
+    (u13_l1, 'Snake-Eyes Flamberge Dragon',  'https://images.ygoprodeck.com/images/cards_small/48452496.jpg', 'PHNI-099', 'yugioh', 'Phantom Nightmare', 'PHNI-099', 'Ultra Rare', 'nm', 20.00, 18.00, 1),
     -- u13_l2: Tearlaments Core (2 items)
     (u13_l2, 'Tearlaments Kitkallos',        'https://images.ygoprodeck.com/images/cards_small/92731385.jpg', 'POTE-048', 'yugioh', 'Power of the Elements', 'POTE-048', 'Ultra Rare', 'nm', 30.00, NULL, 1),
     (u13_l2, 'Tearlaments Rulkallos',        'https://images.ygoprodeck.com/images/cards_small/84330567.jpg', 'POTE-047', 'yugioh', 'Power of the Elements', 'POTE-047', 'Ultra Rare', 'nm', 18.00, NULL, 1),
@@ -772,8 +772,8 @@ BEGIN
     (me, 'mtg', 'MH2-138', 'Ragavan, Nimble Pilferer',  'Modern Horizons 2',    'MH2', '138', 'https://cards.scryfall.io/normal/front/a/9/a9738cda-adb1-47fb-9f4c-ecd930228c4d.jpg', 'Mythic Rare', 'nm', 1, false, 55.00,  NULL,  NULL,  false, NULL, NULL),
     (me, 'mtg', 'MH2-138', 'Ragavan, Nimble Pilferer',  'Modern Horizons 2',    'MH2', '138', 'https://cards.scryfall.io/normal/front/a/9/a9738cda-adb1-47fb-9f4c-ecd930228c4d.jpg', 'Mythic Rare', 'nm', 1, false, 60.00,  'psa', '9',   false, NULL, 50.00),
     (me, 'mtg', 'ALL-42',  'Force of Will',             'Alliances',            'ALL', '42',  'https://cards.scryfall.io/normal/front/9/a/9a879b60-4381-447d-8a5a-8e0b6a1d49ca.jpg', 'Uncommon',    'lp', 1, false, 85.00,  NULL,  NULL,  false, NULL, NULL),
-    (me, 'mtg', 'MH2-254', 'Scalding Tarn',             'Modern Horizons 2',    'MH2', '254', 'https://cards.scryfall.io/normal/front/7/1/71e491c5-8c07-449b-b2f1-ffa052f6d636.jpg', 'Rare',        'nm', 1, false, 28.00,  NULL,  NULL,  false, NULL, 22.00),
-    (me, 'mtg', 'MH2-254', 'Scalding Tarn',             'Modern Horizons 2',    'MH2', '254', 'https://cards.scryfall.io/normal/front/7/1/71e491c5-8c07-449b-b2f1-ffa052f6d636.jpg', 'Rare',        'nm', 1, false, 28.00,  NULL,  NULL,  false, NULL, 22.00),
+    (me, 'mtg', 'MH2-254', 'Scalding Tarn',             'Modern Horizons 2',    'MH2', '254', 'https://cards.scryfall.io/normal/front/7/1/71e491c5-8c07-449b-b2f1-ffa052e6d311.jpg', 'Rare',        'nm', 1, false, 28.00,  NULL,  NULL,  false, NULL, 22.00),
+    (me, 'mtg', 'MH2-254', 'Scalding Tarn',             'Modern Horizons 2',    'MH2', '254', 'https://cards.scryfall.io/normal/front/7/1/71e491c5-8c07-449b-b2f1-ffa052e6d311.jpg', 'Rare',        'nm', 1, false, 28.00,  NULL,  NULL,  false, NULL, 22.00),
     (me, 'mtg', 'DMU-107', 'Sheoldred, the Apocalypse', 'Dominaria United',     'DMU', '107', 'https://cards.scryfall.io/normal/front/d/6/d67be074-cdd4-41d9-ac89-0a0456c4e4b2.jpg', 'Mythic Rare', 'nm', 1, false, 75.00,  NULL,  NULL,  false, NULL, 60.00),
 
     -- Yu-Gi-Oh
