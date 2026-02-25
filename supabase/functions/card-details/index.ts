@@ -13,6 +13,7 @@ import {
   normalizeMtgCard,
   normalizeYugiohCard,
 } from '../_shared/normalizeCard.ts';
+import { cacheCardImage } from '../_shared/cacheCardImage.ts';
 
 const VALID_TCGS = ['pokemon', 'mtg', 'yugioh'] as const;
 type TcgType = (typeof VALID_TCGS)[number];
@@ -132,6 +133,10 @@ Deno.serve(async (req: Request) => {
       default:
         return errorResponse('Unsupported tcg type');
     }
+
+    // Cache card image into Supabase Storage
+    const { cachedUrl } = await cacheCardImage(card.tcg, card.externalId, card.imageUrl);
+    card = { ...card, imageUrl: cachedUrl };
 
     return jsonResponse({ card });
   } catch (err) {

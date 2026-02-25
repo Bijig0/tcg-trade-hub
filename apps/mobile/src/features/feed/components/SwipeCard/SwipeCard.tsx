@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, Image } from 'react-native';
+import { ImageOff } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import { ListingTypeBadge } from '@/features/listings';
 import BundlePreview from '@/features/listings/components/BundlePreview/BundlePreview';
@@ -24,6 +25,9 @@ const SwipeCard = ({ listing, className }: SwipeCardProps) => {
   const items = listing.items ?? [];
   const firstItem = items[0];
   const heroImage = firstItem?.card_image_url ?? '';
+  const [heroError, setHeroError] = useState(false);
+  const handleHeroError = useCallback(() => setHeroError(true), []);
+  const showHero = heroImage.length > 0 && !heroError;
 
   return (
     <View
@@ -33,18 +37,20 @@ const SwipeCard = ({ listing, className }: SwipeCardProps) => {
       )}
     >
       {/* Hero image from first item */}
-      {heroImage ? (
+      {showHero ? (
         <View className="relative h-[55%]">
           <Image
             source={{ uri: heroImage }}
             className="h-full w-full bg-muted"
             resizeMode="contain"
+            onError={handleHeroError}
           />
           <ListingTypeBadge type={listing.type} className="absolute left-3 top-3 px-3 py-1.5" />
         </View>
       ) : (
-        <View className="h-[55%] items-center justify-center bg-muted">
-          <Text className="text-muted-foreground">No image</Text>
+        <View className="relative h-[55%] items-center justify-center bg-muted">
+          <ImageOff size={48} className="text-muted-foreground" />
+          <ListingTypeBadge type={listing.type} className="absolute left-3 top-3 px-3 py-1.5" />
         </View>
       )}
 
