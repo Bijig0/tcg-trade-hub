@@ -1,0 +1,33 @@
+{
+  "name": "@tcg-trade-hub/admin",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev --port 3001",
+    "build": "vite build",
+    "start": "node .output/server/index.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.62.0",
+    "@tanstack/react-router": "^1.161.0",
+    "@tanstack/react-start": "^1.161.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "flow-graph": "link:../../../flow-graph",
+    "cytoscape": "^3.30.0",
+    "cytoscape-dagre": "^2.5.0",
+    "cytoscape-elk": "^2.2.0",
+    "elkjs": "^0.9.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "~5.9.2",
+    "vite": "^7.0.0",
+    "vite-tsconfig-paths": "^4.3.0"
+  }
+}

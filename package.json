@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "turbo dev",
     "dev:site": "pnpm --filter web dev",
+    "dev:admin": "pnpm --filter admin dev",
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
