@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, SectionList, Pressable, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useRouter } from 'expo-router';
 import { Plus, ArrowRight, Package, Handshake, Archive } from 'lucide-react-native';
 import SegmentedFilter from '@/components/ui/SegmentedFilter/SegmentedFilter';
@@ -173,7 +173,7 @@ const MyListingsScreen = () => {
   // Loading state
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <View className="flex-1 bg-background">
         <View className="flex-row border-b border-border">
           {['Active', 'Matched', 'History'].map((label) => (
             <View key={label} className="flex-1 items-center pb-2.5 pt-3">
@@ -193,7 +193,7 @@ const MyListingsScreen = () => {
             </View>
           ))}
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -202,7 +202,7 @@ const MyListingsScreen = () => {
   // First-time empty state -- no listings at all
   if (allListings.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <View className="flex-1 bg-background">
         <View className="flex-1 px-6 pt-12">
           <Text className="text-2xl font-bold text-foreground">
             What are you looking to do?
@@ -231,7 +231,7 @@ const MyListingsScreen = () => {
             ))}
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 

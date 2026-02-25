@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthProvider';
-import { chatKeys } from '@/features/chat/queryKeys';
 import { meetupKeys } from '@/features/meetups/queryKeys';
 import { profileKeys } from '@/features/profile/queryKeys';
 import { listingKeys } from '@/features/listings/queryKeys';
@@ -12,24 +11,7 @@ import { fetchMyListings } from '@/features/listings/hooks/useMyListings/useMyLi
 import { fetchLikedListings } from '@/features/feed/hooks/useLikedListings/useLikedListings';
 import { fetchMyCollection } from '@/features/collection/hooks/useMyCollection/useMyCollection';
 import { fetchMySealedProducts } from '@/features/collection/hooks/useMySealedProducts/useMySealedProducts';
-import type { MeetupRow, ShopRow, UserRow, MessageType } from '@tcg-trade-hub/database';
-
-type ConversationPreview = {
-  conversationId: string;
-  matchId: string;
-  otherUser: {
-    id: string;
-    name: string;
-    avatar: string | null;
-    rating: number;
-  };
-  lastMessage: {
-    body: string | null;
-    type: MessageType;
-    createdAt: string;
-  } | null;
-  unreadCount: number;
-};
+import type { MeetupRow, ShopRow, UserRow } from '@tcg-trade-hub/database';
 
 type MeetupWithDetails = MeetupRow & {
   shop: Pick<ShopRow, 'id' | 'name' | 'address'> | null;
@@ -79,86 +61,9 @@ const usePrefetchTabs = () => {
       queryFn: () => fetchMySealedProducts(user.id),
     });
 
-    // Conversations tab
-    queryClient.prefetchQuery<ConversationPreview[]>({
-      queryKey: chatKeys.conversations(),
-      queryFn: async () => {
-        const { data: conversations, error } = await supabase
-          .from('conversations')
-          .select(
-            `
-            id,
-            match_id,
-            matches!inner (
-              id,
-              user_a_id,
-              user_b_id
-            )
-          `,
-          )
-          .or(
-            `user_a_id.eq.${user.id},user_b_id.eq.${user.id}`,
-            { referencedTable: 'matches' },
-          );
-
-        if (error) throw error;
-        if (!conversations || conversations.length === 0) return [];
-
-        const results: ConversationPreview[] = [];
-
-        for (const conv of conversations) {
-          const match = conv.matches as unknown as {
-            id: string;
-            user_a_id: string;
-            user_b_id: string;
-          };
-
-          const otherUserId =
-            match.user_a_id === user.id ? match.user_b_id : match.user_a_id;
-
-          const { data: otherUserData } = await supabase
-            .from('users')
-            .select('id, display_name, avatar_url, rating_score')
-            .eq('id', otherUserId)
-            .single();
-
-          const { data: lastMessageData } = await supabase
-            .from('messages')
-            .select('body, type, created_at')
-            .eq('conversation_id', conv.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
-
-          results.push({
-            conversationId: conv.id,
-            matchId: match.id,
-            otherUser: {
-              id: otherUserData?.id ?? otherUserId,
-              name: otherUserData?.display_name ?? 'Unknown',
-              avatar: otherUserData?.avatar_url ?? null,
-              rating: otherUserData?.rating_score ?? 0,
-            },
-            lastMessage: lastMessageData
-              ? {
-                  body: lastMessageData.body,
-                  type: lastMessageData.type,
-                  createdAt: lastMessageData.created_at,
-                }
-              : null,
-            unreadCount: 0,
-          });
-        }
-
-        results.sort((a, b) => {
-          const dateA = a.lastMessage?.createdAt ?? '';
-          const dateB = b.lastMessage?.createdAt ?? '';
-          return dateB.localeCompare(dateA);
-        });
-
-        return results;
-      },
-    });
+    // Conversations tab: NOT prefetched here because useConversations has a
+    // complex query shape (negotiation_status, nested listings, RPC unread counts)
+    // that diverges from a simplified prefetch. Extracting the queryFn is a future refactor.
 
     // Meetups tab
     queryClient.prefetchQuery<MeetupsResult>({

@@ -48,9 +48,15 @@ const ListingsRoute = () => {
         onValueChange={setActiveSection}
       />
 
-      {activeSection === 'listings' && <MyListingsScreen />}
-      {activeSection === 'interested' && <InterestedScreen />}
-      {activeSection === 'collection' && <CollectionScreen />}
+      <View style={{ flex: activeSection === 'listings' ? 1 : 0, display: activeSection === 'listings' ? 'flex' : 'none' }}>
+        <MyListingsScreen />
+      </View>
+      <View style={{ flex: activeSection === 'interested' ? 1 : 0, display: activeSection === 'interested' ? 'flex' : 'none' }}>
+        <InterestedScreen />
+      </View>
+      <View style={{ flex: activeSection === 'collection' ? 1 : 0, display: activeSection === 'collection' ? 'flex' : 'none' }}>
+        <CollectionScreen />
+      </View>
     </SafeAreaView>
   );
 };
