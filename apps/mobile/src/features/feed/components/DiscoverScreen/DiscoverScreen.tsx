@@ -1,14 +1,12 @@
 import React from 'react';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { List, Layers, Heart } from 'lucide-react-native';
+import { List, Heart } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 
 import usePrefetchTabs from '@/hooks/usePrefetchTabs/usePrefetchTabs';
-import EmptyState from '@/components/ui/EmptyState/EmptyState';
 import { useFeedStore } from '@/stores/feedStore/feedStore';
-import useHasActiveListings from '../../hooks/useHasActiveListings/useHasActiveListings';
 import FeedSwipeView from '../FeedSwipeView/FeedSwipeView';
 import type { ListingType } from '@tcg-trade-hub/database';
 
@@ -21,40 +19,14 @@ const TYPE_CHIPS: { label: string; value: ListingType }[] = [
 /**
  * Discover tab screen — the app's primary landing tab.
  *
- * Gates access behind having at least one active listing. If the user has
- * none, shows an EmptyState with a CTA to create one. Otherwise renders
- * the swipe-based FeedSwipeView with a header linking to the Browse screen.
+ * Renders the swipe-based FeedSwipeView with a header linking to the
+ * Browse screen and filter chips for listing type (WTS/WTB/WTT).
  */
 const DiscoverScreen = () => {
   const router = useRouter();
-  const { hasListings, isLoading } = useHasActiveListings();
   const listingTypes = useFeedStore((s) => s.filters.listingTypes);
   const toggleListingType = useFeedStore((s) => s.toggleListingType);
   usePrefetchTabs();
-
-  if (isLoading) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['top']}>
-        <ActivityIndicator size="large" />
-      </SafeAreaView>
-    );
-  }
-
-  if (!hasListings) {
-    return (
-      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-        <EmptyState
-          icon={<EmptyIcon />}
-          title="Create a Listing First"
-          description="To discover other traders, you need at least one active listing so they can see what you're offering."
-          action={{
-            label: 'Create Listing',
-            onPress: () => router.push('/(tabs)/(listings)/new'),
-          }}
-        />
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -121,11 +93,5 @@ const DiscoverScreen = () => {
     </SafeAreaView>
   );
 };
-
-const EmptyIcon = () => (
-  <View className="h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-    <Layers size={32} className="text-primary" />
-  </View>
-);
 
 export default DiscoverScreen;
