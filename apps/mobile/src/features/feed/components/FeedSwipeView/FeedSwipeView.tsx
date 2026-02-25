@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { View, Text, Modal, Pressable, Dimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -11,14 +11,17 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import { Heart, X, Sparkles, Send } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
+import BottomSheet from '@gorhom/bottom-sheet';
 import { cn } from '@/lib/cn';
 import Button from '@/components/ui/Button/Button';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
+import OfferCreationSheet from '@/features/listings/components/OfferCreationSheet/OfferCreationSheet';
 import SwipeCard from '../SwipeCard/SwipeCard';
 import useFeedListings from '../../hooks/useFeedListings/useFeedListings';
 import useRecordSwipe from '../../hooks/useRecordSwipe/useRecordSwipe';
+import { feedKeys } from '../../queryKeys';
 import type { ListingWithDistance } from '../../schemas';
 import type { MatchRow } from '@tcg-trade-hub/database';
 
@@ -34,13 +37,15 @@ export type FeedSwipeViewProps = {
  * Card stack swipe interface using react-native-gesture-handler + reanimated.
  *
  * Shows SwipeCard components in a stack. Swipe right = like, left = pass.
+ * Center button opens OfferCreationSheet for the current listing.
  * Calls useRecordSwipe on swipe completion. Shows a match animation modal
  * when a mutual match is detected.
  */
 const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
-  const router = useRouter();
+  const queryClient = useQueryClient();
   const { data, isLoading, error, refetch, fetchNextPage, hasNextPage } = useFeedListings();
   const recordSwipe = useRecordSwipe();
+  const bottomSheetRef = useRef<BottomSheet>(null);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [, setMatchData] = useState<MatchRow | null>(null);
@@ -177,6 +182,11 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
     animateOffScreen(direction);
   };
 
+  const handleMakeOffer = () => {
+    if (!currentListing) return;
+    bottomSheetRef.current?.snapToIndex(0);
+  };
+
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center p-4">
@@ -264,11 +274,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
         </Pressable>
 
         <Pressable
-          onPress={() => {
-            if (currentListing) {
-              router.push(`/(tabs)/(listings)/listing/${currentListing.id}`);
-            }
-          }}
+          onPress={handleMakeOffer}
           className="h-14 w-14 items-center justify-center rounded-full border-2 border-primary bg-card active:bg-primary/10"
         >
           <Send size={22} className="text-primary" />
@@ -282,6 +288,14 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
           <Heart size={28} className="text-emerald-500" fill="#10b981" />
         </Pressable>
       </View>
+
+      {/* Offer creation sheet */}
+      {currentListing && (
+        <OfferCreationSheet
+          listing={currentListing}
+          bottomSheetRef={bottomSheetRef}
+        />
+      )}
 
       {/* Match modal */}
       <Modal
