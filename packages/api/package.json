@@ -6,7 +6,12 @@
   "types": "./src/index.ts",
   "scripts": {
     "build": "echo 'no build needed — consumed as TS source'",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
   },
   "dependencies": {
     "@orpc/client": "^1.13.0",

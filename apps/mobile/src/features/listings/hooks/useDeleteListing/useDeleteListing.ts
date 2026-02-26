@@ -3,22 +3,39 @@ import { supabase } from '@/lib/supabase';
 import { listingKeys } from '../../queryKeys';
 import { feedKeys } from '../../../feed/queryKeys';
 
+type ExpireResult = {
+  success: boolean;
+  withdrawn_offer_count: number;
+};
+
 /**
- * Hook that soft-deletes a listing by updating its status to 'expired'.
+ * Hook that expires a listing via atomic Postgres RPC.
  *
- * Invalidates myListings and feed queries on success.
+ * Atomically transitions the listing to 'expired' and withdraws
+ * all pending offers. Invalidates myListings and feed queries on success.
+ *
+ * @see packages/api/src/pipelines/expireListing/expireListing.ts
  */
 const useDeleteListing = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, string>({
+  return useMutation<ExpireResult, Error, string>({
     mutationFn: async (listingId) => {
-      const { error } = await supabase
-        .from('listings')
-        .update({ status: 'expired' })
-        .eq('id', listingId);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
+      if (!userId) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase.rpc('expire_listing_v1' as never, {
+        p_listing_id: listingId,
+        p_user_id: userId,
+      } as never);
 
       if (error) throw error;
+
+      return data as ExpireResult;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: listingKeys.myListings() });

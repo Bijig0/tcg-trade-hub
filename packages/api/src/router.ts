@@ -9,6 +9,11 @@ import { update as shopEventUpdate } from './procedures/shop/events/update';
 import { remove as shopEventRemove } from './procedures/shop/events/remove';
 import { list as shopNotificationList } from './procedures/shop/notifications/list';
 import { markRead as shopNotificationMarkRead } from './procedures/shop/notifications/markRead';
+import { acceptOfferProcedure } from './procedures/pipelines/acceptOffer';
+import { declineOfferProcedure } from './procedures/pipelines/declineOffer';
+import { completeMeetupProcedure } from './procedures/pipelines/completeMeetup';
+import { expireListingProcedure } from './procedures/pipelines/expireListing';
+import { createOfferProcedure } from './procedures/pipelines/createOffer';
 
 export const router = {
   preRegistration: { create },
@@ -27,6 +32,13 @@ export const router = {
       list: shopNotificationList,
       markRead: shopNotificationMarkRead,
     },
+  },
+  pipeline: {
+    acceptOffer: acceptOfferProcedure,
+    declineOffer: declineOfferProcedure,
+    completeMeetup: completeMeetupProcedure,
+    expireListing: expireListingProcedure,
+    createOffer: createOfferProcedure,
   },
 };
 

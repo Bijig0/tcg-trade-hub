@@ -13,26 +13,37 @@ type CompleteMeetupResponse = {
 };
 
 /**
- * Hook that calls the complete-meetup edge function.
+ * Hook that completes a meetup via atomic Postgres RPC.
  *
  * Marks the current user's side as completed. When both users have
- * completed, the response indicates `both_completed: true` which
- * triggers the rating prompt via the onBothCompleted callback.
+ * completed, the RPC atomically finalizes the meetup, match, and
+ * increments both users' total_trades. The response indicates
+ * `both_completed: true` which triggers the rating prompt via
+ * the onBothCompleted callback.
+ *
+ * @see packages/api/src/pipelines/completeMeetup/completeMeetup.ts
  */
 const useCompleteMeetup = (onBothCompleted?: (meetupId: string) => void) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ meetupId }: CompleteMeetupParams) => {
-      const { data, error } = await supabase.functions.invoke<CompleteMeetupResponse>(
-        'complete-meetup',
-        { body: { meetup_id: meetupId } },
-      );
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
+      if (!userId) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase.rpc('complete_meetup_v1' as never, {
+        p_meetup_id: meetupId,
+        p_user_id: userId,
+      } as never);
 
       if (error) throw error;
-      if (!data) throw new Error('No response from complete-meetup');
+      if (!data) throw new Error('No response from complete_meetup_v1');
 
-      return data;
+      return data as CompleteMeetupResponse;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: meetupKeys.all });

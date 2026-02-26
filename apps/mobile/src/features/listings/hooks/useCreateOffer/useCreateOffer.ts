@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { listingKeys } from '../../queryKeys';
 import type { SelectedCard } from '../../schemas';
-import type { OfferRow, OfferItemInsert } from '@tcg-trade-hub/database';
 
 type CreateOfferInput = {
   listingId: string;
@@ -11,14 +10,21 @@ type CreateOfferInput = {
   message: string | null;
 };
 
+type CreateOfferResult = {
+  offer_id: string;
+};
+
 /**
- * Mutation hook that creates an offer on a listing.
- * Inserts an offer row followed by offer_items rows for each selected card.
+ * Mutation hook that creates an offer on a listing via atomic Postgres RPC.
+ *
+ * Atomically inserts an offer row and all offer_items in a single transaction.
+ *
+ * @see packages/api/src/pipelines/createOffer/createOffer.ts
  */
 const useCreateOffer = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<OfferRow, Error, CreateOfferInput>({
+  return useMutation<CreateOfferResult, Error, CreateOfferInput>({
     mutationFn: async ({ listingId, selectedCards, cashAmount, message }) => {
       const {
         data: { session },
@@ -27,43 +33,29 @@ const useCreateOffer = () => {
 
       if (!user) throw new Error('User not authenticated');
 
-      // Insert offer
-      const { data: offer, error: offerError } = await supabase
-        .from('offers')
-        .insert({
-          listing_id: listingId,
-          offerer_id: user.id,
-          cash_amount: cashAmount,
-          message,
-        })
-        .select()
-        .single();
+      const items = selectedCards.map((sc) => ({
+        card_name: sc.card.name,
+        card_image_url: sc.card.imageUrl,
+        card_external_id: sc.card.externalId,
+        tcg: sc.card.tcg,
+        card_set: sc.card.setName,
+        card_number: sc.card.number,
+        condition: sc.condition,
+        market_price: sc.card.marketPrice ?? null,
+        quantity: 1,
+      }));
 
-      if (offerError) throw offerError;
+      const { data, error } = await supabase.rpc('create_offer_v1' as never, {
+        p_listing_id: listingId,
+        p_offerer_id: user.id,
+        p_cash_amount: cashAmount,
+        p_message: message,
+        p_items: JSON.stringify(items),
+      } as never);
 
-      // Insert offer items
-      if (selectedCards.length > 0) {
-        const items: OfferItemInsert[] = selectedCards.map((sc) => ({
-          offer_id: offer.id,
-          card_name: sc.card.name,
-          card_image_url: sc.card.imageUrl,
-          card_external_id: sc.card.externalId,
-          tcg: sc.card.tcg,
-          card_set: sc.card.setName,
-          card_number: sc.card.number,
-          condition: sc.condition,
-          market_price: sc.card.marketPrice ?? null,
-          quantity: 1,
-        }));
+      if (error) throw error;
 
-        const { error: itemsError } = await supabase
-          .from('offer_items')
-          .insert(items);
-
-        if (itemsError) throw itemsError;
-      }
-
-      return offer as OfferRow;
+      return data as CreateOfferResult;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: listingKeys.offers(variables.listingId) });
