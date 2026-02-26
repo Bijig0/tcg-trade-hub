@@ -40,7 +40,7 @@ const MyListingDetailScreen = () => {
   const offerDetailRef = useRef<BottomSheet>(null);
 
   const [selectedOffer, setSelectedOffer] = useState<OfferWithItems | null>(null);
-  const [detailTab, setDetailTab] = useState<DetailTab>('offers');
+  const [detailTab, setDetailTab] = useState<DetailTab>('opportunities');
 
   const { data: listing, isLoading: isListingLoading } = useListingDetail(id ?? '');
   const { data: offerData, isLoading: isOffersLoading } = useListingOffers(id ?? '');
@@ -198,8 +198,8 @@ const MyListingDetailScreen = () => {
   const opportunityCount = opportunities?.length ?? 0;
 
   const tabItems = [
-    { value: 'offers' as DetailTab, label: 'Offers', count: offerCount },
     { value: 'opportunities' as DetailTab, label: 'Opportunities', count: opportunityCount },
+    { value: 'offers' as DetailTab, label: 'Offers', count: offerCount },
   ];
 
   const renderOfferItem = ({ item }: { item: OfferWithItems }) => (
