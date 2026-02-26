@@ -7,10 +7,12 @@ import { profileKeys } from '@/features/profile/queryKeys';
 import { listingKeys } from '@/features/listings/queryKeys';
 import { feedKeys } from '@/features/feed/queryKeys';
 import { collectionKeys } from '@/features/collection/queryKeys';
+import { chatKeys } from '@/features/chat/queryKeys';
 import { fetchMyListings } from '@/features/listings/hooks/useMyListings/useMyListings';
 import { fetchLikedListings } from '@/features/feed/hooks/useLikedListings/useLikedListings';
 import { fetchMyCollection } from '@/features/collection/hooks/useMyCollection/useMyCollection';
 import { fetchMySealedProducts } from '@/features/collection/hooks/useMySealedProducts/useMySealedProducts';
+import { fetchConversations } from '@/features/chat/hooks/useConversations/useConversations';
 import type { MeetupRow, ShopRow, UserRow } from '@tcg-trade-hub/database';
 
 type MeetupWithDetails = MeetupRow & {
@@ -61,9 +63,11 @@ const usePrefetchTabs = () => {
       queryFn: () => fetchMySealedProducts(user.id),
     });
 
-    // Conversations tab: NOT prefetched here because useConversations has a
-    // complex query shape (negotiation_status, nested listings, RPC unread counts)
-    // that diverges from a simplified prefetch. Extracting the queryFn is a future refactor.
+    // Conversations tab
+    queryClient.prefetchQuery({
+      queryKey: chatKeys.conversations(),
+      queryFn: () => fetchConversations(user.id),
+    });
 
     // Meetups tab
     queryClient.prefetchQuery<MeetupsResult>({

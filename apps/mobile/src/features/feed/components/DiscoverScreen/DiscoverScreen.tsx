@@ -5,7 +5,6 @@ import { useRouter } from 'expo-router';
 import { List, Heart } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 
-import usePrefetchTabs from '@/hooks/usePrefetchTabs/usePrefetchTabs';
 import { useFeedStore } from '@/stores/feedStore/feedStore';
 import FeedSwipeView from '../FeedSwipeView/FeedSwipeView';
 import type { ListingType } from '@tcg-trade-hub/database';
@@ -26,8 +25,6 @@ const DiscoverScreen = () => {
   const router = useRouter();
   const listingTypes = useFeedStore((s) => s.filters.listingTypes);
   const toggleListingType = useFeedStore((s) => s.toggleListingType);
-  usePrefetchTabs();
-
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       {/* Header */}

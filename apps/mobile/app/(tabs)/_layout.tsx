@@ -1,9 +1,11 @@
 import { Tabs } from 'expo-router';
 import { Compass, Layers, MessageCircle, Calendar, User } from 'lucide-react-native';
 import { useTheme } from '@/context/ThemeProvider';
+import usePrefetchTabs from '@/hooks/usePrefetchTabs/usePrefetchTabs';
 
 const TabsLayout = () => {
   const { tabBar } = useTheme();
+  usePrefetchTabs();
 
   return (
     <Tabs
