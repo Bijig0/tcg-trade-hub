@@ -160,24 +160,28 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
     ),
   }));
 
-  const nextCardScale = useAnimatedStyle(() => ({
-    transform: [
-      {
-        scale: interpolate(
-          Math.abs(translateX.value),
-          [0, SWIPE_THRESHOLD],
-          [0.95, 1],
-          Extrapolation.CLAMP,
-        ),
-      },
-    ],
-    opacity: interpolate(
-      Math.abs(translateX.value),
-      [0, SWIPE_THRESHOLD],
-      [0.5, 1],
-      Extrapolation.CLAMP,
-    ),
-  }));
+  const nextCardStyle = useAnimatedStyle(() => {
+    const drag = Math.abs(translateX.value);
+    const exitX = SCREEN_WIDTH * 1.5;
+    return {
+      transform: [
+        {
+          scale: interpolate(
+            drag,
+            [0, SWIPE_THRESHOLD, exitX],
+            [0.92, 0.98, 1],
+            Extrapolation.CLAMP,
+          ),
+        },
+      ],
+      opacity: interpolate(
+        drag,
+        [0, SWIPE_THRESHOLD, exitX],
+        [0.6, 0.9, 1],
+        Extrapolation.CLAMP,
+      ),
+    };
+  });
 
   const handleButtonSwipe = (direction: 'like' | 'pass') => {
     if (isSwiping) return;
@@ -237,8 +241,8 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
         {/* Next card (behind) */}
         {nextListing && (
           <Animated.View
-            className="absolute inset-x-4"
-            style={nextCardScale}
+            className="absolute inset-0"
+            style={nextCardStyle}
           >
             <SwipeCard listing={nextListing} />
           </Animated.View>
