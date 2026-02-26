@@ -12,6 +12,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Heart, X, Sparkles, Handshake } from 'lucide-react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthProvider';
 import { cn } from '@/lib/cn';
 import Button from '@/components/ui/Button/Button';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
@@ -42,6 +44,7 @@ export type FeedSwipeViewProps = {
  * when a mutual match is detected.
  */
 const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
+  const { user } = useAuth();
   const { data, isLoading, error, refetch, fetchNextPage, hasNextPage } = useFeedListings();
   const recordSwipe = useRecordSwipe();
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -238,7 +241,9 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
           __DEV__
             ? {
                 label: 'Refresh Feed',
-                onPress: () => {
+                onPress: async () => {
+                  if (!user) return;
+                  await supabase.from('swipes').delete().eq('user_id', user.id);
                   setCurrentIndex(0);
                   refetch();
                 },
