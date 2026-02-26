@@ -17,7 +17,8 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "TCG Trade Hub needs your location to find nearby card shops and traders.",
         "NSCameraUsageDescription": "TCG Trade Hub needs camera access to photograph your cards.",
-        "NSPhotoLibraryUsageDescription": "TCG Trade Hub needs photo library access to upload card photos."
+        "NSPhotoLibraryUsageDescription": "TCG Trade Hub needs photo library access to upload card photos.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -27,9 +28,10 @@
       },
       "package": "com.tcgtradehub.app",
       "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "CAMERA"
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "scheme": "tcg-trade-hub",
@@ -44,6 +46,12 @@
         }
       ]
     ],
-    "newArchEnabled": true
+    "newArchEnabled": true,
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bae0bd7a-242a-4840-9356-3890e020c358"
+      }
+    }
   }
 }
