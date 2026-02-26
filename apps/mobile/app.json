@@ -44,8 +44,20 @@
           "photosPermission": "TCG Trade Hub needs photo access to upload card photos.",
           "cameraPermission": "TCG Trade Hub needs camera access to photograph your cards."
         }
+      ],
+      [
+        "expo-updates",
+        {
+          "username": "tcg-trade-hub"
+        }
       ]
     ],
+    "updates": {
+      "url": "https://u.expo.dev/bae0bd7a-242a-4840-9356-3890e020c358"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "newArchEnabled": true,
     "extra": {
       "router": {},

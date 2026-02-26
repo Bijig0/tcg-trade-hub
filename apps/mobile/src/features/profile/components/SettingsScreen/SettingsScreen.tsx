@@ -10,6 +10,7 @@ import Separator from '@/components/ui/Separator/Separator';
 import Slider from '@/components/ui/Slider/Slider';
 import { MIN_RADIUS_KM, MAX_RADIUS_KM } from '@/config/constants';
 import useUpdateProfile from '../../hooks/useUpdateProfile/useUpdateProfile';
+import useCheckForUpdates from '../../hooks/useCheckForUpdates/useCheckForUpdates';
 import DevUserSwitcher from '../DevUserSwitcher/DevUserSwitcher';
 
 type NotificationPrefs = {
@@ -26,6 +27,7 @@ const SettingsScreen = () => {
   const router = useRouter();
   const { profile, user, signOut } = useAuth();
   const updateProfile = useUpdateProfile();
+  const { status: updateStatus, checkForUpdates } = useCheckForUpdates();
   const [radiusKm, setRadiusKm] = useState(profile?.radius_km ?? 25);
   const [showApproxDistance, setShowApproxDistance] = useState(true);
   const [autoMatch, setAutoMatch] = useState(profile?.auto_match ?? false);
@@ -262,6 +264,21 @@ const SettingsScreen = () => {
             <Text className="text-sm text-muted-foreground">App Version</Text>
             <Text className="text-sm text-foreground">1.0.0</Text>
           </View>
+
+          <Pressable
+            onPress={checkForUpdates}
+            disabled={updateStatus === 'checking' || updateStatus === 'downloading'}
+            className="rounded-lg border border-border bg-card p-3 active:bg-accent"
+          >
+            <View className="flex-row items-center justify-between">
+              <Text className="text-sm text-foreground">Check for Updates</Text>
+              {updateStatus === 'checking' ? (
+                <Text className="text-xs text-muted-foreground">Checking...</Text>
+              ) : updateStatus === 'downloading' ? (
+                <Text className="text-xs text-muted-foreground">Downloading...</Text>
+              ) : null}
+            </View>
+          </Pressable>
 
           <Pressable
             onPress={() => Linking.openURL('https://tcgtradehub.app/terms')}
