@@ -342,4 +342,4 @@ const CollectionScreen: React.FC = () => {
   );
 };
 
-export default CollectionScreen;
+export default React.memo(CollectionScreen);

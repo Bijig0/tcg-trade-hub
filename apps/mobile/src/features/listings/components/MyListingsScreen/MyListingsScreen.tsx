@@ -273,4 +273,4 @@ const MyListingsScreen = () => {
   );
 };
 
-export default MyListingsScreen;
+export default React.memo(MyListingsScreen);

@@ -112,4 +112,4 @@ const InterestedScreen = () => {
   );
 };
 
-export default InterestedScreen;
+export default React.memo(InterestedScreen);
