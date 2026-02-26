@@ -9,7 +9,7 @@ const monorepoRoot = path.resolve(projectRoot, '../..');
 const config = getDefaultConfig(projectRoot);
 
 // Watch the entire monorepo so Metro sees changes in packages/*
-config.watchFolders = [monorepoRoot];
+config.watchFolders = [...(config.watchFolders || []), monorepoRoot];
 
 // Let Metro resolve node_modules from both the app and monorepo root.
 // With pnpm hoisted mode, most deps live in root node_modules.

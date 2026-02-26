@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, type PropsWithChildren } from 'react';
 import { type Session, type User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { queryClient } from '@/lib/queryClient';
 import type { UserRow } from '@tcg-trade-hub/database';
 
 type AuthContextValue = {
@@ -66,6 +67,15 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
       if (event === 'INITIAL_SESSION') {
         return;
       }
+
+      // Clear stale query cache on auth transitions so queries re-fetch
+      // with the new (or no) user context
+      if (event === 'SIGNED_OUT') {
+        queryClient.clear();
+      } else if (event === 'SIGNED_IN') {
+        queryClient.invalidateQueries();
+      }
+
       void applySessionState(newSession);
     });
 
@@ -96,6 +106,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   }, []);
 
   const signOut = async () => {
+    queryClient.clear();
     await supabase.auth.signOut();
     setSession(null);
     setProfile(null);
