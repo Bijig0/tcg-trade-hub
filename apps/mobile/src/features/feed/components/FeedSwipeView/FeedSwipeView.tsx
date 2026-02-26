@@ -80,9 +80,14 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
         }
         return nextIdx;
       });
+
+      // Reset position AFTER advancing index so the old card
+      // stays off-screen until React re-renders with the new card
+      translateX.value = 0;
+      translateY.value = 0;
       setIsSwiping(false);
     },
-    [currentIndex, listings, recordSwipe, hasNextPage, fetchNextPage],
+    [currentIndex, listings, recordSwipe, hasNextPage, fetchNextPage, translateX, translateY],
   );
 
   const animateOffScreen = useCallback(
@@ -92,14 +97,11 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
 
       translateX.value = withTiming(targetX, { duration: SWIPE_EXIT_DURATION }, (finished) => {
         if (finished) {
-          // Snap back to center instantly before next card renders
-          translateX.value = 0;
-          translateY.value = 0;
           runOnJS(advanceCard)(direction);
         }
       });
     },
-    [translateX, translateY, advanceCard],
+    [translateX, advanceCard],
   );
 
   const panGesture = Gesture.Pan()
