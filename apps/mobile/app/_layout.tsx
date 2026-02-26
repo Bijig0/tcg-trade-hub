@@ -3,8 +3,10 @@ import '../src/global.css';
 import '@/lib/iconInterop';
 import '@/lib/imageInterop';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Slot, useRouter, useSegments, ErrorBoundary } from 'expo-router';
+import { Alert } from 'react-native';
+import * as Updates from 'expo-updates';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ActivityIndicator, View, Text, ScrollView, LogBox } from 'react-native';
@@ -62,6 +64,28 @@ const RootNavigator = () => {
       }
     }
   }, [session, isLoading, isOnboarded, segments]);
+
+  useEffect(() => {
+    if (__DEV__) return;
+    const checkForUpdates = async () => {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (!update.isAvailable) return;
+        await Updates.fetchUpdateAsync();
+        Alert.alert(
+          'Update Available',
+          'A new version has been downloaded. Restart to apply it.',
+          [
+            { text: 'Later', style: 'cancel' },
+            { text: 'Restart Now', onPress: () => Updates.reloadAsync() },
+          ],
+        );
+      } catch {
+        // Silent fail — user can manually check in Settings
+      }
+    };
+    checkForUpdates();
+  }, []);
 
   if (isLoading) {
     return (
