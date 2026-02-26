@@ -25,13 +25,13 @@ const OfferCreationSheet = ({ listing, bottomSheetRef }: OfferCreationSheetProps
   const [message, setMessage] = useState('');
 
   const handleToggleCard = useCallback(
-    (card: NormalizedCard, condition: CardCondition, fromCollection: boolean) => {
+    (card: NormalizedCard, condition: CardCondition, fromCollection: boolean, selectionId: string) => {
       setSelectedCards((prev) => {
-        const idx = prev.findIndex((sc) => sc.card.externalId === card.externalId);
+        const idx = prev.findIndex((sc) => sc.selectionId === selectionId);
         if (idx >= 0) {
           return prev.filter((_, i) => i !== idx);
         }
-        return [...prev, { card, condition, fromCollection, addToCollection: false, askingPrice: '' }];
+        return [...prev, { card, condition, fromCollection, addToCollection: false, askingPrice: '', selectionId }];
       });
     },
     [],

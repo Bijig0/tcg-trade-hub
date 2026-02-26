@@ -53,7 +53,7 @@ const BundleConfirmStep = ({ type, selectedCards, cashAmount, description }: Bun
       {/* Card grid */}
       {selectedCards.map((sc) => (
         <View
-          key={sc.card.externalId}
+          key={sc.selectionId}
           className="flex-row items-center gap-3 rounded-xl border border-border bg-card p-3"
         >
           <Image

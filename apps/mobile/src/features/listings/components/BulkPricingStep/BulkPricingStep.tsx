@@ -95,7 +95,7 @@ const BulkPricingStep = ({
 
         return (
           <View
-            key={sc.card.externalId}
+            key={sc.selectionId}
             className="gap-2 rounded-xl border border-border bg-card p-3"
           >
             {/* Tappable card info header */}
@@ -193,7 +193,7 @@ const BulkPricingStep = ({
                 <DollarSign size={16} className="text-muted-foreground" />
                 <TextInput
                   value={sc.askingPrice}
-                  onChangeText={(val) => onUpdatePrice(sc.card.externalId, val)}
+                  onChangeText={(val) => onUpdatePrice(sc.selectionId, val)}
                   keyboardType="decimal-pad"
                   placeholder="0.00"
                   className="flex-1 text-base text-foreground"
@@ -203,7 +203,7 @@ const BulkPricingStep = ({
               {sc.card.marketPrice != null && (
                 <Pressable
                   onPress={() =>
-                    onUpdatePrice(sc.card.externalId, sc.card.marketPrice!.toFixed(2))
+                    onUpdatePrice(sc.selectionId, sc.card.marketPrice!.toFixed(2))
                   }
                   className="rounded-lg border border-border px-2.5 py-2.5"
                 >
