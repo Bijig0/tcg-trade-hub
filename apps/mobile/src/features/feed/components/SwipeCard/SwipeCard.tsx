@@ -90,7 +90,7 @@ const SwipeCard = ({ listing, className, onOpenDetail }: SwipeCardProps) => {
               onPress={handleOpenDetail}
               className="mt-1 items-center justify-center rounded-lg bg-muted p-1.5 active:bg-accent"
             >
-              <Info size={16} className="text-foreground" />
+              <Info size={16} color="#a1a1aa" />
             </Pressable>
           )}
         </View>
