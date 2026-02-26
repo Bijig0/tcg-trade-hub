@@ -14,6 +14,7 @@ import useConversations, {
 } from '../../hooks/useConversations/useConversations';
 import { chatKeys } from '../../queryKeys';
 import formatMessage from '../../utils/formatMessage/formatMessage';
+import generateDefaultChatName from '../../utils/generateDefaultChatName/generateDefaultChatName';
 
 type ConversationItemProps = {
   conversation: ConversationPreview;
@@ -21,9 +22,9 @@ type ConversationItemProps = {
 };
 
 const ConversationItem = ({ conversation, onPress }: ConversationItemProps) => {
-  const { otherUser, lastMessage, unreadCount, negotiationStatus, listingThumbnails } = conversation;
+  const { otherUser, lastMessage, unreadCount, negotiationStatus, listingThumbnails, nickname, listingTitle } = conversation;
 
-  const displayName = otherUser?.name ?? 'Unknown';
+  const displayName = nickname ?? generateDefaultChatName(otherUser?.name ?? 'Unknown', listingTitle);
 
   const initials = displayName
     .split(' ')

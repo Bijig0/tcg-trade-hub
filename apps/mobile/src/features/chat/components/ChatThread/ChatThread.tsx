@@ -23,11 +23,13 @@ import useSendMessage from '../../hooks/useSendMessage/useSendMessage';
 import useRealtimeChat from '../../hooks/useRealtimeChat/useRealtimeChat';
 import useRealtimeMatchUpdates from '@/features/listings/hooks/useRealtimeMatchUpdates/useRealtimeMatchUpdates';
 import useTradeContext from '../../hooks/useTradeContext/useTradeContext';
+import useConversationNickname from '../../hooks/useConversationNickname/useConversationNickname';
 import useMarkAsRead from '../../hooks/useMarkAsRead/useMarkAsRead';
 import useTypingIndicator from '../../hooks/useTypingIndicator/useTypingIndicator';
 import useNegotiationStatus from '../../hooks/useNegotiationStatus/useNegotiationStatus';
 import useChatBlockCheck from '../../hooks/useChatBlockCheck/useChatBlockCheck';
 import useLongPressMessage from '../../hooks/useLongPressMessage/useLongPressMessage';
+import generateDefaultChatName from '../../utils/generateDefaultChatName/generateDefaultChatName';
 import MessageBubble from '../MessageBubble/MessageBubble';
 import OfferCard from '../OfferCard/OfferCard';
 import MeetupProposalCard from '../MeetupProposalCard/MeetupProposalCard';
@@ -76,8 +78,16 @@ const ChatThread = ({
   } = useMessages(conversationId);
   const sendMessage = useSendMessage();
 
-  // New hooks
+  // Trade context and nickname
   const { data: tradeContext } = useTradeContext(conversationId);
+  const defaultChatName = generateDefaultChatName(
+    otherUser.name,
+    tradeContext?.listingTitle,
+  );
+  const { displayName, rename } = useConversationNickname({
+    conversationId,
+    defaultNickname: defaultChatName,
+  });
   const { markAsRead } = useMarkAsRead(conversationId);
   const { isOtherUserTyping, sendTypingStart, sendTypingStop } =
     useTypingIndicator(conversationId);
@@ -310,6 +320,7 @@ const ChatThread = ({
                 hasResponse={respondedOfferIds.has(item.id)}
                 onAccept={() => handleAcceptMeetup(item.id)}
                 onDecline={() => handleDeclineMeetup(item.id)}
+                conversationId={conversationId}
               />
             );
 
@@ -382,13 +393,19 @@ const ChatThread = ({
       <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
         <View className="flex-1 flex-row items-center gap-3">
           <Avatar uri={otherUser.avatar} fallback={otherInitials} size="md" />
-          <Text className="text-lg font-semibold text-foreground">
-            {otherUser.name}
+          <Text
+            className="flex-shrink text-lg font-semibold text-foreground"
+            numberOfLines={1}
+          >
+            {displayName}
           </Text>
         </View>
         <ChatHeaderActions
           otherUserId={otherUser.id}
           otherUserName={otherUser.name}
+          conversationId={conversationId}
+          currentDisplayName={displayName}
+          onRename={rename}
         />
       </View>
 
@@ -397,6 +414,7 @@ const ChatThread = ({
         <TradeContextHeader
           tradeContext={tradeContext}
           isCurrentUserListingOwner={isCurrentUserListingOwner}
+          conversationId={conversationId}
         />
       )}
 
