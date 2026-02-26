@@ -16,8 +16,8 @@ type OfferPreviewSectionProps = {
  * Tapping navigates to the full offer detail screen.
  */
 const OfferPreviewSection = ({
-  listingItems,
-  offerItems,
+  listingItems = [],
+  offerItems = [],
   conversationId,
 }: OfferPreviewSectionProps) => {
   const router = useRouter();
