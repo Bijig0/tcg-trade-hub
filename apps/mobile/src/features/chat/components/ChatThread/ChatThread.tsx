@@ -11,7 +11,8 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Send, Handshake, MapPin, Ban } from 'lucide-react-native';
+import { Send, Handshake, MapPin, Ban, ChevronLeft } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/context/AuthProvider';
 import Avatar from '@/components/ui/Avatar/Avatar';
@@ -68,6 +69,7 @@ const ChatThread = ({
   onOpenCounterOffer,
 }: ChatThreadProps) => {
   const { user } = useAuth();
+  const router = useRouter();
   const [text, setText] = useState('');
   const {
     data,
@@ -391,7 +393,14 @@ const ChatThread = ({
     >
       {/* Header */}
       <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
-        <View className="flex-1 flex-row items-center gap-3">
+        <View className="flex-1 flex-row items-center gap-2">
+          <Pressable
+            onPress={() => router.back()}
+            className="-ml-1 p-1 active:opacity-70"
+            hitSlop={8}
+          >
+            <ChevronLeft size={24} color="#6b7280" />
+          </Pressable>
           <Avatar uri={otherUser.avatar} fallback={otherInitials} size="md" />
           <Text
             className="flex-shrink text-lg font-semibold text-foreground"
