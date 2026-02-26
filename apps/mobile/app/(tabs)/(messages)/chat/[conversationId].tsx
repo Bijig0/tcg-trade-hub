@@ -1,4 +1,5 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback } from 'react';
 import { ChatThread } from '@/features/chat';
 
 type ChatParams = {
@@ -11,6 +12,21 @@ type ChatParams = {
 
 const ChatRoute = () => {
   const params = useLocalSearchParams<ChatParams>();
+  const router = useRouter();
+
+  const handleOpenOffer = useCallback(() => {
+    router.push({
+      pathname: '/(tabs)/(messages)/offer-detail',
+      params: { conversationId: params.conversationId },
+    });
+  }, [router, params.conversationId]);
+
+  const handleCounterOffer = useCallback((_prefill: unknown) => {
+    router.push({
+      pathname: '/(tabs)/(messages)/offer-detail',
+      params: { conversationId: params.conversationId },
+    });
+  }, [router, params.conversationId]);
 
   return (
     <ChatThread
@@ -21,6 +37,8 @@ const ChatRoute = () => {
         name: params.otherUserName ?? 'Unknown',
         avatar: params.otherUserAvatar ?? null,
       }}
+      onOpenOfferModal={handleOpenOffer}
+      onOpenCounterOffer={handleCounterOffer}
     />
   );
 };

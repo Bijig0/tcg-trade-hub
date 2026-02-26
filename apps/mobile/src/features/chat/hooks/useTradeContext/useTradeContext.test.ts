@@ -41,11 +41,11 @@ const mockConversation = {
 };
 
 const mockListingItems = [
-  { card_name: 'Charizard VMAX', card_image_url: 'https://img/charizard.png', quantity: 1, market_price: 100 },
+  { card_name: 'Charizard VMAX', card_image_url: 'https://img/charizard.png', card_external_id: 'swsh4-20', tcg: 'pokemon', condition: 'nm', quantity: 1, market_price: 100 },
 ];
 
 const mockOfferItems = [
-  { card_name: 'Pikachu V', card_image_url: 'https://img/pikachu.png', quantity: 2, market_price: 25 },
+  { card_name: 'Pikachu V', card_image_url: 'https://img/pikachu.png', card_external_id: 'swsh4-5', tcg: 'pokemon', condition: 'lp', quantity: 2, market_price: 25 },
 ];
 
 describe('useTradeContext', () => {
@@ -104,12 +104,12 @@ describe('useTradeContext', () => {
       listingTcg: 'pokemon',
       listingOwnerId: 'user-1',
       listingItems: [
-        { cardName: 'Charizard VMAX', cardImageUrl: 'https://img/charizard.png', quantity: 1, marketPrice: 100 },
+        { cardName: 'Charizard VMAX', cardImageUrl: 'https://img/charizard.png', cardExternalId: 'swsh4-20', tcg: 'pokemon', condition: 'nm', quantity: 1, marketPrice: 100 },
       ],
       listingTotalValue: 100,
       offererId: 'user-2',
       offerItems: [
-        { cardName: 'Pikachu V', cardImageUrl: 'https://img/pikachu.png', quantity: 2, marketPrice: 25 },
+        { cardName: 'Pikachu V', cardImageUrl: 'https://img/pikachu.png', cardExternalId: 'swsh4-5', tcg: 'pokemon', condition: 'lp', quantity: 2, marketPrice: 25 },
       ],
       offerCashAmount: 50,
       negotiationStatus: 'offer_pending',

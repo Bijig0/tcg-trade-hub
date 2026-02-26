@@ -14,6 +14,7 @@ export { default as RenameChatModal } from './components/RenameChatModal/RenameC
 export { default as TradeItemRow } from './components/TradeItemRow/TradeItemRow';
 export { default as TradeSideSection } from './components/TradeSideSection/TradeSideSection';
 export { default as OfferDetailScreen } from './components/OfferDetailScreen/OfferDetailScreen';
+export { default as CardPickerModal } from './components/CardPickerModal/CardPickerModal';
 export { default as useConversationNickname } from './hooks/useConversationNickname/useConversationNickname';
 export { default as useConversations } from './hooks/useConversations/useConversations';
 export type { ConversationPreview } from './hooks/useConversations/useConversations';
@@ -32,6 +33,7 @@ export { default as useLongPressMessage } from './hooks/useLongPressMessage/useL
 export { default as formatMessage } from './utils/formatMessage/formatMessage';
 export { default as generateDefaultChatName } from './utils/generateDefaultChatName/generateDefaultChatName';
 export { default as parseOfferPayload } from './utils/parseOfferPayload/parseOfferPayload';
+export { toCardRef, fromCardRef, collectionItemToTradeItem } from './utils/toCardRef/toCardRef';
 export type { ParsedOffer } from './utils/parseOfferPayload/parseOfferPayload';
 export { chatKeys } from './queryKeys';
 export { SendTextMessageSchema, SendImageMessageSchema } from './schemas';
