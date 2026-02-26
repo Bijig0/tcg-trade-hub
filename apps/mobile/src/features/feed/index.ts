@@ -28,8 +28,15 @@ export { default as useLikedListings } from './hooks/useLikedListings/useLikedLi
 
 // Utils
 export { default as formatDistance } from './utils/formatDistance/formatDistance';
-export { default as rankListings } from './utils/rankListings/rankListings';
-export type { RankedListing, Point } from './utils/rankListings/rankListings';
+
+// Algorithm
+export {
+  buildExclusionSets,
+  transformRawListing,
+  rankListings,
+  sortListings,
+} from './algorithm';
+export type { RankedListing, Point, RawFeedListing } from './algorithm';
 
 // Query keys
 export { feedKeys } from './queryKeys';
