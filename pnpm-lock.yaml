@@ -369,6 +369,10 @@ importers:
       zod:
         specifier: ^3.24.0
         version: 3.25.76
+    devDependencies:
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4
 
   packages/database:
     dependencies:

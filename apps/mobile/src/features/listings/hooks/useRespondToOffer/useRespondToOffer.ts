@@ -2,8 +2,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { listingKeys } from '../../queryKeys';
-import { assertTransition } from '@tcg-trade-hub/database';
-import type { OfferStatus, ListingStatus } from '@tcg-trade-hub/database';
 
 type RespondInput = {
   offerId: string;
@@ -17,8 +15,16 @@ type RespondResult = {
 };
 
 /**
- * Mutation that accepts or declines an offer.
- * On accept: creates match + conversation, navigates to chat.
+ * Mutation that accepts or declines an offer via atomic Postgres RPC.
+ *
+ * On accept: atomically accepts the offer, declines all sibling offers,
+ * creates a match + conversation, and transitions the listing to matched.
+ * Then navigates to the new chat.
+ *
+ * On decline: atomically declines the single offer.
+ *
+ * @see packages/api/src/pipelines/acceptOffer/acceptOffer.ts
+ * @see packages/api/src/pipelines/declineOffer/declineOffer.ts
  */
 const useRespondToOffer = () => {
   const queryClient = useQueryClient();
@@ -26,79 +32,36 @@ const useRespondToOffer = () => {
 
   return useMutation<RespondResult, Error, RespondInput>({
     mutationFn: async ({ offerId, listingId, action }) => {
-      // Fetch current offer to validate transition
-      const { data: currentOffer, error: fetchOfferError } = await supabase
-        .from('offers')
-        .select('*')
-        .eq('id', offerId)
-        .single();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
 
-      if (fetchOfferError) throw fetchOfferError;
-
-      assertTransition('offer', currentOffer.status as OfferStatus, action);
-
-      // Update offer status
-      const { error: offerError } = await supabase
-        .from('offers')
-        .update({ status: action as OfferStatus })
-        .eq('id', offerId);
-
-      if (offerError) throw offerError;
+      if (!userId) throw new Error('Not authenticated');
 
       if (action === 'accepted') {
-        const offer = currentOffer;
+        const { data, error } = await supabase.rpc('accept_offer_v1' as never, {
+          p_offer_id: offerId,
+          p_listing_id: listingId,
+          p_user_id: userId,
+        } as never);
 
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const userId = session?.user?.id;
+        if (error) throw error;
 
-        if (!userId) throw new Error('Not authenticated');
-
-        // Create match
-        const { data: match, error: matchError } = await supabase
-          .from('matches')
-          .insert({
-            user_a_id: userId,
-            user_b_id: offer.offerer_id,
-            listing_id: listingId,
-            offer_id: offerId,
-          })
-          .select()
-          .single();
-
-        if (matchError) throw matchError;
-
-        // Validate and update listing status
-        const { data: currentListing, error: listingFetchError } = await supabase
-          .from('listings')
-          .select('status')
-          .eq('id', listingId)
-          .single();
-
-        if (listingFetchError) throw listingFetchError;
-
-        assertTransition('listing', currentListing.status as ListingStatus, 'matched');
-
-        await supabase
-          .from('listings')
-          .update({ status: 'matched' })
-          .eq('id', listingId);
-
-        // Create conversation
-        const { data: conversation, error: convoError } = await supabase
-          .from('conversations')
-          .insert({ match_id: match.id })
-          .select()
-          .single();
-
-        if (convoError) throw convoError;
-
+        const result = data as { match_id: string; conversation_id: string };
         return {
-          match_id: match.id,
-          conversation_id: conversation.id,
+          match_id: result.match_id,
+          conversation_id: result.conversation_id,
         };
       }
+
+      // Decline
+      const { error } = await supabase.rpc('decline_offer_v1' as never, {
+        p_offer_id: offerId,
+        p_user_id: userId,
+      } as never);
+
+      if (error) throw error;
 
       return { match_id: null, conversation_id: null };
     },
