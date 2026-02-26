@@ -109,11 +109,9 @@ function AdminHome() {
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen flex-col overflow-hidden">
       <HealthBar health={health} onRetry={retry} />
-      <div className="flex min-h-0 flex-1 flex-col">
-        <GraphViewer serverUrl={GRAPH_SERVER_URL} height="100%" className="min-h-0 flex-1" />
-      </div>
+      <GraphViewer serverUrl={GRAPH_SERVER_URL} height="calc(100dvh - 41px)" />
     </div>
   );
 }
