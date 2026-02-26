@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import { useRouter } from 'expo-router';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/context/AuthProvider';
 import Card, {
@@ -19,6 +20,7 @@ export type MeetupProposalCardProps = {
   onDecline?: () => void;
   /** Whether a response has already been sent for this proposal */
   hasResponse?: boolean;
+  conversationId?: string;
   className?: string;
 };
 
@@ -29,9 +31,11 @@ const MeetupProposalCard = ({
   onAccept,
   onDecline,
   hasResponse = false,
+  conversationId,
   className,
 }: MeetupProposalCardProps) => {
   const { user } = useAuth();
+  const router = useRouter();
   const payload = message.payload as unknown as MeetupProposalPayload | null;
 
   if (!payload) return null;
@@ -51,6 +55,14 @@ const MeetupProposalCard = ({
       : 'TBD';
 
   const locationDisplay = payload.location_name ?? 'Location not specified';
+
+  const handleViewTrade = () => {
+    if (!conversationId) return;
+    router.push({
+      pathname: '/(tabs)/(messages)/offer-detail',
+      params: { conversationId },
+    });
+  };
 
   return (
     <View
@@ -117,6 +129,19 @@ const MeetupProposalCard = ({
             <Text className="text-xs text-muted-foreground">
               This proposal has been responded to
             </Text>
+          </CardFooter>
+        ) : null}
+
+        {conversationId ? (
+          <CardFooter>
+            <Button
+              size="sm"
+              variant="outline"
+              onPress={handleViewTrade}
+              className="flex-1"
+            >
+              View Trade
+            </Button>
           </CardFooter>
         ) : null}
       </Card>

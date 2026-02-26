@@ -8,4 +8,6 @@ export const chatKeys = {
     [...chatKeys.all, 'tradeContext', conversationId] as const,
   unreadCount: (conversationId: string) =>
     [...chatKeys.all, 'unreadCount', conversationId] as const,
+  nickname: (conversationId: string) =>
+    [...chatKeys.all, 'nickname', conversationId] as const,
 };

@@ -10,6 +10,11 @@ export { default as TradeContextHeader } from './components/TradeContextHeader/T
 export { default as TypingIndicator } from './components/TypingIndicator/TypingIndicator';
 export { default as ChatHeaderActions } from './components/ChatHeaderActions/ChatHeaderActions';
 export { default as ReadReceipt } from './components/ReadReceipt/ReadReceipt';
+export { default as RenameChatModal } from './components/RenameChatModal/RenameChatModal';
+export { default as TradeItemRow } from './components/TradeItemRow/TradeItemRow';
+export { default as TradeSideSection } from './components/TradeSideSection/TradeSideSection';
+export { default as OfferDetailScreen } from './components/OfferDetailScreen/OfferDetailScreen';
+export { default as useConversationNickname } from './hooks/useConversationNickname/useConversationNickname';
 export { default as useConversations } from './hooks/useConversations/useConversations';
 export type { ConversationPreview } from './hooks/useConversations/useConversations';
 export { default as useMessages } from './hooks/useMessages/useMessages';
@@ -25,6 +30,7 @@ export { default as useChatBlockCheck } from './hooks/useChatBlockCheck/useChatB
 export type { ChatBlockState } from './hooks/useChatBlockCheck/useChatBlockCheck';
 export { default as useLongPressMessage } from './hooks/useLongPressMessage/useLongPressMessage';
 export { default as formatMessage } from './utils/formatMessage/formatMessage';
+export { default as generateDefaultChatName } from './utils/generateDefaultChatName/generateDefaultChatName';
 export { default as parseOfferPayload } from './utils/parseOfferPayload/parseOfferPayload';
 export type { ParsedOffer } from './utils/parseOfferPayload/parseOfferPayload';
 export { chatKeys } from './queryKeys';

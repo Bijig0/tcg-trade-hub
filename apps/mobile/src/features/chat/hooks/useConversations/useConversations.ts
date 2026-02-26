@@ -22,6 +22,7 @@ export type ConversationPreview = {
   negotiationStatus: NegotiationStatus;
   listingTitle: string;
   listingThumbnails: string[];
+  nickname: string | null;
 };
 
 /**
@@ -156,6 +157,17 @@ const useConversations = () => {
         ]),
       );
 
+      // 6b. Bulk-fetch nicknames for current user
+      const { data: nicknameData } = await supabase
+        .from('conversation_nicknames')
+        .select('conversation_id, nickname')
+        .eq('user_id', user.id)
+        .in('conversation_id', convIds);
+
+      const nicknameMap = new Map<string, string>(
+        (nicknameData ?? []).map((n) => [n.conversation_id, n.nickname]),
+      );
+
       // 7. Build results, filtering blocked users
       const results: ConversationPreview[] = [];
 
@@ -208,6 +220,7 @@ const useConversations = () => {
           negotiationStatus: conv.negotiation_status as NegotiationStatus,
           listingTitle: match.listings.title,
           listingThumbnails,
+          nickname: nicknameMap.get(conv.id) ?? null,
         });
       }
 

@@ -5,28 +5,40 @@ import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import useBlockUser from '@/features/safety/hooks/useBlockUser/useBlockUser';
 import ReportModal from '@/features/safety/components/ReportModal/ReportModal';
+import RenameChatModal from '../RenameChatModal/RenameChatModal';
 import { chatKeys } from '../../queryKeys';
 
 export type ChatHeaderActionsProps = {
   otherUserId: string;
   otherUserName: string;
+  conversationId: string;
+  currentDisplayName: string;
+  onRename: (newName: string) => void;
 };
 
 /**
  * 3-dot menu button for the chat header.
- * Shows "Block {name}" and "Report {name}" actions.
+ * Shows "Rename Chat", "Block {name}", and "Report {name}" actions.
  */
 const ChatHeaderActions = ({
   otherUserId,
   otherUserName,
+  conversationId,
+  currentDisplayName,
+  onRename,
 }: ChatHeaderActionsProps) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const blockUser = useBlockUser();
   const [reportVisible, setReportVisible] = useState(false);
+  const [renameVisible, setRenameVisible] = useState(false);
 
   const handlePress = useCallback(() => {
     Alert.alert('Actions', undefined, [
+      {
+        text: 'Rename Chat',
+        onPress: () => setRenameVisible(true),
+      },
       {
         text: `Block ${otherUserName}`,
         style: 'destructive',
@@ -63,6 +75,13 @@ const ChatHeaderActions = ({
         visible={reportVisible}
         onClose={() => setReportVisible(false)}
         reportedUserId={otherUserId}
+      />
+
+      <RenameChatModal
+        visible={renameVisible}
+        currentName={currentDisplayName}
+        onSave={onRename}
+        onClose={() => setRenameVisible(false)}
       />
     </>
   );
