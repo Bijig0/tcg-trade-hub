@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import { MapPin, ChevronRight } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/context/AuthProvider';
 import Card, {
@@ -55,6 +56,25 @@ const MeetupProposalCard = ({
       : 'TBD';
 
   const locationDisplay = payload.location_name ?? 'Location not specified';
+  const hasMapData = !!(payload.location_coords || payload.shop_id);
+
+  const handleViewLocation = () => {
+    router.push({
+      pathname: '/(tabs)/(messages)/meetup-location',
+      params: {
+        locationName: payload.location_name ?? '',
+        ...(payload.location_coords
+          ? {
+              lat: String(payload.location_coords.lat),
+              lng: String(payload.location_coords.lng),
+            }
+          : {}),
+        ...(payload.shop_id ? { shopId: payload.shop_id } : {}),
+        ...(payload.proposed_time ? { proposedTime: payload.proposed_time } : {}),
+        ...(payload.note ? { note: payload.note } : {}),
+      },
+    });
+  };
 
   const handleViewTrade = () => {
     if (!conversationId) return;
@@ -76,14 +96,28 @@ const MeetupProposalCard = ({
           <CardTitle className="text-base">Meetup Proposal</CardTitle>
         </CardHeader>
         <CardContent>
-          <View className="gap-2">
-            <View className="flex-row items-center gap-2">
-              <Text className="text-xs font-semibold uppercase text-muted-foreground">
+          <View className="gap-3">
+            {/* Location section */}
+            <View className="rounded-lg border border-border bg-accent p-3">
+              <Text className="mb-1.5 text-xs font-semibold uppercase text-muted-foreground">
                 Location
               </Text>
-              <Text className="flex-1 text-sm text-foreground">
-                {locationDisplay}
-              </Text>
+              <View className="flex-row items-center">
+                <MapPin size={16} className="text-amber-500" />
+                <Text className="ml-1.5 flex-1 text-sm font-medium text-foreground" numberOfLines={1}>
+                  {locationDisplay}
+                </Text>
+                {hasMapData ? (
+                  <Pressable
+                    onPress={handleViewLocation}
+                    className="flex-row items-center"
+                    hitSlop={8}
+                  >
+                    <Text className="text-xs font-semibold text-primary">View</Text>
+                    <ChevronRight size={14} className="text-primary" />
+                  </Pressable>
+                ) : null}
+              </View>
             </View>
 
             <View className="flex-row items-center gap-2">
@@ -97,7 +131,7 @@ const MeetupProposalCard = ({
 
             {payload.note ? (
               <Text className="mt-1 text-xs italic text-muted-foreground">
-                "{payload.note}"
+                &ldquo;{payload.note}&rdquo;
               </Text>
             ) : null}
           </View>
