@@ -18,6 +18,7 @@ const makeCard = (name: string): SelectedCard => ({
   fromCollection: true,
   addToCollection: false,
   askingPrice: '',
+  selectionId: `sel-${name}`,
 });
 
 describe('generateBundleTitle', () => {

@@ -68,6 +68,7 @@ const MatchConfirmSheet = forwardRef<BottomSheet, MatchConfirmSheetProps>(
         fromCollection: true,
         addToCollection: false,
         askingPrice: '',
+        selectionId: c.id,
       }));
 
       createOffer.mutate(

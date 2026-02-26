@@ -110,6 +110,7 @@ const TradeBuilderScreen = () => {
       fromCollection: true,
       addToCollection: false,
       askingPrice: '',
+      selectionId: c.id,
     }));
 
     createOffer.mutate(
