@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@source "../../node_modules/flow-graph/dist/react";
+
 @theme {
   --color-background: oklch(0.13 0.01 268);
   --color-foreground: oklch(0.93 0.005 268);
