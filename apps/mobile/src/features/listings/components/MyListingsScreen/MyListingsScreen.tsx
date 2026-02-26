@@ -8,6 +8,7 @@ import RefreshableScreen from '@/components/ui/RefreshableScreen/RefreshableScre
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import useMyListings from '../../hooks/useMyListings/useMyListings';
 import useDeleteListing from '../../hooks/useDeleteListing/useDeleteListing';
+import usePrefetchActiveListingDetails from '../../hooks/usePrefetchActiveListingDetails/usePrefetchActiveListingDetails';
 import { listingKeys } from '../../queryKeys';
 import groupListingsByTab from '../../utils/groupListingsByTab/groupListingsByTab';
 import ActiveListingCard from '../ActiveListingCard/ActiveListingCard';
@@ -80,6 +81,7 @@ const EMPTY_STATE_CONFIG: Record<ListingTab, { icon: typeof Package; title: stri
 const MyListingsScreen = () => {
   const router = useRouter();
   const { data: listings, isLoading } = useMyListings();
+  usePrefetchActiveListingDetails(listings);
   const deleteListing = useDeleteListing();
   const [activeTab, setActiveTab] = useState<ListingTab>('active');
 
