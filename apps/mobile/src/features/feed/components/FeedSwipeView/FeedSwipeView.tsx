@@ -234,6 +234,17 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
         icon={<PackageOpenIcon />}
         title="No More Listings"
         description="You've seen all available listings. Check back later or adjust your filters."
+        action={
+          __DEV__
+            ? {
+                label: 'Refresh Feed',
+                onPress: () => {
+                  setCurrentIndex(0);
+                  refetch();
+                },
+              }
+            : undefined
+        }
       />
     );
   }
