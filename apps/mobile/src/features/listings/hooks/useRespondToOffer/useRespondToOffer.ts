@@ -40,11 +40,11 @@ const useRespondToOffer = () => {
       if (!userId) throw new Error('Not authenticated');
 
       if (action === 'accepted') {
-        const { data, error } = await supabase.rpc('accept_offer_v1' as never, {
+        const { data, error } = await supabase.rpc('accept_offer_v1', {
           p_offer_id: offerId,
           p_listing_id: listingId,
           p_user_id: userId,
-        } as never);
+        });
 
         if (error) throw error;
 
@@ -56,10 +56,10 @@ const useRespondToOffer = () => {
       }
 
       // Decline
-      const { error } = await supabase.rpc('decline_offer_v1' as never, {
+      const { error } = await supabase.rpc('decline_offer_v1', {
         p_offer_id: offerId,
         p_user_id: userId,
-      } as never);
+      });
 
       if (error) throw error;
 

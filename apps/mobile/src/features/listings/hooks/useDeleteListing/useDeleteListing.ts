@@ -28,10 +28,10 @@ const useDeleteListing = () => {
 
       if (!userId) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase.rpc('expire_listing_v1' as never, {
+      const { data, error } = await supabase.rpc('expire_listing_v1', {
         p_listing_id: listingId,
         p_user_id: userId,
-      } as never);
+      });
 
       if (error) throw error;
 

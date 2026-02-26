@@ -45,13 +45,13 @@ const useCreateOffer = () => {
         quantity: 1,
       }));
 
-      const { data, error } = await supabase.rpc('create_offer_v1' as never, {
+      const { data, error } = await supabase.rpc('create_offer_v1', {
         p_listing_id: listingId,
         p_offerer_id: user.id,
         p_cash_amount: cashAmount,
-        p_message: message,
+        p_message: message ?? '',
         p_items: JSON.stringify(items),
-      } as never);
+      });
 
       if (error) throw error;
 

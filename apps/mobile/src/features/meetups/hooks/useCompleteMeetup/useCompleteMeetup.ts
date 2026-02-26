@@ -35,10 +35,10 @@ const useCompleteMeetup = (onBothCompleted?: (meetupId: string) => void) => {
 
       if (!userId) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase.rpc('complete_meetup_v1' as never, {
+      const { data, error } = await supabase.rpc('complete_meetup_v1', {
         p_meetup_id: meetupId,
         p_user_id: userId,
-      } as never);
+      });
 
       if (error) throw error;
       if (!data) throw new Error('No response from complete_meetup_v1');
