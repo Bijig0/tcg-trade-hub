@@ -1,24 +1,42 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, RefreshControl, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useCallback, useMemo } from 'react';
+import { View, Text, Pressable, ActivityIndicator, Alert, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import MapView from 'react-native-maps';
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { ArrowLeft, MessageCircle, XCircle } from 'lucide-react-native';
+
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Badge from '@/components/ui/Badge/Badge';
-import Button from '@/components/ui/Button/Button';
-import RefreshableScreen from '@/components/ui/RefreshableScreen/RefreshableScreen';
 import Separator from '@/components/ui/Separator/Separator';
+import Button from '@/components/ui/Button/Button';
+import { useSheetPositionStore } from '@/stores/sheetPositionStore/sheetPositionStore';
 import useMeetupDetail from '../../hooks/useMeetupDetail/useMeetupDetail';
 import useCompleteMeetup from '../../hooks/useCompleteMeetup/useCompleteMeetup';
 import useCancelMeetup from '../../hooks/useCancelMeetup/useCancelMeetup';
-import { meetupKeys } from '../../queryKeys';
 import RatingModal from '../RatingModal/RatingModal';
 import DevMeetupActions from '../DevMeetupActions/DevMeetupActions';
+import MeetupMapMarker from '../MeetupMapMarker/MeetupMapMarker';
+import CompletionBar from '../CompletionBar/CompletionBar';
+import OfferPreviewSection from '../OfferPreviewSection/OfferPreviewSection';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const FALLBACK_REGION = {
+  latitude: -37.8136,
+  longitude: 144.9631,
+  latitudeDelta: 0.02,
+  longitudeDelta: 0.02,
+};
+
+const SHEET_KEY = 'meetup-detail';
 
 /**
- * Full detail screen for a single meetup.
+ * Full-screen meetup detail with MapView background and draggable bottom sheet.
  *
- * Displays location (with map placeholder if coords available), date/time,
- * other user info, and action buttons for completing or cancelling the meetup.
+ * Shows the meetup location on a map with a custom marker, and all details
+ * (location info, other user, offer preview, completion bar, actions)
+ * inside a persisted-position bottom sheet.
  */
 const MeetupDetailScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -26,6 +44,8 @@ const MeetupDetailScreen = () => {
   const { data: meetup, isLoading, isError } = useMeetupDetail(id ?? '');
   const [ratingVisible, setRatingVisible] = useState(false);
   const [rateeId, setRateeId] = useState('');
+
+  const { getPosition, setPosition } = useSheetPositionStore();
 
   const handleBothCompleted = useCallback(
     (_meetupId: string) => {
@@ -39,6 +59,28 @@ const MeetupDetailScreen = () => {
 
   const completeMeetup = useCompleteMeetup(handleBothCompleted);
   const cancelMeetup = useCancelMeetup();
+
+  const snapPoints = useMemo(() => ['15%', '55%', '85%'], []);
+  const initialIndex = getPosition(SHEET_KEY, 2);
+
+  const handleSheetChange = useCallback(
+    (index: number) => {
+      setPosition(SHEET_KEY, index);
+    },
+    [setPosition],
+  );
+
+  const mapRegion = useMemo(() => {
+    if (meetup?.shopCoords) {
+      return {
+        latitude: meetup.shopCoords.latitude,
+        longitude: meetup.shopCoords.longitude,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+      };
+    }
+    return FALLBACK_REGION;
+  }, [meetup?.shopCoords]);
 
   if (isLoading) {
     return (
@@ -104,17 +146,7 @@ const MeetupDetailScreen = () => {
   };
 
   const handleComplete = () => {
-    Alert.alert(
-      'Complete Meetup',
-      'Confirm that this trade meetup has been completed?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm',
-          onPress: () => completeMeetup.mutate({ meetupId: meetup.id }),
-        },
-      ],
-    );
+    completeMeetup.mutate({ meetupId: meetup.id });
   };
 
   const handleCancel = () => {
@@ -137,137 +169,159 @@ const MeetupDetailScreen = () => {
   };
 
   return (
-    <RefreshableScreen queryKeys={[meetupKeys.detail(id ?? '')]}>
-      {({ onRefresh, isRefreshing }) => (
-        <View className="flex-1">
-          <ScrollView
-            contentContainerClassName="pb-8"
-            refreshControl={
-              <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-            }
-          >
-            {/* Map placeholder */}
-        {meetup.location_coords ? (
-          <View className="h-48 w-full items-center justify-center bg-muted">
-            <Text className="text-sm text-muted-foreground">
-              Map view available with react-native-maps
-            </Text>
-          </View>
-        ) : (
-          <View className="h-32 w-full items-center justify-center bg-muted">
-            <Text className="text-4xl">📍</Text>
-          </View>
+    <View className="flex-1 bg-background">
+      {/* Full-screen map */}
+      <MapView
+        style={{ width: SCREEN_WIDTH, flex: 1 }}
+        initialRegion={mapRegion}
+        showsUserLocation
+        showsMyLocationButton={false}
+      >
+        {meetup.shopCoords && (
+          <MeetupMapMarker
+            coordinate={meetup.shopCoords}
+            title={locationName}
+          />
         )}
+      </MapView>
 
-        {/* Location info */}
-        <View className="px-4 pt-4">
-          <View className="flex-row items-center justify-between">
-            <Text className="text-xl font-bold text-foreground">{locationName}</Text>
-            <Badge variant={statusVariant as 'default' | 'secondary' | 'destructive'}>
-              {statusLabel}
-            </Badge>
-          </View>
-          {locationAddress ? (
-            <Text className="mt-1 text-sm text-muted-foreground">{locationAddress}</Text>
-          ) : null}
-          <Text className="mt-2 text-base text-foreground">{formattedTime}</Text>
+      {/* Floating back button */}
+      <SafeAreaView
+        edges={['top']}
+        className="absolute left-0 right-0 top-0"
+        style={{ pointerEvents: 'box-none' }}
+      >
+        <View className="mx-4 mt-1" style={{ pointerEvents: 'auto' }}>
+          <Pressable
+            onPress={() => router.back()}
+            className="h-10 w-10 items-center justify-center rounded-full bg-background/90 shadow-sm"
+          >
+            <ArrowLeft size={20} className="text-foreground" />
+          </Pressable>
         </View>
+      </SafeAreaView>
 
-        <View className="px-4 py-4">
-          <Separator />
-        </View>
-
-        {/* Other user info */}
-        <View className="flex-row items-center px-4">
-          <Avatar uri={other_user.avatar_url} fallback={initials} size="lg" />
-          <View className="ml-3 flex-1">
-            <Text className="text-base font-semibold text-foreground">
-              {other_user.display_name}
-            </Text>
-            <View className="flex-row items-center gap-2">
-              <Text className="text-sm text-muted-foreground">
-                {other_user.rating_score > 0
-                  ? `${'★'.repeat(Math.round(other_user.rating_score))} ${other_user.rating_score.toFixed(1)}`
-                  : 'New trader'}
+      {/* Bottom sheet */}
+      <BottomSheet
+        index={initialIndex}
+        snapPoints={snapPoints}
+        onChange={handleSheetChange}
+        enableDynamicSizing={false}
+        enablePanDownToClose={false}
+        backgroundStyle={{ borderRadius: 20, backgroundColor: '#0f0f13' }}
+        handleIndicatorStyle={{ backgroundColor: '#a1a1aa', width: 40 }}
+      >
+        <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+          {/* Location header */}
+          <View className="px-4 pt-2">
+            <View className="flex-row items-center justify-between">
+              <Text className="flex-1 text-xl font-bold text-foreground" numberOfLines={1}>
+                {locationName}
               </Text>
-              {other_user.total_trades > 0 ? (
+              <Badge variant={statusVariant as 'default' | 'secondary' | 'destructive'}>
+                {statusLabel}
+              </Badge>
+            </View>
+            {locationAddress ? (
+              <Text className="mt-1 text-sm text-muted-foreground">{locationAddress}</Text>
+            ) : null}
+            <Text className="mt-2 text-base text-foreground">{formattedTime}</Text>
+          </View>
+
+          <View className="px-4 py-4">
+            <Separator />
+          </View>
+
+          {/* Other user info */}
+          <View className="flex-row items-center px-4">
+            <Avatar uri={other_user.avatar_url} fallback={initials} size="lg" />
+            <View className="ml-3 flex-1">
+              <Text className="text-base font-semibold text-foreground">
+                {other_user.display_name}
+              </Text>
+              <View className="flex-row items-center gap-2">
                 <Text className="text-sm text-muted-foreground">
-                  {other_user.total_trades} trade{other_user.total_trades !== 1 ? 's' : ''}
+                  {other_user.rating_score > 0
+                    ? `${'★'.repeat(Math.round(other_user.rating_score))} ${other_user.rating_score.toFixed(1)}`
+                    : 'New trader'}
                 </Text>
-              ) : null}
+                {other_user.total_trades > 0 ? (
+                  <Text className="text-sm text-muted-foreground">
+                    {other_user.total_trades} trade{other_user.total_trades !== 1 ? 's' : ''}
+                  </Text>
+                ) : null}
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* Completion status */}
-        {status === 'confirmed' ? (
-          <View className="mx-4 mt-4 rounded-lg bg-muted p-3">
-            {userCompleted ? (
-              <Text className="text-sm text-foreground">
-                You confirmed completion. Waiting for the other party.
-              </Text>
-            ) : otherCompleted ? (
-              <Text className="text-sm text-foreground">
-                The other party confirmed. Your turn to confirm completion.
-              </Text>
-            ) : (
-              <Text className="text-sm text-muted-foreground">
-                Neither party has confirmed completion yet.
-              </Text>
-            )}
+          {/* Offer preview */}
+          <View className="px-4 pt-4">
+            <OfferPreviewSection
+              listingItems={meetup.listingItems}
+              offerItems={meetup.offerItems}
+              conversationId={meetup.conversation?.id ?? null}
+            />
           </View>
-        ) : null}
 
-        {/* Dev actions (dev mode only) */}
-        {__DEV__ && status === 'confirmed' && (
-          <DevMeetupActions
-            meetupId={meetup.id}
-            otherCompletionField={is_user_a ? 'user_b_completed' : 'user_a_completed'}
-          />
-        )}
+          {/* Completion bar */}
+          {status === 'confirmed' && (
+            <View className="px-4 pt-4">
+              <CompletionBar
+                userCompleted={userCompleted}
+                otherCompleted={otherCompleted}
+                otherUserName={other_user.display_name}
+                otherUserAvatarUrl={other_user.avatar_url}
+                onComplete={handleComplete}
+                isPending={completeMeetup.isPending}
+              />
+            </View>
+          )}
 
-        {/* Action buttons */}
-        <View className="gap-3 px-4 pt-6">
-          {meetup.conversation ? (
-            <Button variant="outline" onPress={handleOpenChat}>
-              <Text className="text-base font-medium text-foreground">Open Chat</Text>
-            </Button>
-          ) : null}
+          {/* Dev actions (dev mode only) */}
+          {__DEV__ && status === 'confirmed' && (
+            <DevMeetupActions
+              meetupId={meetup.id}
+              otherCompletionField={is_user_a ? 'user_b_completed' : 'user_a_completed'}
+            />
+          )}
 
-          {status === 'confirmed' && !userCompleted ? (
-            <Button
-              onPress={handleComplete}
-              disabled={completeMeetup.isPending}
-            >
-              <Text className="text-base font-semibold text-primary-foreground">
-                {completeMeetup.isPending ? 'Completing...' : 'Complete Meetup'}
-              </Text>
-            </Button>
-          ) : null}
+          {/* Action buttons */}
+          <View className="gap-3 px-4 pt-6">
+            {meetup.conversation ? (
+              <Button variant="outline" onPress={handleOpenChat}>
+                <View className="flex-row items-center gap-2">
+                  <MessageCircle size={18} className="text-foreground" />
+                  <Text className="text-base font-medium text-foreground">Open Chat</Text>
+                </View>
+              </Button>
+            ) : null}
 
-          {status === 'confirmed' ? (
-            <Button
-              variant="destructive"
-              onPress={handleCancel}
-              disabled={cancelMeetup.isPending}
-            >
-              <Text className="text-base font-semibold text-destructive-foreground">
-                {cancelMeetup.isPending ? 'Cancelling...' : 'Cancel Meetup'}
-              </Text>
-            </Button>
-          ) : null}
-        </View>
-          </ScrollView>
+            {status === 'confirmed' ? (
+              <Button
+                variant="destructive"
+                onPress={handleCancel}
+                disabled={cancelMeetup.isPending}
+              >
+                <View className="flex-row items-center gap-2">
+                  <XCircle size={18} className="text-destructive-foreground" />
+                  <Text className="text-base font-semibold text-destructive-foreground">
+                    {cancelMeetup.isPending ? 'Cancelling...' : 'Cancel Meetup'}
+                  </Text>
+                </View>
+              </Button>
+            ) : null}
+          </View>
+        </BottomSheetScrollView>
+      </BottomSheet>
 
-          <RatingModal
-            visible={ratingVisible}
-            onClose={() => setRatingVisible(false)}
-            meetupId={meetup.id}
-            rateeId={rateeId}
-          />
-        </View>
-      )}
-    </RefreshableScreen>
+      {/* Rating modal overlay */}
+      <RatingModal
+        visible={ratingVisible}
+        onClose={() => setRatingVisible(false)}
+        meetupId={meetup.id}
+        rateeId={rateeId}
+      />
+    </View>
   );
 };
 
