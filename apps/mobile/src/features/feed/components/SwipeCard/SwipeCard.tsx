@@ -27,6 +27,12 @@ const SwipeCard = ({ listing, className, onOpenDetail }: SwipeCardProps) => {
   const [selectedItemIndex, setSelectedItemIndex] = useState(0);
   const [photoIndex, setPhotoIndex] = useState(0);
 
+  // Reset selection when the listing changes (no key remount)
+  useEffect(() => {
+    setSelectedItemIndex(0);
+    setPhotoIndex(0);
+  }, [listing.id]);
+
   // Reset photo index when selected item changes
   useEffect(() => {
     setPhotoIndex(0);
