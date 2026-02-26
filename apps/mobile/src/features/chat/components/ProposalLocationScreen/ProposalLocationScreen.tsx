@@ -1,15 +1,20 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useRef, useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import MapView from 'react-native-maps';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { ArrowLeft, MapPin, Clock, MessageSquare } from 'lucide-react-native';
+import { ArrowLeft, MapPin, Clock, MessageSquare, Navigation } from 'lucide-react-native';
 
 import { useSheetPositionStore } from '@/stores/sheetPositionStore/sheetPositionStore';
 import useShopDetail from '@/features/shops/hooks/useShopDetail/useShopDetail';
 import parseLocationCoords from '@/features/meetups/utils/parseLocationCoords/parseLocationCoords';
 import MeetupMapMarker from '@/features/meetups/components/MeetupMapMarker/MeetupMapMarker';
+import useUserLocation from '@/hooks/useUserLocation/useUserLocation';
+import MapDirectionsOverlay from '@/components/MapDirectionsOverlay/MapDirectionsOverlay';
+import DirectionsInfoBar from '@/components/DirectionsInfoBar/DirectionsInfoBar';
+import openMapsNavigation from '@/utils/openMapsNavigation/openMapsNavigation';
+import Button from '@/components/ui/Button/Button';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -41,6 +46,9 @@ const ProposalLocationScreen = () => {
 
   const router = useRouter();
   const { getPosition, setPosition } = useSheetPositionStore();
+  const mapRef = useRef<MapView>(null);
+  const userLocation = useUserLocation();
+  const [routeInfo, setRouteInfo] = useState<{ distance: number; duration: number } | null>(null);
 
   const shopId = params.shopId ?? null;
   const { data: shop, isLoading: isShopLoading } = useShopDetail(shopId);
@@ -100,6 +108,31 @@ const ProposalLocationScreen = () => {
     });
   }, [params.proposedTime]);
 
+  const showDirections = !!userLocation && !!resolvedCoords;
+
+  const handleDirectionsReady = useCallback(
+    (result: { distance: number; duration: number }) => {
+      setRouteInfo(result);
+      if (resolvedCoords && userLocation && mapRef.current) {
+        mapRef.current.fitToCoordinates(
+          [userLocation, resolvedCoords],
+          { edgePadding: { top: 80, right: 60, bottom: 280, left: 60 }, animated: true },
+        );
+      }
+    },
+    [resolvedCoords, userLocation],
+  );
+
+  const handleGetDirections = useCallback(() => {
+    if (resolvedCoords) {
+      openMapsNavigation({
+        latitude: resolvedCoords.latitude,
+        longitude: resolvedCoords.longitude,
+        label: locationName,
+      });
+    }
+  }, [resolvedCoords, locationName]);
+
   if (shopId && isShopLoading) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['top']}>
@@ -112,6 +145,7 @@ const ProposalLocationScreen = () => {
     <View className="flex-1 bg-background">
       {/* Full-screen map */}
       <MapView
+        ref={mapRef}
         style={{ width: SCREEN_WIDTH, flex: 1 }}
         initialRegion={mapRegion}
         showsUserLocation
@@ -121,6 +155,13 @@ const ProposalLocationScreen = () => {
           <MeetupMapMarker
             coordinate={resolvedCoords}
             title={locationName}
+          />
+        )}
+        {showDirections && (
+          <MapDirectionsOverlay
+            origin={userLocation}
+            destination={resolvedCoords}
+            onReady={handleDirectionsReady}
           />
         )}
       </MapView>
@@ -165,6 +206,11 @@ const ProposalLocationScreen = () => {
                 {locationAddress}
               </Text>
             ) : null}
+            {routeInfo && (
+              <View className="ml-7">
+                <DirectionsInfoBar distanceKm={routeInfo.distance} durationMin={routeInfo.duration} />
+              </View>
+            )}
           </View>
 
           {/* Proposed time */}
@@ -182,6 +228,20 @@ const ProposalLocationScreen = () => {
               <Text className="flex-1 text-sm italic text-muted-foreground">
                 &ldquo;{params.note}&rdquo;
               </Text>
+            </View>
+          ) : null}
+
+          {/* Get Directions button */}
+          {resolvedCoords ? (
+            <View className="px-4 pt-4">
+              <Button variant="default" onPress={handleGetDirections}>
+                <View className="flex-row items-center gap-2">
+                  <Navigation size={18} className="text-primary-foreground" />
+                  <Text className="text-base font-semibold text-primary-foreground">
+                    Get Directions
+                  </Text>
+                </View>
+              </Button>
             </View>
           ) : null}
         </BottomSheetScrollView>

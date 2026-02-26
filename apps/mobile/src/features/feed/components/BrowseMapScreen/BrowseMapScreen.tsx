@@ -13,7 +13,7 @@ import FilterBar from '../FilterBar/FilterBar';
 import ListingCard from '../ListingCard/ListingCard';
 import useFeedListings from '../../hooks/useFeedListings/useFeedListings';
 import useBrowseShops from '../../hooks/useBrowseShops/useBrowseShops';
-import useUserLocation from '../../hooks/useUserLocation/useUserLocation';
+import useUserLocation from '@/hooks/useUserLocation/useUserLocation';
 import type { ListingWithDistance } from '../../schemas';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
