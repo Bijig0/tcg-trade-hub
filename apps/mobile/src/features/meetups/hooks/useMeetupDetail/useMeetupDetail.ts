@@ -56,8 +56,8 @@ const useMeetupDetail = (meetupId: string) => {
             id,
             user_a_id,
             user_b_id,
-            listing_a_id,
-            listing_b_id,
+            listing_id,
+            offer_id,
             status,
             created_at,
             updated_at
