@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { View, Text, Pressable, Animated } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useErrorToastStore } from '@/stores/errorToastStore/errorToastStore';
 
@@ -48,6 +49,7 @@ const ToastItem = ({ id, message, onDismiss }: ToastItemProps) => {
   }, [id, onDismiss, opacity, translateY]);
 
   const handlePress = useCallback(() => {
+    void Clipboard.setStringAsync(message);
     Animated.parallel([
       Animated.timing(opacity, {
         toValue: 0,
@@ -60,7 +62,7 @@ const ToastItem = ({ id, message, onDismiss }: ToastItemProps) => {
         useNativeDriver: true,
       }),
     ]).start(() => onDismiss(id));
-  }, [id, onDismiss, opacity, translateY]);
+  }, [id, message, onDismiss, opacity, translateY]);
 
   return (
     <Animated.View style={{ opacity, transform: [{ translateY }] }}>
@@ -70,6 +72,9 @@ const ToastItem = ({ id, message, onDismiss }: ToastItemProps) => {
       >
         <Text className="text-sm text-destructive-foreground" numberOfLines={3}>
           {message}
+        </Text>
+        <Text className="mt-1 text-[10px] text-destructive-foreground/60">
+          Tap to copy & dismiss
         </Text>
       </Pressable>
     </Animated.View>
