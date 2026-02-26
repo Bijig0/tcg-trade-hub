@@ -167,6 +167,11 @@ const ConversationsScreen = () => {
               onPress={() => handlePress(item)}
             />
           )}
+          ListHeaderComponent={
+            <View className="px-4 pb-3 pt-4">
+              <Text className="text-2xl font-bold text-foreground">Messages</Text>
+            </View>
+          }
           ListEmptyComponent={
             <EmptyState
               icon={
