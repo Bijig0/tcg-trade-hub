@@ -6,6 +6,9 @@ import type { NegotiationStatus, ListingType, TcgType } from '@tcg-trade-hub/dat
 export type TradeContextItem = {
   cardName: string;
   cardImageUrl: string;
+  cardExternalId: string;
+  tcg: string;
+  condition: string;
   quantity: number;
   marketPrice: number | null;
 };
@@ -90,13 +93,13 @@ const useTradeContext = (conversationId: string) => {
       // Fetch listing items
       const { data: listingItems } = await supabase
         .from('listing_items')
-        .select('card_name, card_image_url, quantity, market_price')
+        .select('card_name, card_image_url, card_external_id, tcg, condition, quantity, market_price')
         .eq('listing_id', match.listings.id);
 
       // Fetch offer items
       const { data: offerItems } = await supabase
         .from('offer_items')
-        .select('card_name, card_image_url, quantity, market_price')
+        .select('card_name, card_image_url, card_external_id, tcg, condition, quantity, market_price')
         .eq('offer_id', match.offers.id);
 
       return {
@@ -108,6 +111,9 @@ const useTradeContext = (conversationId: string) => {
         listingItems: (listingItems ?? []).map((li) => ({
           cardName: li.card_name,
           cardImageUrl: li.card_image_url,
+          cardExternalId: li.card_external_id,
+          tcg: li.tcg,
+          condition: li.condition,
           quantity: li.quantity,
           marketPrice: li.market_price,
         })),
@@ -116,6 +122,9 @@ const useTradeContext = (conversationId: string) => {
         offerItems: (offerItems ?? []).map((oi) => ({
           cardName: oi.card_name,
           cardImageUrl: oi.card_image_url,
+          cardExternalId: oi.card_external_id,
+          tcg: oi.tcg,
+          condition: oi.condition,
           quantity: oi.quantity,
           marketPrice: oi.market_price,
         })),

@@ -18,9 +18,9 @@ describe('OfferDetailScreen', () => {
 
   it('should calculate offer total value from items', () => {
     const items: TradeContextItem[] = [
-      { cardName: 'Card A', cardImageUrl: '', quantity: 2, marketPrice: 10 },
-      { cardName: 'Card B', cardImageUrl: '', quantity: 1, marketPrice: 25.5 },
-      { cardName: 'Card C', cardImageUrl: '', quantity: 1, marketPrice: null },
+      { cardName: 'Card A', cardImageUrl: '', cardExternalId: 'a-1', tcg: 'pokemon', condition: 'nm', quantity: 2, marketPrice: 10 },
+      { cardName: 'Card B', cardImageUrl: '', cardExternalId: 'b-1', tcg: 'pokemon', condition: 'nm', quantity: 1, marketPrice: 25.5 },
+      { cardName: 'Card C', cardImageUrl: '', cardExternalId: 'c-1', tcg: 'pokemon', condition: 'nm', quantity: 1, marketPrice: null },
     ];
 
     const totalValue = items.reduce(
