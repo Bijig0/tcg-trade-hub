@@ -18,7 +18,7 @@ import MyBundleSummary from '../MyBundleSummary/MyBundleSummary';
 import ReceivedOfferCard from '../ReceivedOfferCard/ReceivedOfferCard';
 import TradeOpportunityCard from '../TradeOpportunityCard/TradeOpportunityCard';
 import ShopMarker from '../ShopMarker/ShopMarker';
-import OfferDetailSheet from '../OfferDetailSheet/OfferDetailSheet';
+import OfferDetailView from '../OfferDetailView/OfferDetailView';
 import DevListingActions from '../DevListingActions/DevListingActions';
 import type { OfferWithItems, TradeOpportunity } from '../../schemas';
 import type { OfferItemRow, ListingItemRow } from '@tcg-trade-hub/database';
@@ -37,7 +37,6 @@ const MyListingDetailScreen = () => {
   const router = useRouter();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const flatListRef = useRef<BottomSheetFlatListMethods>(null);
-  const offerDetailRef = useRef<BottomSheet>(null);
 
   const [selectedOffer, setSelectedOffer] = useState<OfferWithItems | null>(null);
   const [detailTab, setDetailTab] = useState<DetailTab>('opportunities');
@@ -86,14 +85,12 @@ const MyListingDetailScreen = () => {
     [id, respondToOffer],
   );
 
-  // --- Stacked sheet handlers ---
-
   const handleOfferPress = useCallback((offer: OfferWithItems) => {
     setSelectedOffer(offer);
-    offerDetailRef.current?.expand();
+    bottomSheetRef.current?.snapToIndex(2);
   }, []);
 
-  const handleOfferDetailClose = useCallback(() => {
+  const handleOfferDetailBack = useCallback(() => {
     setSelectedOffer(null);
   }, []);
 
@@ -340,7 +337,18 @@ const MyListingDetailScreen = () => {
         backgroundStyle={{ borderRadius: 20, backgroundColor: '#0f0f13' }}
         handleIndicatorStyle={{ backgroundColor: '#a1a1aa', width: 40 }}
       >
-        {showOffersList ? (
+        {selectedOffer ? (
+          <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+            <OfferDetailView
+              offer={selectedOffer}
+              onBack={handleOfferDetailBack}
+              onAccept={handleAccept}
+              onDecline={handleDecline}
+              isResponding={respondToOffer.isPending}
+              onCardPress={handleOfferCardPress}
+            />
+          </BottomSheetScrollView>
+        ) : showOffersList ? (
           <BottomSheetFlatList
             ref={flatListRef}
             data={offers}
@@ -364,17 +372,6 @@ const MyListingDetailScreen = () => {
           </BottomSheetScrollView>
         )}
       </BottomSheet>
-
-      {/* Stacked: Offer detail sheet */}
-      <OfferDetailSheet
-        ref={offerDetailRef}
-        offer={selectedOffer}
-        onClose={handleOfferDetailClose}
-        onAccept={handleAccept}
-        onDecline={handleDecline}
-        isResponding={respondToOffer.isPending}
-        onCardPress={handleOfferCardPress}
-      />
     </View>
   );
 };
