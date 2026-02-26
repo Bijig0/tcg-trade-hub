@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { Alert } from 'react-native';
-import * as Updates from 'expo-updates';
 
 type UpdateStatus = 'idle' | 'checking' | 'downloading' | 'ready' | 'up-to-date' | 'error';
 
@@ -10,17 +9,30 @@ type UseCheckForUpdatesReturn = {
 };
 
 /**
+ * Lazily loads expo-updates. Returns null in Expo Go where the module
+ * is not available (it requires a development or production build).
+ */
+const getUpdatesModule = () => {
+  try {
+    return require('expo-updates') as typeof import('expo-updates');
+  } catch {
+    return null;
+  }
+};
+
+/**
  * Hook to check for and apply OTA updates via expo-updates.
  *
- * In development (Expo Go), updates are not available so it shows an info alert.
- * In production builds, it checks for a new update, downloads it, and prompts
- * the user to restart.
+ * In Expo Go the module is unavailable, so tapping shows an info alert.
+ * In production builds it checks, downloads, and prompts for restart.
  */
 const useCheckForUpdates = (): UseCheckForUpdatesReturn => {
   const [status, setStatus] = useState<UpdateStatus>('idle');
 
   const checkForUpdates = useCallback(async () => {
-    if (__DEV__) {
+    const Updates = getUpdatesModule();
+
+    if (!Updates || __DEV__) {
       Alert.alert(
         'Development Mode',
         'OTA updates are not available in development. Build a production version to test updates.',

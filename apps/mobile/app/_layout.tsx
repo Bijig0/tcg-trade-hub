@@ -5,11 +5,9 @@ import '@/lib/imageInterop';
 
 import React, { useEffect } from 'react';
 import { Slot, useRouter, useSegments, ErrorBoundary } from 'expo-router';
-import { Alert } from 'react-native';
-import * as Updates from 'expo-updates';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ActivityIndicator, View, Text, ScrollView, LogBox } from 'react-native';
+import { ActivityIndicator, Alert, View, Text, ScrollView, LogBox } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider, useAuth } from '@/context/AuthProvider';
@@ -67,24 +65,30 @@ const RootNavigator = () => {
 
   useEffect(() => {
     if (__DEV__) return;
-    const checkForUpdates = async () => {
+    let Updates: typeof import('expo-updates') | null = null;
+    try {
+      Updates = require('expo-updates');
+    } catch {
+      return;
+    }
+    const check = async () => {
       try {
-        const update = await Updates.checkForUpdateAsync();
+        const update = await Updates!.checkForUpdateAsync();
         if (!update.isAvailable) return;
-        await Updates.fetchUpdateAsync();
+        await Updates!.fetchUpdateAsync();
         Alert.alert(
           'Update Available',
           'A new version has been downloaded. Restart to apply it.',
           [
             { text: 'Later', style: 'cancel' },
-            { text: 'Restart Now', onPress: () => Updates.reloadAsync() },
+            { text: 'Restart Now', onPress: () => Updates!.reloadAsync() },
           ],
         );
       } catch {
         // Silent fail — user can manually check in Settings
       }
     };
-    checkForUpdates();
+    check();
   }, []);
 
   if (isLoading) {
