@@ -13,6 +13,14 @@ export type TradeContextItem = {
   marketPrice: number | null;
 };
 
+export type TradeUserProfile = {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+  ratingScore: number;
+  totalTrades: number;
+};
+
 export type TradeContext = {
   listingId: string;
   listingTitle: string;
@@ -21,9 +29,12 @@ export type TradeContext = {
   listingOwnerId: string;
   listingItems: TradeContextItem[];
   listingTotalValue: number;
+  listingOwnerProfile: TradeUserProfile | null;
   offererId: string | null;
+  offererProfile: TradeUserProfile | null;
   offerItems: TradeContextItem[];
   offerCashAmount: number;
+  offerCashDirection: 'offering' | 'requesting' | null;
   negotiationStatus: NegotiationStatus;
 };
 
@@ -101,6 +112,26 @@ const useTradeContext = (conversationId: string) => {
         .from('offer_items')
         .select('card_name, card_image_url, card_external_id, tcg, condition, quantity, market_price')
         .eq('offer_id', match.offers.id);
+
+      // Fetch user profiles for both sides
+      const userIds = [match.listings.user_id, match.offers.offerer_id];
+      const { data: profiles } = await supabase
+        .from('users')
+        .select('id, display_name, avatar_url, rating_score, total_trades')
+        .in('id', userIds);
+
+      const profileMap = new Map(
+        (profiles ?? []).map((p) => [
+          p.id,
+          {
+            id: p.id,
+            displayName: p.display_name,
+            avatarUrl: p.avatar_url,
+            ratingScore: p.rating_score,
+            totalTrades: p.total_trades,
+          } satisfies TradeUserProfile,
+        ]),
+      );
 
       return {
         listingId: match.listings.id,

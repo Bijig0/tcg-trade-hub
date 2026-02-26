@@ -96,7 +96,7 @@ const useFeedListings = () => {
         return { listings: [], nextCursor: null };
       }
 
-      console.log(`[useFeedListings] Fetched ${rawListings.length} listings`);
+      console.log(`[useFeedListings] user=${user.id}, swipedIds=${swipedIds.length}, blockedUserIds=${blockedUserIds.length}, fetched=${rawListings.length}`);
 
       // 3. Transform and sort
       const listings = (rawListings as unknown as RawFeedListing[]).map(transformRawListing);

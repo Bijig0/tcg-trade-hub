@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { View, Text, Modal, Pressable, Dimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -22,6 +23,7 @@ import OfferCreationSheet from '@/features/listings/components/OfferCreationShee
 import FeedCardDetailSheet from '../FeedCardDetailSheet/FeedCardDetailSheet';
 import SwipeCard from '../SwipeCard/SwipeCard';
 import useFeedListings from '../../hooks/useFeedListings/useFeedListings';
+import { feedKeys } from '../../queryKeys';
 import useRecordSwipe from '../../hooks/useRecordSwipe/useRecordSwipe';
 import type { CardDetailSheetItem } from '@/features/listings/components/CardDetailSheet/CardDetailSheet';
 import type { ListingWithDistance } from '../../schemas';
@@ -45,6 +47,7 @@ export type FeedSwipeViewProps = {
  */
 const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { data, isLoading, error, refetch, fetchNextPage, hasNextPage } = useFeedListings();
   const recordSwipe = useRecordSwipe();
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -245,7 +248,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
                   if (!user) return;
                   await supabase.from('swipes').delete().eq('user_id', user.id);
                   setCurrentIndex(0);
-                  refetch();
+                  await queryClient.resetQueries({ queryKey: feedKeys.lists() });
                 },
               }
             : undefined
