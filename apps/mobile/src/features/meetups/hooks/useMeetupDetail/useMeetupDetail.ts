@@ -7,6 +7,8 @@ import type {
   UserRow,
   MatchRow,
   ConversationRow,
+  ListingItemRow,
+  OfferItemRow,
 } from '@tcg-trade-hub/database';
 
 export type MeetupDetail = MeetupRow & {
@@ -18,13 +20,53 @@ export type MeetupDetail = MeetupRow & {
   >;
   conversation: Pick<ConversationRow, 'id'> | null;
   is_user_a: boolean;
+  shopCoords: { latitude: number; longitude: number } | null;
+  listingItems: ListingItemRow[];
+  offerItems: OfferItemRow[];
+};
+
+/**
+ * Parses a PostGIS geography/geometry value to lat/lng coordinates.
+ * Handles GeoJSON `{ type: 'Point', coordinates: [lng, lat] }` and
+ * WKT `POINT(lng lat)` string formats.
+ */
+const parseLocationCoords = (
+  location: unknown,
+): { latitude: number; longitude: number } | null => {
+  if (!location) return null;
+
+  // GeoJSON format: { type: 'Point', coordinates: [lng, lat] }
+  if (typeof location === 'object' && location !== null) {
+    const geo = location as Record<string, unknown>;
+    if (Array.isArray(geo.coordinates) && geo.coordinates.length >= 2) {
+      const [lng, lat] = geo.coordinates as number[];
+      if (typeof lat === 'number' && typeof lng === 'number') {
+        return { latitude: lat, longitude: lng };
+      }
+    }
+  }
+
+  // WKT format: "POINT(lng lat)"
+  if (typeof location === 'string') {
+    const wktMatch = location.match(/POINT\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
+    if (wktMatch) {
+      const lng = parseFloat(wktMatch[1]);
+      const lat = parseFloat(wktMatch[2]);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        return { latitude: lat, longitude: lng };
+      }
+    }
+  }
+
+  return null;
 };
 
 /**
  * Hook that fetches a single meetup by ID with all joined data.
  *
  * Resolves the match, both users, the shop location, and the related
- * conversation for the match.
+ * conversation for the match. Also fetches listing_items, offer_items,
+ * and parses shop coordinates for the map view.
  */
 const useMeetupDetail = (meetupId: string) => {
   return useQuery<MeetupDetail, Error>({
@@ -46,6 +88,7 @@ const useMeetupDetail = (meetupId: string) => {
           proposal_message_id,
           shop_id,
           location_name,
+          location_coords,
           proposed_time,
           status,
           user_a_completed,
@@ -66,6 +109,7 @@ const useMeetupDetail = (meetupId: string) => {
             id,
             name,
             address,
+            location,
             hours,
             website,
             phone,
@@ -83,38 +127,56 @@ const useMeetupDetail = (meetupId: string) => {
       if (!meetup) throw new Error('Meetup not found');
 
       const match = (meetup as Record<string, unknown>).match as MatchRow;
+      const shop = (meetup as Record<string, unknown>).shop as (ShopRow & { location?: unknown }) | null;
       const isUserA = match.user_a_id === user.id;
       const otherUserId = isUserA ? match.user_b_id : match.user_a_id;
 
-      // Fetch other user's profile
-      const { data: otherUser, error: userError } = await supabase
-        .from('users')
-        .select('id, display_name, avatar_url, rating_score, total_trades')
-        .eq('id', otherUserId)
-        .single();
+      // Fetch other user's profile, listing items, offer items, and conversation in parallel
+      const [userResult, conversationResult, listingItemsResult, offerItemsResult] =
+        await Promise.all([
+          supabase
+            .from('users')
+            .select('id, display_name, avatar_url, rating_score, total_trades')
+            .eq('id', otherUserId)
+            .single(),
+          supabase
+            .from('conversations')
+            .select('id')
+            .eq('match_id', match.id)
+            .single(),
+          supabase
+            .from('listing_items')
+            .select('*')
+            .eq('listing_id', match.listing_id),
+          supabase
+            .from('offer_items')
+            .select('*')
+            .eq('offer_id', match.offer_id),
+        ]);
 
-      if (userError) throw userError;
+      if (userResult.error) throw userResult.error;
 
-      // Fetch the conversation for this match
-      const { data: conversation } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('match_id', match.id)
-        .single();
+      // Parse shop coordinates (prefer shop location, fall back to meetup location_coords)
+      const shopCoords =
+        parseLocationCoords(shop?.location) ??
+        parseLocationCoords((meetup as Record<string, unknown>).location_coords);
 
       return {
         ...(meetup as unknown as MeetupRow),
         match,
-        shop: (meetup as Record<string, unknown>).shop as ShopRow | null,
-        other_user: otherUser ?? {
+        shop: shop as ShopRow | null,
+        other_user: userResult.data ?? {
           id: otherUserId,
           display_name: 'Unknown',
           avatar_url: null,
           rating_score: 0,
           total_trades: 0,
         },
-        conversation: conversation ?? null,
+        conversation: conversationResult.data ?? null,
         is_user_a: isUserA,
+        shopCoords,
+        listingItems: (listingItemsResult.data ?? []) as ListingItemRow[],
+        offerItems: (offerItemsResult.data ?? []) as OfferItemRow[],
       };
     },
     enabled: !!meetupId,
