@@ -101,8 +101,6 @@ const FeedCardDetailSheet = forwardRef<BottomSheet, FeedCardDetailSheetProps>(
       [allItems],
     );
 
-    if (!displayItem) return null;
-
     return (
       <BottomSheet
         ref={ref}
@@ -114,32 +112,36 @@ const FeedCardDetailSheet = forwardRef<BottomSheet, FeedCardDetailSheetProps>(
         handleIndicatorStyle={{ backgroundColor: '#a1a1aa', width: 40 }}
       >
         <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-          {/* Tab selector (only for bundles) */}
-          {isBundle && (
-            <SegmentedFilter
-              items={TAB_ITEMS}
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="mx-4 mb-3"
-            />
-          )}
+          {displayItem ? (
+            <>
+              {/* Tab selector (only for bundles) */}
+              {isBundle && (
+                <SegmentedFilter
+                  items={TAB_ITEMS}
+                  value={activeTab}
+                  onValueChange={setActiveTab}
+                  className="mx-4 mb-3"
+                />
+              )}
 
-          {activeTab === 'detail' ? (
-            <DetailTabContent
-              item={displayItem}
-              cardDetail={cardDetail}
-              currentMarketPrice={currentMarketPrice}
-              variantNames={variantNames}
-              selectedVariant={selectedVariant}
-              onSelectVariant={setSelectedVariant}
-            />
-          ) : (
-            <BundleTabContent
-              allItems={allItems}
-              totalMarketValue={totalMarketValue}
-              onItemPress={handleBundleItemPress}
-            />
-          )}
+              {activeTab === 'detail' ? (
+                <DetailTabContent
+                  item={displayItem}
+                  cardDetail={cardDetail}
+                  currentMarketPrice={currentMarketPrice}
+                  variantNames={variantNames}
+                  selectedVariant={selectedVariant}
+                  onSelectVariant={setSelectedVariant}
+                />
+              ) : (
+                <BundleTabContent
+                  allItems={allItems}
+                  totalMarketValue={totalMarketValue}
+                  onItemPress={handleBundleItemPress}
+                />
+              )}
+            </>
+          ) : null}
         </BottomSheetScrollView>
       </BottomSheet>
     );

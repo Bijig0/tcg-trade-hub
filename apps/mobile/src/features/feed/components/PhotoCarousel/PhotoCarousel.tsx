@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { ImageOff } from 'lucide-react-native';
@@ -38,6 +38,11 @@ const PhotoCarousel = ({
 
   const hasPhotos = photos.length > 0;
   const imageUri = hasPhotos ? photos[photoIndex] ?? '' : fallbackImageUrl;
+
+  // Reset error state when the displayed image URL changes
+  useEffect(() => {
+    setImageError(false);
+  }, [imageUri]);
   const showImage = imageUri.length > 0 && !imageError;
 
   const handlePrevious = useCallback(() => {
