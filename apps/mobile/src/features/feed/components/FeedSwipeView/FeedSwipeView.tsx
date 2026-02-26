@@ -17,9 +17,11 @@ import Button from '@/components/ui/Button/Button';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import OfferCreationSheet from '@/features/listings/components/OfferCreationSheet/OfferCreationSheet';
+import FeedCardDetailSheet from '../FeedCardDetailSheet/FeedCardDetailSheet';
 import SwipeCard from '../SwipeCard/SwipeCard';
 import useFeedListings from '../../hooks/useFeedListings/useFeedListings';
 import useRecordSwipe from '../../hooks/useRecordSwipe/useRecordSwipe';
+import type { CardDetailSheetItem } from '@/features/listings/components/CardDetailSheet/CardDetailSheet';
 import type { ListingWithDistance } from '../../schemas';
 import type { MatchRow } from '@tcg-trade-hub/database';
 
@@ -43,11 +45,13 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
   const { data, isLoading, error, refetch, fetchNextPage, hasNextPage } = useFeedListings();
   const recordSwipe = useRecordSwipe();
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const detailSheetRef = useRef<BottomSheet>(null);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [, setMatchData] = useState<MatchRow | null>(null);
   const [showMatch, setShowMatch] = useState(false);
   const [isSwiping, setIsSwiping] = useState(false);
+  const [detailItem, setDetailItem] = useState<CardDetailSheetItem | null>(null);
 
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -186,6 +190,11 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
     bottomSheetRef.current?.snapToIndex(0);
   };
 
+  const handleOpenDetail = useCallback((item: CardDetailSheetItem) => {
+    setDetailItem(item);
+    detailSheetRef.current?.snapToIndex(0);
+  }, []);
+
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center p-4">
@@ -241,7 +250,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
             className="w-full flex-1"
             style={cardAnimatedStyle}
           >
-            <SwipeCard listing={currentListing} />
+            <SwipeCard key={currentListing.id} listing={currentListing} onOpenDetail={handleOpenDetail} />
 
             {/* Like overlay */}
             <Animated.View
@@ -288,6 +297,14 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
           <Heart size={28} className="text-emerald-500" fill="#10b981" />
         </Pressable>
       </View>
+
+      {/* Card detail sheet */}
+      <FeedCardDetailSheet
+        ref={detailSheetRef}
+        item={detailItem}
+        allItems={currentListing?.items ?? []}
+        onClose={() => setDetailItem(null)}
+      />
 
       {/* Offer creation sheet */}
       {currentListing && (

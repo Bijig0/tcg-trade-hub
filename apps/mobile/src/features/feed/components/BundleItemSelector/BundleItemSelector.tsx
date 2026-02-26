@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, ScrollView, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { ImageOff } from 'lucide-react-native';
 import { cn } from '@/lib/cn';

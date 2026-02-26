@@ -12,6 +12,10 @@ export { default as ListingCard } from './components/ListingCard/ListingCard';
 export { default as FilterBar } from './components/FilterBar/FilterBar';
 export { default as InterestedScreen } from './components/InterestedScreen/InterestedScreen';
 export { default as InterestedListingCard } from './components/InterestedListingCard/InterestedListingCard';
+export { default as PhotoCarousel } from './components/PhotoCarousel/PhotoCarousel';
+export { default as BundleItemSelector } from './components/BundleItemSelector/BundleItemSelector';
+export { default as BundleItemRow } from './components/BundleItemRow/BundleItemRow';
+export { default as FeedCardDetailSheet } from './components/FeedCardDetailSheet/FeedCardDetailSheet';
 
 // Hooks
 export { default as useFeedListings } from './hooks/useFeedListings/useFeedListings';

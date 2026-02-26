@@ -1,34 +1,53 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text } from 'react-native';
-import { Image } from 'expo-image';
-import { ImageOff } from 'lucide-react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, Pressable } from 'react-native';
+import { Info } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
-import { ListingTypeBadge } from '@/features/listings';
-import BundlePreview from '@/features/listings/components/BundlePreview/BundlePreview';
+import { TCG_LABELS } from '@/config/constants';
+import PhotoCarousel from '../PhotoCarousel/PhotoCarousel';
+import BundleItemSelector from '../BundleItemSelector/BundleItemSelector';
 import type { ListingWithDistance } from '../../schemas';
+import type { CardDetailSheetItem } from '@/features/listings/components/CardDetailSheet/CardDetailSheet';
 import formatDistance from '../../utils/formatDistance/formatDistance';
-
-const TCG_LABELS: Record<string, string> = {
-  pokemon: 'Pokemon',
-  mtg: 'Magic: The Gathering',
-  yugioh: 'Yu-Gi-Oh!',
-};
 
 export type SwipeCardProps = {
   listing: ListingWithDistance;
   className?: string;
+  /** Callback to open the detail bottom sheet for a specific item */
+  onOpenDetail?: (item: CardDetailSheetItem) => void;
 };
 
 /**
- * Full-screen card for the swipe view showing bundle preview.
+ * Full-screen card for the swipe view with interactive bundle
+ * item selection, photo navigation, and detail access.
  */
-const SwipeCard = ({ listing, className }: SwipeCardProps) => {
+const SwipeCard = ({ listing, className, onOpenDetail }: SwipeCardProps) => {
   const items = listing.items ?? [];
-  const firstItem = items[0];
-  const heroImage = firstItem?.card_image_url ?? '';
-  const [heroError, setHeroError] = useState(false);
-  const handleHeroError = useCallback(() => setHeroError(true), []);
-  const showHero = heroImage.length > 0 && !heroError;
+  const isBundle = items.length > 1;
+
+  const [selectedItemIndex, setSelectedItemIndex] = useState(0);
+  const [photoIndex, setPhotoIndex] = useState(0);
+
+  // Reset photo index when selected item changes
+  useEffect(() => {
+    setPhotoIndex(0);
+  }, [selectedItemIndex]);
+
+  const selectedItem = items[selectedItemIndex] ?? items[0];
+
+  const handleOpenDetail = useCallback(() => {
+    if (!selectedItem || !onOpenDetail) return;
+    onOpenDetail({
+      card_name: selectedItem.card_name,
+      card_image_url: selectedItem.card_image_url,
+      card_external_id: selectedItem.card_external_id,
+      tcg: selectedItem.tcg,
+      card_set: selectedItem.card_set,
+      card_number: selectedItem.card_number,
+      condition: selectedItem.condition,
+      market_price: selectedItem.market_price,
+      card_rarity: selectedItem.card_rarity,
+    });
+  }, [selectedItem, onOpenDetail]);
 
   return (
     <View
@@ -37,38 +56,51 @@ const SwipeCard = ({ listing, className }: SwipeCardProps) => {
         className,
       )}
     >
-      {/* Hero image from first item */}
-      {showHero ? (
-        <View className="relative h-[55%]">
-          <Image
-            source={{ uri: heroImage }}
-            className="h-full w-full bg-muted"
-            contentFit="contain"
-            cachePolicy="disk"
-            transition={200}
-            placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
-            placeholderContentFit="contain"
-            onError={handleHeroError}
-          />
-          <ListingTypeBadge type={listing.type} className="absolute left-3 top-3 px-3 py-1.5" />
-        </View>
-      ) : (
-        <View className="relative h-[55%] items-center justify-center bg-muted">
-          <ImageOff size={48} className="text-muted-foreground" />
-          <ListingTypeBadge type={listing.type} className="absolute left-3 top-3 px-3 py-1.5" />
-        </View>
-      )}
+      {/* Hero image area with photo navigation */}
+      <PhotoCarousel
+        photos={listing.photos ?? []}
+        fallbackImageUrl={selectedItem?.card_image_url ?? ''}
+        photoIndex={photoIndex}
+        onPhotoIndexChange={setPhotoIndex}
+        listingType={listing.type}
+      />
 
       {/* Card info */}
       <View className="flex-1 p-4">
-        {/* Bundle thumbnail row */}
-        {items.length > 1 && (
-          <BundlePreview items={items} size="sm" className="mb-3" />
+        {/* Bundle item selector */}
+        {isBundle && (
+          <View className="mb-3">
+            <BundleItemSelector
+              items={items}
+              selectedIndex={selectedItemIndex}
+              onSelectIndex={setSelectedItemIndex}
+            />
+          </View>
         )}
 
-        <Text className="text-2xl font-bold text-card-foreground" numberOfLines={2}>
-          {listing.title}
-        </Text>
+        {/* Title row with info button */}
+        <View className="flex-row items-start justify-between gap-2">
+          <View className="flex-1">
+            <Text className="text-2xl font-bold text-card-foreground" numberOfLines={2}>
+              {listing.title}
+            </Text>
+          </View>
+          {onOpenDetail && (
+            <Pressable
+              onPress={handleOpenDetail}
+              className="mt-1 items-center justify-center rounded-lg bg-muted p-1.5 active:bg-accent"
+            >
+              <Info size={16} className="text-foreground" />
+            </Pressable>
+          )}
+        </View>
+
+        {/* Selected item name (bundle only) */}
+        {isBundle && selectedItem && (
+          <Text className="mt-0.5 text-sm text-primary" numberOfLines={1}>
+            {selectedItem.card_name}
+          </Text>
+        )}
 
         <Text className="mt-1 text-sm text-muted-foreground">
           {TCG_LABELS[listing.tcg] ?? listing.tcg} &middot; {items.length} card{items.length !== 1 ? 's' : ''}
