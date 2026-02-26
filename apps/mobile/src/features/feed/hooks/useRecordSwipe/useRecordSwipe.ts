@@ -1,7 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthProvider';
-import { feedKeys } from '../../queryKeys';
 import type { SwipeDirection, MatchRow } from '@tcg-trade-hub/database';
 
 type RecordSwipeInput = {
@@ -22,7 +21,6 @@ type RecordSwipeResponse = {
  */
 const useRecordSwipe = () => {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
 
   return useMutation<RecordSwipeResponse, Error, RecordSwipeInput>({
     mutationFn: async ({ listingId, direction }) => {
@@ -51,9 +49,6 @@ const useRecordSwipe = () => {
         swipe_id: data.id,
         match: null,
       };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: feedKeys.lists() });
     },
   });
 };

@@ -25,9 +25,8 @@ export const routerMeta: Record<string, Record<string, ProcedureMeta>> = {
 };
 
 /**
- * External entries for core trading operations that aren't oRPC procedures yet.
- * These are currently Supabase-direct mutations from the mobile app.
- * When they become oRPC procedures, move them to `routerMeta` above.
+ * External entries for operations not yet covered by the pipeline registry.
+ * Most trading operations are now defined in ./pipelines.ts as pipeline-derived entries.
  */
 export const tradingOperationEntries: ExternalEntry[] = [
   {
@@ -41,62 +40,12 @@ export const tradingOperationEntries: ExternalEntry[] = [
     },
   },
   {
-    id: "offer.create",
-    displayLabel: "offer.create",
-    connections: [
-      { from: "app:mobile", to: "table:offers" },
-      { from: "app:mobile", to: "table:offer_items" },
-    ],
-    meta: {
-      description: "Send an offer on a listing with card items",
-      tables: [
-        { name: "offers", operation: "insert" },
-        { name: "offer_items", operation: "insert" },
-      ],
-      consumers: ["mobile"],
-    },
-  },
-  {
-    id: "listing.respond",
-    displayLabel: "listing.respond",
-    connections: [
-      { from: "app:mobile", to: "table:offers" },
-      { from: "app:mobile", to: "table:listings" },
-      { from: "app:mobile", to: "table:matches" },
-    ],
-    meta: {
-      description: "Respond to an offer (accept/decline/counter), update listing and create match",
-      tables: [
-        { name: "offers", operation: "update" },
-        { name: "listings", operation: "update" },
-        { name: "matches", operation: "insert" },
-      ],
-      consumers: ["mobile"],
-    },
-  },
-  {
     id: "meetup.cancel",
     displayLabel: "meetup.cancel",
     connections: [{ from: "app:mobile", to: "table:meetups" }],
     meta: {
       description: "Cancel a confirmed meetup",
       tables: [{ name: "meetups", operation: "update" }],
-      consumers: ["mobile"],
-    },
-  },
-  {
-    id: "meetup.complete",
-    displayLabel: "meetup.complete",
-    connections: [
-      { from: "app:mobile", to: "table:meetups" },
-      { from: "app:mobile", to: "table:matches" },
-    ],
-    meta: {
-      description: "Complete a meetup and finalize the match",
-      tables: [
-        { name: "meetups", operation: "update" },
-        { name: "matches", operation: "update" },
-      ],
       consumers: ["mobile"],
     },
   },
