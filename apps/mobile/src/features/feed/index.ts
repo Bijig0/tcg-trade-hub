@@ -23,7 +23,7 @@ export { default as useRecordSwipe } from './hooks/useRecordSwipe/useRecordSwipe
 export { default as useListingDetail, fetchListingDetail } from './hooks/useListingDetail/useListingDetail';
 export { default as useHasActiveListings } from './hooks/useHasActiveListings/useHasActiveListings';
 export { default as useBrowseShops } from './hooks/useBrowseShops/useBrowseShops';
-export { default as useUserLocation } from './hooks/useUserLocation/useUserLocation';
+export { default as useUserLocation } from '@/hooks/useUserLocation/useUserLocation';
 export { default as useLikedListings } from './hooks/useLikedListings/useLikedListings';
 
 // Utils

@@ -1,15 +1,19 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { View, Text, Pressable, ActivityIndicator, Alert, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import MapView from 'react-native-maps';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { ArrowLeft, MessageCircle, XCircle } from 'lucide-react-native';
+import { ArrowLeft, MessageCircle, XCircle, Navigation } from 'lucide-react-native';
 
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Badge from '@/components/ui/Badge/Badge';
 import Separator from '@/components/ui/Separator/Separator';
 import Button from '@/components/ui/Button/Button';
+import useUserLocation from '@/hooks/useUserLocation/useUserLocation';
+import MapDirectionsOverlay from '@/components/MapDirectionsOverlay/MapDirectionsOverlay';
+import DirectionsInfoBar from '@/components/DirectionsInfoBar/DirectionsInfoBar';
+import openMapsNavigation from '@/utils/openMapsNavigation/openMapsNavigation';
 import { useSheetPositionStore } from '@/stores/sheetPositionStore/sheetPositionStore';
 import useMeetupDetail from '../../hooks/useMeetupDetail/useMeetupDetail';
 import useCompleteMeetup from '../../hooks/useCompleteMeetup/useCompleteMeetup';
@@ -44,6 +48,9 @@ const MeetupDetailScreen = () => {
   const { data: meetup, isLoading, isError } = useMeetupDetail(id ?? '');
   const [ratingVisible, setRatingVisible] = useState(false);
   const [rateeId, setRateeId] = useState('');
+  const [routeInfo, setRouteInfo] = useState<{ distance: number; duration: number } | null>(null);
+  const mapRef = useRef<MapView>(null);
+  const userLocation = useUserLocation();
 
   const { getPosition, setPosition } = useSheetPositionStore();
 
@@ -168,10 +175,36 @@ const MeetupDetailScreen = () => {
     );
   };
 
+  const showDirections = status === 'confirmed' && !!userLocation && !!meetup.shopCoords;
+
+  const handleDirectionsReady = useCallback(
+    (result: { distance: number; duration: number }) => {
+      setRouteInfo(result);
+      if (meetup?.shopCoords && userLocation && mapRef.current) {
+        mapRef.current.fitToCoordinates(
+          [userLocation, meetup.shopCoords],
+          { edgePadding: { top: 80, right: 60, bottom: 320, left: 60 }, animated: true },
+        );
+      }
+    },
+    [meetup?.shopCoords, userLocation],
+  );
+
+  const handleGetDirections = useCallback(() => {
+    if (meetup?.shopCoords) {
+      openMapsNavigation({
+        latitude: meetup.shopCoords.latitude,
+        longitude: meetup.shopCoords.longitude,
+        label: locationName,
+      });
+    }
+  }, [meetup?.shopCoords, locationName]);
+
   return (
     <View className="flex-1 bg-background">
       {/* Full-screen map */}
       <MapView
+        ref={mapRef}
         style={{ width: SCREEN_WIDTH, flex: 1 }}
         initialRegion={mapRegion}
         showsUserLocation
@@ -181,6 +214,13 @@ const MeetupDetailScreen = () => {
           <MeetupMapMarker
             coordinate={meetup.shopCoords}
             title={locationName}
+          />
+        )}
+        {showDirections && (
+          <MapDirectionsOverlay
+            origin={userLocation}
+            destination={meetup.shopCoords}
+            onReady={handleDirectionsReady}
           />
         )}
       </MapView>
@@ -225,6 +265,9 @@ const MeetupDetailScreen = () => {
             {locationAddress ? (
               <Text className="mt-1 text-sm text-muted-foreground">{locationAddress}</Text>
             ) : null}
+            {routeInfo && (
+              <DirectionsInfoBar distanceKm={routeInfo.distance} durationMin={routeInfo.duration} />
+            )}
             <Text className="mt-2 text-base text-foreground">{formattedTime}</Text>
           </View>
 
@@ -287,6 +330,17 @@ const MeetupDetailScreen = () => {
 
           {/* Action buttons */}
           <View className="gap-3 px-4 pt-6">
+            {meetup.shopCoords && status === 'confirmed' ? (
+              <Button variant="default" onPress={handleGetDirections}>
+                <View className="flex-row items-center gap-2">
+                  <Navigation size={18} className="text-primary-foreground" />
+                  <Text className="text-base font-semibold text-primary-foreground">
+                    Get Directions
+                  </Text>
+                </View>
+              </Button>
+            ) : null}
+
             {meetup.conversation ? (
               <Button variant="outline" onPress={handleOpenChat}>
                 <View className="flex-row items-center gap-2">
