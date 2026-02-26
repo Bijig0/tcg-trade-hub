@@ -20,7 +20,7 @@ const CONDITION_OPTIONS: { label: string; value: CardCondition }[] = [
 
 type MultiCardSelectorProps = {
   selectedCards: SelectedCard[];
-  onToggle: (card: NormalizedCard, condition: CardCondition, fromCollection: boolean) => void;
+  onToggle: (card: NormalizedCard, condition: CardCondition, fromCollection: boolean, selectionId: string) => void;
 };
 
 /**
@@ -38,7 +38,7 @@ const MultiCardSelector = ({ selectedCards, onToggle }: MultiCardSelectorProps) 
   const [externalTcg, setExternalTcg] = useState<TcgType | null>(null);
 
   const selectedIds = useMemo(
-    () => new Set(selectedCards.map((sc) => sc.card.externalId)),
+    () => new Set(selectedCards.map((sc) => sc.selectionId)),
     [selectedCards],
   );
 
@@ -62,7 +62,7 @@ const MultiCardSelector = ({ selectedCards, onToggle }: MultiCardSelectorProps) 
   };
 
   const handleExternalSelect = (card: NormalizedCard) => {
-    onToggle(card, externalCondition, false);
+    onToggle(card, externalCondition, false, card.externalId);
   };
 
   if (isLoading) {
@@ -124,7 +124,7 @@ const MultiCardSelector = ({ selectedCards, onToggle }: MultiCardSelectorProps) 
 
       {/* Collection items as selectable rows */}
       {filteredItems.map((item) => {
-        const isSelected = selectedIds.has(item.external_id);
+        const isSelected = selectedIds.has(item.id);
         return (
           <Pressable
             key={item.id}
@@ -133,6 +133,7 @@ const MultiCardSelector = ({ selectedCards, onToggle }: MultiCardSelectorProps) 
                 collectionItemToNormalizedCard(item),
                 item.condition,
                 true,
+                item.id,
               )
             }
             className={cn(

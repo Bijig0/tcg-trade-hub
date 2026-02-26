@@ -23,9 +23,9 @@ type ListingFormState = {
   reset: () => void;
 
   // Bundle card actions
-  toggleSelectedCard: (card: NormalizedCard, condition: CardCondition, fromCollection: boolean) => void;
-  removeSelectedCard: (externalId: string) => void;
-  updateSelectedCardPrice: (externalId: string, price: string) => void;
+  toggleSelectedCard: (card: NormalizedCard, condition: CardCondition, fromCollection: boolean, selectionId: string) => void;
+  removeSelectedCard: (selectionId: string) => void;
+  updateSelectedCardPrice: (selectionId: string, price: string) => void;
   setAllPricesToMarket: () => void;
   setTcgFilter: (tcg: TcgType | null) => void;
 
@@ -58,9 +58,9 @@ export const useListingFormStore = create<ListingFormState>()(
     reset: () => set(() => ({ ...INITIAL_STATE })),
 
     // Bundle card actions
-    toggleSelectedCard: (card, condition, fromCollection) =>
+    toggleSelectedCard: (card, condition, fromCollection, selectionId) =>
       set((s) => {
-        const idx = s.selectedCards.findIndex((sc) => sc.card.externalId === card.externalId);
+        const idx = s.selectedCards.findIndex((sc) => sc.selectionId === selectionId);
         if (idx >= 0) {
           s.selectedCards.splice(idx, 1);
         } else {
@@ -70,19 +70,20 @@ export const useListingFormStore = create<ListingFormState>()(
             fromCollection,
             addToCollection: !fromCollection,
             askingPrice: '',
+            selectionId,
           });
         }
       }),
 
-    removeSelectedCard: (externalId) =>
+    removeSelectedCard: (selectionId) =>
       set((s) => {
-        const idx = s.selectedCards.findIndex((sc) => sc.card.externalId === externalId);
+        const idx = s.selectedCards.findIndex((sc) => sc.selectionId === selectionId);
         if (idx >= 0) s.selectedCards.splice(idx, 1);
       }),
 
-    updateSelectedCardPrice: (externalId, price) =>
+    updateSelectedCardPrice: (selectionId, price) =>
       set((s) => {
-        const card = s.selectedCards.find((sc) => sc.card.externalId === externalId);
+        const card = s.selectedCards.find((sc) => sc.selectionId === selectionId);
         if (card) card.askingPrice = price;
       }),
 

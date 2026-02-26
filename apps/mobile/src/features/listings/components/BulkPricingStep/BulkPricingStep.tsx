@@ -13,7 +13,7 @@ import type { CardDetail } from '@/services/cardData/types';
 
 type BulkPricingStepProps = {
   selectedCards: SelectedCard[];
-  onUpdatePrice: (externalId: string, price: string) => void;
+  onUpdatePrice: (selectionId: string, price: string) => void;
   onSetAllToMarket: () => void;
 };
 
