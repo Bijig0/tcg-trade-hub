@@ -15,6 +15,9 @@ export { default as TradeItemRow } from './components/TradeItemRow/TradeItemRow'
 export { default as TradeSideSection } from './components/TradeSideSection/TradeSideSection';
 export { default as OfferDetailScreen } from './components/OfferDetailScreen/OfferDetailScreen';
 export { default as CardPickerModal } from './components/CardPickerModal/CardPickerModal';
+export { default as ValueComparisonBar } from './components/ValueComparisonBar/ValueComparisonBar';
+export { default as TradeActionFooter } from './components/TradeActionFooter/TradeActionFooter';
+export { default as CashEditor } from './components/CashEditor/CashEditor';
 export { default as useConversationNickname } from './hooks/useConversationNickname/useConversationNickname';
 export { default as useConversations } from './hooks/useConversations/useConversations';
 export type { ConversationPreview } from './hooks/useConversations/useConversations';
@@ -23,7 +26,7 @@ export type { MessageWithSender } from './hooks/useMessages/useMessages';
 export { default as useSendMessage } from './hooks/useSendMessage/useSendMessage';
 export { default as useRealtimeChat } from './hooks/useRealtimeChat/useRealtimeChat';
 export { default as useTradeContext } from './hooks/useTradeContext/useTradeContext';
-export type { TradeContext } from './hooks/useTradeContext/useTradeContext';
+export type { TradeContext, TradeUserProfile } from './hooks/useTradeContext/useTradeContext';
 export { default as useMarkAsRead } from './hooks/useMarkAsRead/useMarkAsRead';
 export { default as useTypingIndicator } from './hooks/useTypingIndicator/useTypingIndicator';
 export { default as useNegotiationStatus } from './hooks/useNegotiationStatus/useNegotiationStatus';

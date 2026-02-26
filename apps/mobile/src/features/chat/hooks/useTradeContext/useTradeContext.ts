@@ -139,6 +139,8 @@ const useTradeContext = (conversationId: string) => {
         listingType: match.listings.type as ListingType,
         listingTcg: match.listings.tcg as TcgType,
         listingOwnerId: match.listings.user_id,
+        listingOwnerProfile: profileMap.get(match.listings.user_id) ?? null,
+        offererProfile: profileMap.get(match.offers.offerer_id) ?? null,
         listingItems: (listingItems ?? []).map((li) => ({
           cardName: li.card_name,
           cardImageUrl: li.card_image_url,
@@ -160,6 +162,7 @@ const useTradeContext = (conversationId: string) => {
           marketPrice: oi.market_price,
         })),
         offerCashAmount: match.offers.cash_amount,
+        offerCashDirection: match.offers.cash_amount > 0 ? 'offering' : null,
         negotiationStatus: conv.negotiation_status as NegotiationStatus,
       };
     },
