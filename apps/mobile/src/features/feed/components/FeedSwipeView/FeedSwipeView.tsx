@@ -55,6 +55,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
 
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
+  const nextCardProgress = useSharedValue(0);
 
   const listings = data?.pages.flatMap((page) => page.listings) ?? [];
   const currentListing = listings[currentIndex] as ListingWithDistance | undefined;
@@ -85,13 +86,15 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
         return nextIdx;
       });
 
-      // Reset position AFTER advancing index so the old card
-      // stays off-screen until React re-renders with the new card
+      // Reset front card position instantly (it's off-screen anyway)
       translateX.value = 0;
       translateY.value = 0;
-      setIsSwiping(false);
+      // Smoothly shrink the new back card from full size to resting state
+      nextCardProgress.value = withTiming(0, { duration: 200 }, () => {
+        runOnJS(setIsSwiping)(false);
+      });
     },
-    [currentIndex, listings, recordSwipe, hasNextPage, fetchNextPage, translateX, translateY],
+    [currentIndex, listings, recordSwipe, hasNextPage, fetchNextPage, translateX, translateY, nextCardProgress],
   );
 
   const animateOffScreen = useCallback(
@@ -99,13 +102,14 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
       'worklet';
       const targetX = direction === 'like' ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5;
 
+      nextCardProgress.value = withTiming(1, { duration: SWIPE_EXIT_DURATION });
       translateX.value = withTiming(targetX, { duration: SWIPE_EXIT_DURATION }, (finished) => {
         if (finished) {
           runOnJS(advanceCard)(direction);
         }
       });
     },
-    [translateX, advanceCard],
+    [translateX, nextCardProgress, advanceCard],
   );
 
   const panGesture = Gesture.Pan()
@@ -113,6 +117,9 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
     .onUpdate((event) => {
       translateX.value = event.translationX;
       translateY.value = event.translationY;
+      // Drive back card progress from drag distance (0 → 1)
+      const exitX = SCREEN_WIDTH * 1.5;
+      nextCardProgress.value = Math.min(Math.abs(event.translationX) / exitX, 1);
     })
     .onEnd((event) => {
       if (event.translationX > SWIPE_THRESHOLD) {
@@ -124,6 +131,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
       } else {
         translateX.value = withSpring(0);
         translateY.value = withSpring(0);
+        nextCardProgress.value = withSpring(0);
       }
     });
 
@@ -160,28 +168,24 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
     ),
   }));
 
-  const nextCardStyle = useAnimatedStyle(() => {
-    const drag = Math.abs(translateX.value);
-    const exitX = SCREEN_WIDTH * 1.5;
-    return {
-      transform: [
-        {
-          scale: interpolate(
-            drag,
-            [0, SWIPE_THRESHOLD, exitX],
-            [0.92, 0.98, 1],
-            Extrapolation.CLAMP,
-          ),
-        },
-      ],
-      opacity: interpolate(
-        drag,
-        [0, SWIPE_THRESHOLD, exitX],
-        [0.6, 0.9, 1],
-        Extrapolation.CLAMP,
-      ),
-    };
-  });
+  const nextCardStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        scale: interpolate(
+          nextCardProgress.value,
+          [0, 1],
+          [0.92, 1],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+    opacity: interpolate(
+      nextCardProgress.value,
+      [0, 1],
+      [0.6, 1],
+      Extrapolation.CLAMP,
+    ),
+  }));
 
   const handleButtonSwipe = (direction: 'like' | 'pass') => {
     if (isSwiping) return;
@@ -254,7 +258,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
             className="w-full flex-1"
             style={cardAnimatedStyle}
           >
-            <SwipeCard key={currentListing.id} listing={currentListing} onOpenDetail={handleOpenDetail} />
+            <SwipeCard listing={currentListing} onOpenDetail={handleOpenDetail} />
 
             {/* Like overlay */}
             <Animated.View
