@@ -324,6 +324,12 @@ const SettingsScreen = () => {
             <View className="mt-4">
               <DevAdminLink />
             </View>
+            <Pressable
+              onPress={() => router.push('/(tabs)/(profile)/storybook')}
+              className="mt-4 rounded-lg border border-border bg-card p-3 active:bg-accent"
+            >
+              <Text className="text-sm text-foreground">Storybook</Text>
+            </Pressable>
           </View>
 
           <View className="px-4 py-4">
