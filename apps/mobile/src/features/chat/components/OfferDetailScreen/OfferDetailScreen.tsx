@@ -1,13 +1,15 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft, RotateCcw } from 'lucide-react-native';
+import BottomSheet from '@gorhom/bottom-sheet';
 import { useAuth } from '@/context/AuthProvider';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import useTradeContext from '../../hooks/useTradeContext/useTradeContext';
 import type { TradeContextItem } from '../../hooks/useTradeContext/useTradeContext';
 import useSendMessage from '../../hooks/useSendMessage/useSendMessage';
+import usePreviousOffer from '../../hooks/usePreviousOffer/usePreviousOffer';
 import useMyCollection from '@/features/collection/hooks/useMyCollection/useMyCollection';
 import useUserCollection from '@/features/collection/hooks/useUserCollection/useUserCollection';
 import { toCardRef } from '../../utils/toCardRef/toCardRef';
@@ -16,6 +18,7 @@ import TradeSideSection from '../TradeSideSection/TradeSideSection';
 import CardPickerModal from '../CardPickerModal/CardPickerModal';
 import ValueComparisonBar from '../ValueComparisonBar/ValueComparisonBar';
 import TradeActionFooter from '../TradeActionFooter/TradeActionFooter';
+import PreviousOfferSheet from '../PreviousOfferSheet/PreviousOfferSheet';
 import type { CardOfferPayload } from '@tcg-trade-hub/database';
 
 export type OfferDetailScreenProps = {
@@ -29,7 +32,9 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
   const { user } = useAuth();
   const router = useRouter();
   const { data: tradeContext, isLoading } = useTradeContext(conversationId);
+  const { data: previousOffer } = usePreviousOffer(conversationId);
   const sendMessage = useSendMessage();
+  const previousOfferSheetRef = useRef<BottomSheet>(null);
 
   // Editing state
   const [editingMyItems, setEditingMyItems] = useState<TradeContextItem[] | null>(null);
@@ -344,6 +349,22 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
         <NegotiationStatusBadge status={tradeContext.negotiationStatus} />
       </View>
 
+      {/* Previous offer banner — visible only during editing when a previous offer exists */}
+      {hasChanges && previousOffer && (
+        <Pressable
+          onPress={() => previousOfferSheetRef.current?.snapToIndex(0)}
+          className="mx-4 mt-2 flex-row items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 active:opacity-70"
+        >
+          <View className="flex-row items-center gap-2">
+            <RotateCcw size={16} color="#f59e0b" />
+            <Text className="text-sm font-medium text-foreground" numberOfLines={1}>
+              Countering {previousOffer.senderDisplayName}&apos;s offer
+            </Text>
+          </View>
+          <Text className="text-sm font-semibold text-amber-500">View</Text>
+        </Pressable>
+      )}
+
       {/* Scrollable content */}
       <ScrollView className="flex-1 px-4 py-4" contentContainerClassName="gap-3 pb-8">
         {/* My side */}
@@ -454,6 +475,14 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
         onConfirm={handlePickerConfirm}
         title="Select Their Cards"
       />
+
+      {/* Previous offer bottom sheet */}
+      {previousOffer && (
+        <PreviousOfferSheet
+          ref={previousOfferSheetRef}
+          previousOffer={previousOffer}
+        />
+      )}
     </SafeAreaView>
   );
 };
