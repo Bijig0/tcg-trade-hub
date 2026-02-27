@@ -1,12 +1,19 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { useAuth } from '@/context/AuthContext';
 
+const isDev = import.meta.env.DEV;
+
 export const Route = createFileRoute('/_authed')({
   component: AuthedLayout,
 });
 
 function AuthedLayout() {
   const { user, roles, isLoading } = useAuth();
+
+  // Bypass auth in local development
+  if (isDev) {
+    return <Outlet />;
+  }
 
   if (isLoading) {
     return (
