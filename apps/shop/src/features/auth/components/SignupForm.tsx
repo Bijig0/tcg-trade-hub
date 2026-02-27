@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getSupabaseBrowserClient } from '@/lib/supabase.client';
+import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 
 type SignupFormProps = {
   onSuccess: () => void;

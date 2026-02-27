@@ -8,7 +8,7 @@ import {
 } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { UserRolesArraySchema, type UserRole } from '@tcg-trade-hub/database';
-import { getSupabaseBrowserClient } from '@/lib/supabase.client';
+import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { queryClient } from '@/lib/queryClient';
 
 type AuthContextValue = {
