@@ -9,7 +9,8 @@
     "jsx": "react-jsx",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@tcg-trade-hub/database": ["../../packages/database/src"]
     }
   },
   "include": ["app", "src"]

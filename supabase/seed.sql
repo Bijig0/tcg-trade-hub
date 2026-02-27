@@ -126,11 +126,16 @@ SELECT
   'bradysuryasie@gmail.com',
   crypt('password123', gen_salt('bf')),
   now(), now(), now(), '', '',
-  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{"provider":"email","providers":["email"],"roles":["user","admin"]}'::jsonb,
   '{"display_name":"Brady"}'::jsonb
 WHERE NOT EXISTS (
   SELECT 1 FROM auth.users WHERE email = 'bradysuryasie@gmail.com'
 );
+
+-- Ensure roles are set even if user already exists
+UPDATE auth.users
+SET raw_app_meta_data = raw_app_meta_data || '{"roles":["user","admin"]}'::jsonb
+WHERE email = 'bradysuryasie@gmail.com';
 
 -- =============================================================================
 -- FULL SEED DATA: Users, Listings, Matches, Conversations, Messages,
@@ -313,19 +318,19 @@ BEGIN
   -- =========================================================================
   INSERT INTO auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
   VALUES
-    ('00000000-0000-0000-0000-000000000000', u1,  'authenticated', 'authenticated', 'alex.chen@example.com',       crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now() - interval '60 days',  now()),
-    ('00000000-0000-0000-0000-000000000000', u2,  'authenticated', 'authenticated', 'sarah.mitchell@example.com',   crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now() - interval '45 days',  now()),
-    ('00000000-0000-0000-0000-000000000000', u3,  'authenticated', 'authenticated', 'james.wilson@example.com',     crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now() - interval '30 days',  now()),
-    ('00000000-0000-0000-0000-000000000000', u4,  'authenticated', 'authenticated', 'emma.rodriguez@example.com',   crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now() - interval '90 days',  now()),
-    ('00000000-0000-0000-0000-000000000000', u5,  'authenticated', 'authenticated', 'liam.obrien@example.com',      crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now() - interval '20 days',  now()),
-    ('00000000-0000-0000-0000-000000000000', u6,  'authenticated', 'authenticated', 'mia.zhang@example.com',        crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now() - interval '55 days',  now()),
-    ('00000000-0000-0000-0000-000000000000', u7,  'authenticated', 'authenticated', 'noah.patel@example.com',       crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now() - interval '40 days',  now()),
-    ('00000000-0000-0000-0000-000000000000', u8,  'authenticated', 'authenticated', 'olivia.kim@example.com',       crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now() - interval '70 days',  now()),
-    ('00000000-0000-0000-0000-000000000000', u9,  'authenticated', 'authenticated', 'ethan.brooks@example.com',     crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now() - interval '35 days',  now()),
-    ('00000000-0000-0000-0000-000000000000', u10, 'authenticated', 'authenticated', 'sophie.turner@example.com',    crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now() - interval '100 days', now()),
-    ('00000000-0000-0000-0000-000000000000', u11, 'authenticated', 'authenticated', 'ryan.nakamura@example.com',    crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now() - interval '25 days',  now()),
-    ('00000000-0000-0000-0000-000000000000', u12, 'authenticated', 'authenticated', 'chloe.anderson@example.com',   crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now() - interval '50 days',  now()),
-    ('00000000-0000-0000-0000-000000000000', u13, 'authenticated', 'authenticated', 'daniel.lee@example.com',       crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now() - interval '65 days',  now())
+    ('00000000-0000-0000-0000-000000000000', u1,  'authenticated', 'authenticated', 'alex.chen@example.com',       crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"],"roles":["user","shop_owner"]}'::jsonb, '{}'::jsonb, now() - interval '60 days',  now()),
+    ('00000000-0000-0000-0000-000000000000', u2,  'authenticated', 'authenticated', 'sarah.mitchell@example.com',   crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"],"roles":["user"]}'::jsonb, '{}'::jsonb, now() - interval '45 days',  now()),
+    ('00000000-0000-0000-0000-000000000000', u3,  'authenticated', 'authenticated', 'james.wilson@example.com',     crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"],"roles":["user"]}'::jsonb, '{}'::jsonb, now() - interval '30 days',  now()),
+    ('00000000-0000-0000-0000-000000000000', u4,  'authenticated', 'authenticated', 'emma.rodriguez@example.com',   crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"],"roles":["user"]}'::jsonb, '{}'::jsonb, now() - interval '90 days',  now()),
+    ('00000000-0000-0000-0000-000000000000', u5,  'authenticated', 'authenticated', 'liam.obrien@example.com',      crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"],"roles":["user"]}'::jsonb, '{}'::jsonb, now() - interval '20 days',  now()),
+    ('00000000-0000-0000-0000-000000000000', u6,  'authenticated', 'authenticated', 'mia.zhang@example.com',        crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"],"roles":["user"]}'::jsonb, '{}'::jsonb, now() - interval '55 days',  now()),
+    ('00000000-0000-0000-0000-000000000000', u7,  'authenticated', 'authenticated', 'noah.patel@example.com',       crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"],"roles":["user"]}'::jsonb, '{}'::jsonb, now() - interval '40 days',  now()),
+    ('00000000-0000-0000-0000-000000000000', u8,  'authenticated', 'authenticated', 'olivia.kim@example.com',       crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"],"roles":["user"]}'::jsonb, '{}'::jsonb, now() - interval '70 days',  now()),
+    ('00000000-0000-0000-0000-000000000000', u9,  'authenticated', 'authenticated', 'ethan.brooks@example.com',     crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"],"roles":["user"]}'::jsonb, '{}'::jsonb, now() - interval '35 days',  now()),
+    ('00000000-0000-0000-0000-000000000000', u10, 'authenticated', 'authenticated', 'sophie.turner@example.com',    crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"],"roles":["user"]}'::jsonb, '{}'::jsonb, now() - interval '100 days', now()),
+    ('00000000-0000-0000-0000-000000000000', u11, 'authenticated', 'authenticated', 'ryan.nakamura@example.com',    crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"],"roles":["user"]}'::jsonb, '{}'::jsonb, now() - interval '25 days',  now()),
+    ('00000000-0000-0000-0000-000000000000', u12, 'authenticated', 'authenticated', 'chloe.anderson@example.com',   crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"],"roles":["user"]}'::jsonb, '{}'::jsonb, now() - interval '50 days',  now()),
+    ('00000000-0000-0000-0000-000000000000', u13, 'authenticated', 'authenticated', 'daniel.lee@example.com',       crypt('password123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"],"roles":["user"]}'::jsonb, '{}'::jsonb, now() - interval '65 days',  now())
   ON CONFLICT (id) DO NOTHING;
 
   -- =========================================================================
@@ -362,6 +367,11 @@ BEGIN
     rating_score = 4.70,
     total_trades = 7
   WHERE id = me;
+
+  -- =========================================================================
+  -- SHOP OWNERSHIP (Alex Chen owns Good Games Melbourne)
+  -- =========================================================================
+  UPDATE public.shops SET owner_id = u1 WHERE id = shop_good_games;
 
   -- =========================================================================
   -- LISTINGS

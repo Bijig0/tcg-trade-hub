@@ -4,6 +4,13 @@
  */
 import { z } from 'zod';
 
+// --- User role schemas ---
+export const USER_ROLES = ['user', 'shop_owner', 'admin'] as const;
+export const UserRoleSchema = z.enum(USER_ROLES);
+export type UserRole = z.infer<typeof UserRoleSchema>;
+export const UserRolesArraySchema = z.array(UserRoleSchema);
+export type UserRolesArray = z.infer<typeof UserRolesArraySchema>;
+
 // --- Enum schemas ---
 export const TcgTypeSchema = z.enum(['pokemon', 'mtg', 'yugioh']);
 export const ListingTypeSchema = z.enum(['wts', 'wtb', 'wtt']);
