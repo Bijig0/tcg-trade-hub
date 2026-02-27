@@ -177,9 +177,9 @@ const TradeSideSection = ({
               </View>
             </View>
             <View className="mt-2 flex-row items-center border-b border-muted-foreground/30 pb-1.5">
-              <Text className="text-lg font-bold text-foreground">$</Text>
+              <Text className="text-lg font-bold leading-tight text-foreground">$</Text>
               <TextInput
-                className="ml-1 flex-1 text-lg font-semibold text-foreground"
+                className="ml-1 flex-1 p-0 text-lg font-semibold leading-tight text-foreground"
                 value={cashAmount > 0 ? String(cashAmount) : ''}
                 onChangeText={(text) => {
                   const parsed = parseFloat(text.replace(/[^0-9.]/g, ''));
