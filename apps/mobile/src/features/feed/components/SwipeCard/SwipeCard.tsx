@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Info } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
@@ -26,17 +26,20 @@ const SwipeCard = ({ listing, className, onOpenDetail }: SwipeCardProps) => {
 
   const [selectedItemIndex, setSelectedItemIndex] = useState(0);
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [prevListingId, setPrevListingId] = useState(listing.id);
+  const [prevSelectedIndex, setPrevSelectedIndex] = useState(0);
 
-  // Reset selection when the listing changes (no key remount)
-  useEffect(() => {
+  // Synchronous reset during render — avoids the one-frame stale state
+  // that useEffect causes (useEffect runs after paint).
+  if (listing.id !== prevListingId) {
+    setPrevListingId(listing.id);
     setSelectedItemIndex(0);
     setPhotoIndex(0);
-  }, [listing.id]);
-
-  // Reset photo index when selected item changes
-  useEffect(() => {
+    setPrevSelectedIndex(0);
+  } else if (selectedItemIndex !== prevSelectedIndex) {
+    setPrevSelectedIndex(selectedItemIndex);
     setPhotoIndex(0);
-  }, [selectedItemIndex]);
+  }
 
   const selectedItem = items[selectedItemIndex] ?? items[0];
 

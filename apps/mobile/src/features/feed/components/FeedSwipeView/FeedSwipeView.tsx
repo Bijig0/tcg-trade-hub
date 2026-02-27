@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { View, Text, Modal, Pressable, Dimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -63,13 +63,6 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
   const translateY = useSharedValue(0);
   const nextCardProgress = useSharedValue(0);
 
-  // Reset front card position after React commits the new currentIndex,
-  // so the card at center always shows the correct (new) listing data.
-  useEffect(() => {
-    translateX.value = 0;
-    translateY.value = 0;
-  }, [currentIndex]);
-
   const listings = data?.pages.flatMap((page) => page.listings) ?? [];
   const currentListing = listings[currentIndex] as ListingWithDistance | undefined;
   const nextListing = listings[currentIndex + 1] as ListingWithDistance | undefined;
@@ -91,6 +84,12 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
         },
       );
 
+      // Reset shared values BEFORE the state update so the promoted card
+      // renders at center from its very first frame. Using useEffect for
+      // this caused a one-frame flash (useEffect runs after paint).
+      translateX.value = 0;
+      translateY.value = 0;
+
       setCurrentIndex((prev) => {
         const nextIdx = prev + 1;
         if (nextIdx >= listings.length - 3 && hasNextPage) {
@@ -104,7 +103,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
         runOnJS(setIsSwiping)(false);
       });
     },
-    [currentIndex, listings, recordSwipe, hasNextPage, fetchNextPage, nextCardProgress],
+    [currentIndex, listings, recordSwipe, hasNextPage, fetchNextPage, nextCardProgress, translateX, translateY],
   );
 
   const animateOffScreen = useCallback(
