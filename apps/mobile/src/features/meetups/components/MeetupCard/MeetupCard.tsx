@@ -11,7 +11,8 @@ export type MeetupCardProps = {
   className?: string;
 };
 
-const statusVariants: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' }> = {
+const statusVariants: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+  proposed: { label: 'Proposed', variant: 'outline' },
   confirmed: { label: 'Confirmed', variant: 'default' },
   completed: { label: 'Completed', variant: 'secondary' },
   cancelled: { label: 'Cancelled', variant: 'destructive' },
@@ -67,7 +68,7 @@ const MeetupCard = ({ meetup, className }: MeetupCardProps) => {
           <Text className="text-base font-semibold text-card-foreground" numberOfLines={1}>
             {other_user.display_name}
           </Text>
-          <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+          <Badge variant={statusConfig.variant as 'default' | 'secondary' | 'destructive' | 'outline'}>{statusConfig.label}</Badge>
         </View>
 
         <Text className="mt-0.5 text-sm text-muted-foreground" numberOfLines={1}>

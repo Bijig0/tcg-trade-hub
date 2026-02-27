@@ -1167,7 +1167,7 @@ export type Database = {
       listing_status: "active" | "matched" | "completed" | "expired"
       listing_type: "wts" | "wtb" | "wtt"
       match_status: "active" | "completed" | "cancelled"
-      meetup_status: "confirmed" | "completed" | "cancelled"
+      meetup_status: "proposed" | "confirmed" | "completed" | "cancelled"
       message_type:
         | "text"
         | "image"
@@ -1335,7 +1335,7 @@ export const Constants = {
       listing_status: ["active", "matched", "completed", "expired"],
       listing_type: ["wts", "wtb", "wtt"],
       match_status: ["active", "completed", "cancelled"],
-      meetup_status: ["confirmed", "completed", "cancelled"],
+      meetup_status: ["proposed", "confirmed", "completed", "cancelled"],
       message_type: [
         "text",
         "image",

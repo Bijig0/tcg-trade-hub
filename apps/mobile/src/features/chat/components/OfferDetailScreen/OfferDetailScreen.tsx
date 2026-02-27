@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, RotateCcw } from 'lucide-react-native';
+import { ChevronLeft, Lock, MessageCircle, RotateCcw } from 'lucide-react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useAuth } from '@/context/AuthProvider';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
@@ -48,6 +48,8 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
   const isEditable = tradeContext
     ? EDITABLE_STATUSES.has(tradeContext.negotiationStatus)
     : false;
+
+  const isLockedForMeetup = tradeContext?.negotiationStatus === 'meetup_confirmed';
 
   const isListingOwner = tradeContext?.listingOwnerId === user?.id;
   const isOfferSender = tradeContext?.offererId === user?.id;
@@ -368,6 +370,23 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
         <NegotiationStatusBadge status={tradeContext.negotiationStatus} />
       </View>
 
+      {/* Meetup lock banner */}
+      {isLockedForMeetup && (
+        <View className="mx-4 mt-3 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-3">
+          <View className="flex-row items-start gap-2.5">
+            <Lock size={18} color="#3b82f6" style={{ marginTop: 1 }} />
+            <View className="flex-1">
+              <Text className="text-sm font-semibold text-foreground">
+                Trade Locked
+              </Text>
+              <Text className="mt-0.5 text-sm leading-5 text-muted-foreground">
+                This trade has a confirmed meetup. To modify, cancel the meetup first and propose new terms in chat.
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
+
       {/* Previous offer banner — visible only during editing when a previous offer exists */}
       {hasChanges && previousOffer && (
         <Pressable
@@ -439,20 +458,34 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
       </ScrollView>
 
       {/* Status-based action footer */}
-      <TradeActionFooter
-        status={tradeContext.negotiationStatus}
-        isOfferSender={isOfferSender}
-        isPending={sendMessage.isPending}
-        hasChanges={hasChanges}
-        onPropose={handlePropose}
-        onAccept={handleAccept}
-        onDecline={handleDecline}
-        onCounter={handleCounter}
-        onProposeMeetup={handleProposeMeetup}
-        onAcceptMeetup={handleAcceptMeetup}
-        onDeclineMeetup={handleDeclineMeetup}
-        onCompleteTrade={handleCompleteTrade}
-      />
+      {isLockedForMeetup ? (
+        <View className="border-t border-border px-4 py-3">
+          <Pressable
+            onPress={() => router.back()}
+            className="flex-row items-center justify-center gap-2 rounded-lg bg-primary py-3 active:opacity-80"
+          >
+            <MessageCircle size={18} color="#fff" />
+            <Text className="text-base font-semibold text-primary-foreground">
+              Open Chat
+            </Text>
+          </Pressable>
+        </View>
+      ) : (
+        <TradeActionFooter
+          status={tradeContext.negotiationStatus}
+          isOfferSender={isOfferSender}
+          isPending={sendMessage.isPending}
+          hasChanges={hasChanges}
+          onPropose={handlePropose}
+          onAccept={handleAccept}
+          onDecline={handleDecline}
+          onCounter={handleCounter}
+          onProposeMeetup={handleProposeMeetup}
+          onAcceptMeetup={handleAcceptMeetup}
+          onDeclineMeetup={handleDeclineMeetup}
+          onCompleteTrade={handleCompleteTrade}
+        />
+      )}
 
       {/* Card picker modal */}
       <CardPickerModal
