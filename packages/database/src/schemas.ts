@@ -507,6 +507,16 @@ export const ReportInsertSchema = ReportRowSchema.omit({
 });
 
 // --- Message payload schemas ---
+
+export const NoteEntrySchema = z.object({
+  author_id: z.string().uuid(),
+  author_name: z.string(),
+  author_avatar_url: z.string().nullable(),
+  text: z.string().min(1).max(500),
+  created_at: z.string(),
+});
+export type NoteEntry = z.infer<typeof NoteEntrySchema>;
+
 export const CardOfferPayloadSchema = z.object({
   offering: z.array(CardRefSchema),
   requesting: z.array(CardRefSchema),
@@ -516,6 +526,10 @@ export const CardOfferPayloadSchema = z.object({
   requesting_note: z.string().optional(),
   /** @deprecated Use offering_note / requesting_note. Kept for backward compat with old messages. */
   note: z.string().optional(),
+  /** Multi-author notes on the offering side. Takes precedence over offering_note. */
+  offering_notes: z.array(NoteEntrySchema).optional(),
+  /** Multi-author notes on the requesting side. Takes precedence over requesting_note. */
+  requesting_notes: z.array(NoteEntrySchema).optional(),
 });
 
 export type CardOfferPayload = z.infer<typeof CardOfferPayloadSchema>;
