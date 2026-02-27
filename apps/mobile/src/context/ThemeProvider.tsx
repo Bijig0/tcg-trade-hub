@@ -18,7 +18,12 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export const ThemeProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const themeName = useThemeStore((s) => s.themeName);
+  const hasHydrated = useThemeStore((s) => s.hasHydrated);
   const theme = THEMES[themeName] ?? THEME;
+
+  if (!hasHydrated) {
+    return null;
+  }
 
   const themeStyle = useMemo(() => vars(theme.vars), [themeName]);
 

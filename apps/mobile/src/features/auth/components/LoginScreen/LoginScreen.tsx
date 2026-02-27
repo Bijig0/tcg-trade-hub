@@ -53,7 +53,7 @@ const LoginScreen: React.FC = () => {
       className="flex-1"
     >
       <ScrollView
-        contentContainerClassName="flex-1 justify-center px-6 py-12"
+        contentContainerClassName="flex-grow justify-center px-6 py-12"
         keyboardShouldPersistTaps="handled"
       >
         <View className="mb-12 items-center">

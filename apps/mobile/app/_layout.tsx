@@ -4,6 +4,7 @@ import '@/lib/iconInterop';
 import '@/lib/imageInterop';
 
 import React from 'react';
+import * as SplashScreen from 'expo-splash-screen';
 import { Slot, useRouter, useSegments, ErrorBoundary } from 'expo-router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -15,6 +16,8 @@ import { ThemeProvider } from '@/context/ThemeProvider';
 import ErrorToast from '@/components/ui/ErrorToast/ErrorToast';
 import useAutoUpdate from '@/hooks/useAutoUpdate/useAutoUpdate';
 import useDevGraphEmitter from '@/hooks/useDevGraphEmitter/useDevGraphEmitter';
+
+SplashScreen.preventAutoHideAsync();
 
 // Log all errors to console with full stack traces
 const originalConsoleError = console.error;
@@ -74,12 +77,14 @@ const RootNavigator = () => {
   // Auto-poll for OTA updates and seamlessly reload (preview/production builds only)
   const { isUpdating } = useAutoUpdate();
 
+  React.useEffect(() => {
+    if (!isLoading) {
+      SplashScreen.hideAsync();
+    }
+  }, [isLoading]);
+
   if (isLoading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return null;
   }
 
   if (isUpdating) {

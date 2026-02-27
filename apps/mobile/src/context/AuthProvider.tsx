@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, type PropsWithChildren } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 import { type Session, type User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { queryClient } from '@/lib/queryClient';
@@ -31,12 +31,6 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
       throw error;
     }
     setProfile(data);
-  };
-
-  const refreshProfile = async () => {
-    if (session?.user.id) {
-      await fetchProfile(session.user.id);
-    }
   };
 
   useEffect(() => {
@@ -105,27 +99,36 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
     };
   }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     queryClient.clear();
     await supabase.auth.signOut();
     setSession(null);
     setProfile(null);
-  };
+  }, []);
+
+  const refreshProfile = useCallback(async () => {
+    if (session?.user.id) {
+      await fetchProfile(session.user.id);
+    }
+  }, [session?.user.id]);
 
   const isOnboarded = profile !== null && profile.preferred_tcgs.length > 0;
 
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      session,
+      user: session?.user ?? null,
+      profile,
+      isLoading,
+      isOnboarded,
+      signOut,
+      refreshProfile,
+    }),
+    [session, profile, isLoading, isOnboarded, signOut, refreshProfile],
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        session,
-        user: session?.user ?? null,
-        profile,
-        isLoading,
-        isOnboarded,
-        signOut,
-        refreshProfile,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
