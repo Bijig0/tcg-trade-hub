@@ -1,7 +1,8 @@
 import React, { useMemo, forwardRef, useCallback } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { useRouter } from 'expo-router';
 import { Zap } from 'lucide-react-native';
 import Button from '@/components/ui/Button/Button';
 import Badge from '@/components/ui/Badge/Badge';
@@ -11,7 +12,7 @@ import useCreateOffer from '../../hooks/useCreateOffer/useCreateOffer';
 import findMatchingCollectionCards from '../../utils/findMatchingCollectionCards/findMatchingCollectionCards';
 import { CONDITION_LABELS } from '@/config/constants';
 import type { TradeOpportunity } from '../../schemas';
-import type { NormalizedCard, TradeWant } from '@tcg-trade-hub/database';
+import type { NormalizedCard, TradeWant, CollectionRow } from '@tcg-trade-hub/database';
 
 type MatchConfirmSheetProps = {
   opportunity: TradeOpportunity | null;
@@ -28,6 +29,7 @@ type MatchConfirmSheetProps = {
 const MatchConfirmSheet = forwardRef<BottomSheet, MatchConfirmSheetProps>(
   ({ opportunity, myListingId, theirTradeWants, onClose, onSuccess }, ref) => {
     const snapPoints = useMemo(() => ['70%', '92%'], []);
+    const router = useRouter();
     const { data: myCollection } = useMyCollection();
     const createOffer = useCreateOffer();
 
@@ -85,6 +87,23 @@ const MatchConfirmSheet = forwardRef<BottomSheet, MatchConfirmSheetProps>(
         },
       );
     }, [opportunity, matchedCards, myListingId, createOffer, onSuccess]);
+
+    const handleCardPress = useCallback(
+      (card: { external_id: string; card_name: string; image_url: string | null; tcg: string; condition: string; market_price: number | null }) => {
+        router.push({
+          pathname: '/(tabs)/(listings)/listing-card-detail',
+          params: {
+            cardExternalId: card.external_id,
+            cardName: card.card_name,
+            cardImageUrl: card.image_url ?? '',
+            tcg: card.tcg,
+            condition: card.condition,
+            marketPrice: card.market_price != null ? String(card.market_price) : '',
+          },
+        });
+      },
+      [router],
+    );
 
     if (!opportunity) return null;
 
