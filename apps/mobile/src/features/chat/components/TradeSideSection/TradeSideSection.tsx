@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, TextInput } from 'react-native';
-import { Banknote, Plus, Star, X } from 'lucide-react-native';
+import { Banknote, Check, Plus, Star, X } from 'lucide-react-native';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import TradeItemRow from '../TradeItemRow/TradeItemRow';
 import type { TradeContextItem, TradeUserProfile } from '../../hooks/useTradeContext/useTradeContext';
@@ -59,7 +59,7 @@ const TradeSideSection = ({
   userProfile,
 }: TradeSideSectionProps) => {
   const styles = VARIANT_STYLES[variant];
-  const [showCashInput, setShowCashInput] = useState(cashAmount > 0);
+  const [showCashInput, setShowCashInput] = useState(false);
   const cardsValue = items.reduce((s, i) => s + (i.marketPrice ?? 0) * i.quantity, 0);
   const combinedTotal = cardsValue + cashAmount;
 
@@ -142,9 +142,10 @@ const TradeSideSection = ({
         </Pressable>
       )}
 
-      {/* Cash section — three states: collapsed add button, expanded input, or static display */}
+      {/* Cash section — editable: collapsed / active input / confirmed pill — read-only: static or hidden */}
       {isEditable && onChangeCash ? (
-        showCashInput || cashAmount > 0 ? (
+        showCashInput ? (
+          /* Active input state */
           <View className={`mx-4 mb-3 rounded-lg border ${styles.cashBorder} ${styles.cashBg} px-3 py-2.5`}>
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center gap-2">
@@ -153,16 +154,27 @@ const TradeSideSection = ({
                   Cash
                 </Text>
               </View>
-              <Pressable
-                onPress={() => {
-                  onChangeCash(0);
-                  setShowCashInput(false);
-                }}
-                className="rounded-full p-1 active:opacity-70"
-                hitSlop={6}
-              >
-                <X size={14} color="#9ca3af" />
-              </Pressable>
+              <View className="flex-row items-center gap-1">
+                {cashAmount > 0 && (
+                  <Pressable
+                    onPress={() => setShowCashInput(false)}
+                    className="rounded-full bg-green-500/15 p-1.5 active:opacity-70"
+                    hitSlop={6}
+                  >
+                    <Check size={14} color="#22c55e" />
+                  </Pressable>
+                )}
+                <Pressable
+                  onPress={() => {
+                    onChangeCash(0);
+                    setShowCashInput(false);
+                  }}
+                  className="rounded-full p-1.5 active:opacity-70"
+                  hitSlop={6}
+                >
+                  <X size={14} color="#9ca3af" />
+                </Pressable>
+              </View>
             </View>
             <View className="mt-1.5 flex-row items-center gap-1.5">
               <Text className="text-base font-bold text-foreground">$</Text>
@@ -180,7 +192,31 @@ const TradeSideSection = ({
               />
             </View>
           </View>
+        ) : cashAmount > 0 ? (
+          /* Confirmed pill — tap to re-edit, X to remove */
+          <View className={`mx-4 mb-3 flex-row items-center justify-between rounded-lg border ${styles.cashBorder} ${styles.cashBg} px-3 py-2.5`}>
+            <Pressable
+              onPress={() => setShowCashInput(true)}
+              className="flex-1 flex-row items-center gap-2 active:opacity-70"
+            >
+              <Banknote size={16} color={styles.cashAccent} />
+              <Text className="text-sm font-medium text-foreground">
+                ${cashAmount.toFixed(2)} cash
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                onChangeCash(0);
+                setShowCashInput(false);
+              }}
+              className="rounded-full p-1 active:opacity-70"
+              hitSlop={6}
+            >
+              <X size={14} color="#9ca3af" />
+            </Pressable>
+          </View>
         ) : (
+          /* Collapsed — "+ Add Cash" button */
           <Pressable
             onPress={() => setShowCashInput(true)}
             className="mx-4 mb-3 flex-row items-center justify-center gap-1.5 rounded-lg border border-dashed border-muted-foreground/30 py-2.5 active:opacity-70"
@@ -190,6 +226,7 @@ const TradeSideSection = ({
           </Pressable>
         )
       ) : cashAmount > 0 ? (
+        /* Read-only static display */
         <View className={`mx-4 mb-3 flex-row items-center gap-2 rounded-lg ${styles.cashBg} px-3 py-2.5`}>
           <Banknote size={16} color={styles.cashAccent} />
           <Text className="text-sm font-medium text-foreground">
