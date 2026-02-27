@@ -114,14 +114,18 @@ const useMeetups = () => {
       const now = new Date().toISOString();
 
       const upcoming = enriched.filter(
-        (m) => m.status === 'confirmed' && (m.proposed_time === null || m.proposed_time >= now),
+        (m) =>
+          (m.status === 'proposed' || m.status === 'confirmed') &&
+          (m.proposed_time === null || m.proposed_time >= now),
       );
 
       const past = enriched.filter(
         (m) =>
           m.status === 'completed' ||
           m.status === 'cancelled' ||
-          (m.status === 'confirmed' && m.proposed_time !== null && m.proposed_time < now),
+          ((m.status === 'proposed' || m.status === 'confirmed') &&
+            m.proposed_time !== null &&
+            m.proposed_time < now),
       );
 
       return { upcoming, past };

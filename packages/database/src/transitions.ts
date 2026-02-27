@@ -41,6 +41,7 @@ export const MATCH_TRANSITIONS = {
 } as const satisfies Record<MatchStatus, readonly MatchStatus[]>;
 
 export const MEETUP_TRANSITIONS = {
+  proposed: ['confirmed', 'cancelled'],
   confirmed: ['completed', 'cancelled'],
   completed: [],
   cancelled: [],
@@ -166,7 +167,7 @@ export const isActionableListing = (status: ListingStatus): boolean =>
  * Returns true if the meetup can still be acted upon.
  */
 export const isActionableMeetup = (status: MeetupStatus): boolean =>
-  status === 'confirmed';
+  status === 'proposed' || status === 'confirmed';
 
 /**
  * Returns true if the shop event can still be modified.

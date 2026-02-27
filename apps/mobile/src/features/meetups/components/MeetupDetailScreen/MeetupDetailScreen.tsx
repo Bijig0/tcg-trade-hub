@@ -157,18 +157,22 @@ const MeetupDetailScreen = () => {
   const otherCompleted = is_user_a ? meetup.user_b_completed : meetup.user_a_completed;
 
   const statusLabel =
-    status === 'confirmed'
-      ? 'Confirmed'
-      : status === 'completed'
-        ? 'Completed'
-        : 'Cancelled';
+    status === 'proposed'
+      ? 'Proposed'
+      : status === 'confirmed'
+        ? 'Confirmed'
+        : status === 'completed'
+          ? 'Completed'
+          : 'Cancelled';
 
   const statusVariant =
-    status === 'confirmed'
-      ? 'default'
-      : status === 'completed'
-        ? 'secondary'
-        : 'destructive';
+    status === 'proposed'
+      ? 'outline'
+      : status === 'confirmed'
+        ? 'default'
+        : status === 'completed'
+          ? 'secondary'
+          : 'destructive';
 
   const handleOpenChat = () => {
     if (meetup.conversation) {
@@ -199,6 +203,7 @@ const MeetupDetailScreen = () => {
     );
   };
 
+  const isProposed = status === 'proposed';
   const showDirections = status === 'confirmed' && !!userLocation && !!meetup.shopCoords;
 
   return (
@@ -259,7 +264,7 @@ const MeetupDetailScreen = () => {
               <Text className="flex-1 text-xl font-bold text-foreground" numberOfLines={1}>
                 {locationName}
               </Text>
-              <Badge variant={statusVariant as 'default' | 'secondary' | 'destructive'}>
+              <Badge variant={statusVariant as 'default' | 'secondary' | 'destructive' | 'outline'}>
                 {statusLabel}
               </Badge>
             </View>
@@ -307,7 +312,7 @@ const MeetupDetailScreen = () => {
             />
           </View>
 
-          {/* Completion bar */}
+          {/* Completion bar (confirmed only, not proposed) */}
           {status === 'confirmed' && (
             <View className="px-4 pt-4">
               <CompletionBar
@@ -351,7 +356,7 @@ const MeetupDetailScreen = () => {
               </Button>
             ) : null}
 
-            {status === 'confirmed' ? (
+            {(status === 'confirmed' || isProposed) ? (
               <Button
                 variant="destructive"
                 onPress={handleCancel}
@@ -360,7 +365,11 @@ const MeetupDetailScreen = () => {
                 <View className="flex-row items-center gap-2">
                   <XCircle size={18} className="text-destructive-foreground" />
                   <Text className="text-base font-semibold text-destructive-foreground">
-                    {cancelMeetup.isPending ? 'Cancelling...' : 'Cancel Meetup'}
+                    {cancelMeetup.isPending
+                      ? 'Cancelling...'
+                      : isProposed
+                        ? 'Decline Meetup'
+                        : 'Cancel Meetup'}
                   </Text>
                 </View>
               </Button>

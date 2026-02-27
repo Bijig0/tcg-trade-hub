@@ -244,7 +244,8 @@ describe('isActionableListing', () => {
 });
 
 describe('isActionableMeetup', () => {
-  it('returns true for confirmed', () => {
+  it('returns true for proposed and confirmed', () => {
+    expect(isActionableMeetup('proposed')).toBe(true);
     expect(isActionableMeetup('confirmed')).toBe(true);
   });
 
@@ -275,7 +276,7 @@ describe('transition map completeness', () => {
   });
 
   it('MEETUP_TRANSITIONS covers all MeetupStatus values', () => {
-    const statuses: readonly string[] = ['confirmed', 'completed', 'cancelled'];
+    const statuses: readonly string[] = ['proposed', 'confirmed', 'completed', 'cancelled'];
     expect(Object.keys(MEETUP_TRANSITIONS).sort()).toEqual([...statuses].sort());
   });
 
