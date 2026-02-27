@@ -17,7 +17,7 @@ const OfferItemSchema = z.object({
 const CreateOfferInputSchema = z.object({
   listingId: z.string().uuid(),
   cashAmount: z.number().min(0),
-  message: z.string().nullable(),
+  offeringNote: z.string().nullable(),
   items: z.array(OfferItemSchema),
 });
 
@@ -67,7 +67,7 @@ const createOffer = definePipeline({
       p_listing_id: input.listingId,
       p_offerer_id: ctx.userId,
       p_cash_amount: input.cashAmount,
-      p_message: input.message,
+      p_offerer_note: input.offeringNote,
       p_items: JSON.stringify(input.items),
     }),
     resultSchema: CreateOfferResultSchema,

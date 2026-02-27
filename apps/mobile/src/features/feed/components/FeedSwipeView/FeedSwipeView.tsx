@@ -67,13 +67,16 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
   const currentListing = listings[currentIndex] as ListingWithDistance | undefined;
   const nextListing = listings[currentIndex + 1] as ListingWithDistance | undefined;
 
-  // DEBUG: log every render with card identities
+  // Two fixed JSX slots alternate between front/back roles.
+  // The promoted card stays in the same slot (no native view reorder).
+  const frontSlot = currentIndex % 2; // 0 or 1
+  const slot0Listing = (frontSlot === 0 ? currentListing : nextListing) as ListingWithDistance | undefined;
+  const slot1Listing = (frontSlot === 1 ? currentListing : nextListing) as ListingWithDistance | undefined;
+
   if (__DEV__) {
-    const cId = currentListing?.id?.slice(0, 8) ?? 'none';
-    const cTitle = currentListing?.title?.slice(0, 20) ?? 'none';
-    const nId = nextListing?.id?.slice(0, 8) ?? 'none';
-    const nTitle = nextListing?.title?.slice(0, 20) ?? 'none';
-    console.log(`[SWIPE-RENDER] idx=${currentIndex} current=${cId}("${cTitle}") next=${nId}("${nTitle}") txVal=${translateX.value.toFixed(0)} ncp=${nextCardProgress.value.toFixed(2)}`);
+    const s0 = slot0Listing?.id?.slice(0, 8) ?? 'none';
+    const s1 = slot1Listing?.id?.slice(0, 8) ?? 'none';
+    console.log(`[SWIPE-RENDER] idx=${currentIndex} frontSlot=${frontSlot} slot0=${s0}(${frontSlot === 0 ? 'FRONT' : 'BACK'}) slot1=${s1}(${frontSlot === 1 ? 'FRONT' : 'BACK'})`);
   }
 
   const advanceCard = useCallback(
@@ -177,6 +180,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
         )}deg`,
       },
     ],
+    zIndex: 2,
   }));
 
   const likeOverlayStyle = useAnimatedStyle(() => ({
@@ -214,6 +218,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
       [0.6, 1],
       Extrapolation.CLAMP,
     ),
+    zIndex: 1,
   }));
 
   const handleButtonSwipe = (direction: 'like' | 'pass') => {
@@ -282,52 +287,69 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
 
   return (
     <View className={cn('flex-1', className)}>
-      {/* Card stack — keyed by listing ID so React preserves the component
-           instance (and its loaded Image) when a card is promoted from
-           back → front. The departing card is unmounted (already off-screen)
-           and the new back card mounts behind the front (hidden). */}
+      {/* Card stack — two fixed JSX slots that never reorder.
+           Slots alternate front/back roles via currentIndex % 2.
+           The promoted card stays in its exact same slot (no native
+           view reorder), only the animated style swaps. */}
       <GestureDetector gesture={panGesture}>
         <Animated.View className="relative flex-1 px-4 py-2">
-          {[nextListing, currentListing]
-            .filter((l): l is ListingWithDistance => l != null)
-            .map((listing) => {
-              const isCurrent = listing.id === currentListing?.id;
-              if (__DEV__) {
-                console.log(`[SWIPE-MAP] key=${listing.id.slice(0, 8)} title="${listing.title?.slice(0, 20)}" role=${isCurrent ? 'FRONT' : 'BACK'}`);
-              }
-              return (
-                <Animated.View
-                  key={listing.id}
-                  className="absolute inset-x-4 bottom-2 top-2"
-                  style={isCurrent ? cardAnimatedStyle : nextCardStyle}
-                >
-                  <SwipeCard
-                    listing={listing}
-                    onOpenDetail={isCurrent ? handleOpenDetail : undefined}
-                  />
+          {/* Slot 0 */}
+          {slot0Listing && (
+            <Animated.View
+              className="absolute inset-x-4 bottom-2 top-2"
+              style={frontSlot === 0 ? cardAnimatedStyle : nextCardStyle}
+            >
+              <SwipeCard
+                listing={slot0Listing}
+                onOpenDetail={frontSlot === 0 ? handleOpenDetail : undefined}
+              />
+              {frontSlot === 0 && (
+                <>
+                  <Animated.View
+                    className="absolute left-6 top-10 rounded-lg border-4 border-emerald-500 px-4 py-2"
+                    style={[likeOverlayStyle, { transform: [{ rotate: '-15deg' }] }]}
+                  >
+                    <Text className="text-3xl font-black text-emerald-500">LIKE</Text>
+                  </Animated.View>
+                  <Animated.View
+                    className="absolute right-6 top-10 rounded-lg border-4 border-red-500 px-4 py-2"
+                    style={[passOverlayStyle, { transform: [{ rotate: '15deg' }] }]}
+                  >
+                    <Text className="text-3xl font-black text-red-500">PASS</Text>
+                  </Animated.View>
+                </>
+              )}
+            </Animated.View>
+          )}
 
-                  {isCurrent && (
-                    <>
-                      {/* Like overlay */}
-                      <Animated.View
-                        className="absolute left-6 top-10 rounded-lg border-4 border-emerald-500 px-4 py-2"
-                        style={[likeOverlayStyle, { transform: [{ rotate: '-15deg' }] }]}
-                      >
-                        <Text className="text-3xl font-black text-emerald-500">LIKE</Text>
-                      </Animated.View>
-
-                      {/* Pass overlay */}
-                      <Animated.View
-                        className="absolute right-6 top-10 rounded-lg border-4 border-red-500 px-4 py-2"
-                        style={[passOverlayStyle, { transform: [{ rotate: '15deg' }] }]}
-                      >
-                        <Text className="text-3xl font-black text-red-500">PASS</Text>
-                      </Animated.View>
-                    </>
-                  )}
-                </Animated.View>
-              );
-            })}
+          {/* Slot 1 */}
+          {slot1Listing && (
+            <Animated.View
+              className="absolute inset-x-4 bottom-2 top-2"
+              style={frontSlot === 1 ? cardAnimatedStyle : nextCardStyle}
+            >
+              <SwipeCard
+                listing={slot1Listing}
+                onOpenDetail={frontSlot === 1 ? handleOpenDetail : undefined}
+              />
+              {frontSlot === 1 && (
+                <>
+                  <Animated.View
+                    className="absolute left-6 top-10 rounded-lg border-4 border-emerald-500 px-4 py-2"
+                    style={[likeOverlayStyle, { transform: [{ rotate: '-15deg' }] }]}
+                  >
+                    <Text className="text-3xl font-black text-emerald-500">LIKE</Text>
+                  </Animated.View>
+                  <Animated.View
+                    className="absolute right-6 top-10 rounded-lg border-4 border-red-500 px-4 py-2"
+                    style={[passOverlayStyle, { transform: [{ rotate: '15deg' }] }]}
+                  >
+                    <Text className="text-3xl font-black text-red-500">PASS</Text>
+                  </Animated.View>
+                </>
+              )}
+            </Animated.View>
+          )}
         </Animated.View>
       </GestureDetector>
 

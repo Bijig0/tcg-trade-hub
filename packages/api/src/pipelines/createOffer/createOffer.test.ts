@@ -28,7 +28,7 @@ const makeCtx = (fromResult: { data: unknown; error: unknown }): PipelineContext
 const validInput = {
   listingId: UUID_A,
   cashAmount: 50,
-  message: 'I want this!',
+  offeringNote: 'I want this!',
   items: [
     {
       card_name: 'Charizard VMAX',
@@ -107,7 +107,7 @@ describe('createOffer pipeline', () => {
       p_listing_id: UUID_A,
       p_offerer_id: USER_ID,
       p_cash_amount: 50,
-      p_message: 'I want this!',
+      p_offerer_note: 'I want this!',
       p_items: JSON.stringify(validInput.items),
     });
   });

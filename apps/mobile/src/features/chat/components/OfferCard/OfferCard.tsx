@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/context/AuthProvider';
@@ -24,24 +24,27 @@ export type OfferCardProps = {
   onCounter?: () => void;
   /** Whether a response has already been sent for this offer */
   hasResponse?: boolean;
+  onCardPress?: (card: CardRef) => void;
   className?: string;
 };
 
 type CardPillListProps = {
   cards: CardRef[];
   label: string;
+  onCardPress?: (card: CardRef) => void;
 };
 
-const CardPillList = ({ cards, label }: CardPillListProps) => (
+const CardPillList = ({ cards, label, onCardPress }: CardPillListProps) => (
   <View className="mb-2">
     <Text className="mb-1.5 text-xs font-semibold uppercase text-muted-foreground">
       {label}
     </Text>
     <View className="flex-row flex-wrap gap-2">
       {cards.map((card, index) => (
-        <View
+        <Pressable
           key={`${card.externalId}-${index}`}
-          className="flex-row items-center gap-1.5 rounded-full bg-muted px-2.5 py-1"
+          onPress={onCardPress ? () => onCardPress(card) : undefined}
+          className="flex-row items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 active:opacity-70"
         >
           <Image
             source={{ uri: card.imageUrl }}
@@ -52,7 +55,7 @@ const CardPillList = ({ cards, label }: CardPillListProps) => (
             {card.name}
             {card.quantity && card.quantity > 1 ? ` x${card.quantity}` : ''}
           </Text>
-        </View>
+        </Pressable>
       ))}
     </View>
   </View>
@@ -66,6 +69,7 @@ const OfferCard = ({
   onDecline,
   onCounter,
   hasResponse = false,
+  onCardPress,
   className,
 }: OfferCardProps) => {
   const { user } = useAuth();
@@ -89,8 +93,8 @@ const OfferCard = ({
           <CardTitle className="text-base">Trade Offer</CardTitle>
         </CardHeader>
         <CardContent>
-          <CardPillList cards={payload.offering} label="Offering" />
-          <CardPillList cards={payload.requesting} label="Requesting" />
+          <CardPillList cards={payload.offering} label="Offering" onCardPress={onCardPress} />
+          <CardPillList cards={payload.requesting} label="Requesting" onCardPress={onCardPress} />
 
           {payload.cash_amount != null && payload.cash_amount > 0 ? (
             <View className="mt-1 flex-row items-center gap-1">

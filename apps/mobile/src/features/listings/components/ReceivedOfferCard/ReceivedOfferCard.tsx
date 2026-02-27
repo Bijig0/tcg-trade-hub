@@ -78,9 +78,9 @@ const ReceivedOfferCard = ({ offer, onAccept, onDecline, isResponding, onPress }
           Total value: ${totalValue.toFixed(2)}
         </Text>
 
-        {offer.message && (
+        {offer.offerer_note && (
           <Text className="mt-1 text-xs italic text-muted-foreground" numberOfLines={2}>
-            "{offer.message}"
+            "{offer.offerer_note}"
           </Text>
         )}
       </View>

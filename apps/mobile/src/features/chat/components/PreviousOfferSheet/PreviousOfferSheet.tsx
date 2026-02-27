@@ -1,6 +1,7 @@
-import React, { forwardRef, useMemo } from 'react';
+import React, { forwardRef, useMemo, useCallback } from 'react';
 import { View, Text } from 'react-native';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { useRouter } from 'expo-router';
 import type { PreviousOffer } from '../../hooks/usePreviousOffer/usePreviousOffer';
 import type { TradeContextItem } from '../../hooks/useTradeContext/useTradeContext';
 import TradeSideSection from '../TradeSideSection/TradeSideSection';
@@ -42,6 +43,25 @@ const formatRelativeTime = (isoDate: string): string => {
  */
 const PreviousOfferSheet = forwardRef<BottomSheet, PreviousOfferSheetProps>(
   ({ previousOffer }, ref) => {
+    const router = useRouter();
+
+    const handleCardPress = useCallback(
+      (item: TradeContextItem) => {
+        router.push({
+          pathname: '/(tabs)/(listings)/listing-card-detail',
+          params: {
+            cardExternalId: item.cardExternalId,
+            cardName: item.cardName,
+            cardImageUrl: item.cardImageUrl,
+            tcg: item.tcg,
+            condition: item.condition,
+            marketPrice: item.marketPrice != null ? String(item.marketPrice) : '',
+          },
+        });
+      },
+      [router],
+    );
+
     const offeringItems = useMemo(
       () => previousOffer.offering.map(cardRefToTradeItem),
       [previousOffer.offering],
@@ -93,6 +113,7 @@ const PreviousOfferSheet = forwardRef<BottomSheet, PreviousOfferSheetProps>(
               variant="their"
               cashAmount={offeringCash}
               note={previousOffer.offeringNote ?? undefined}
+              onCardPress={handleCardPress}
             />
 
             {/* FOR divider */}
@@ -114,6 +135,7 @@ const PreviousOfferSheet = forwardRef<BottomSheet, PreviousOfferSheetProps>(
               variant="my"
               cashAmount={requestingCash}
               note={previousOffer.requestingNote ?? undefined}
+              onCardPress={handleCardPress}
             />
 
             {/* Value comparison */}
