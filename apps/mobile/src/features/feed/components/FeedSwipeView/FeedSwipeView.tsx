@@ -271,7 +271,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
             className="absolute inset-0"
             style={nextCardStyle}
           >
-            <SwipeCard listing={nextListing} />
+            <SwipeCard key={nextListing.id} listing={nextListing} />
           </Animated.View>
         )}
 
@@ -281,7 +281,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
             className="w-full flex-1"
             style={cardAnimatedStyle}
           >
-            <SwipeCard listing={currentListing} onOpenDetail={handleOpenDetail} />
+            <SwipeCard key={currentListing.id} listing={currentListing} onOpenDetail={handleOpenDetail} />
 
             {/* Like overlay */}
             <Animated.View
