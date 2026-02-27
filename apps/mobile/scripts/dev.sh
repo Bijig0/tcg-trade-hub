@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Ensure we're running from apps/mobile regardless of where the script is invoked.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APP_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$APP_DIR"
+
 # Find a preferred unbooted iPhone simulator and boot it before starting Expo.
 # If an existing simulator is already booted, this ensures we launch on a fresh device.
 
