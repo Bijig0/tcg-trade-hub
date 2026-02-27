@@ -39,6 +39,7 @@ const StaticChatPreview = () => (
       <div className="max-w-[90%]">
         <DemoOfferCard onCounterOffer={() => {}} />
       </div>
+      <div className="h-6" />
     </div>
   </div>
 );
@@ -72,7 +73,7 @@ export const Hero = () => (
       </div>
 
       {/* Phone preview — desktop only */}
-      <div className="hidden w-full max-w-[380px] lg:block [&>div]:max-h-[900px]">
+      <div className="hidden w-full max-w-[380px] lg:block">
         <PhoneFrame>
           <StaticChatPreview />
         </PhoneFrame>
