@@ -14,7 +14,9 @@
     "dev:graph": "npx tsx packages/api/src/graph-sync.ts && npx tsx packages/api/src/graph/serve.ts",
     "dev:mobile": "pnpm --dir apps/mobile exec expo start --port 8082 --clear",
     "studio": "pnpm --filter @tcg-trade-hub/mobile e2e:studio",
-    "graph:maestro": "npx tsx packages/api/src/graph/maestroManifest.ts"
+    "graph:maestro": "npx tsx packages/api/src/graph/maestroManifest.ts",
+    "dev:sim-server": "node apps/mobile/scripts/dev-sim-server.js",
+    "dev:multi": "node apps/mobile/scripts/dev-sim-server.js & pnpm dev:mobile"
   },
   "devDependencies": {
     "turbo": "^2.3.0"

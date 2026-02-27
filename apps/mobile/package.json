@@ -15,7 +15,8 @@
     "e2e": "maestro test e2e/flows/",
     "e2e:auth": "maestro test e2e/flows/auth/",
     "e2e:smoke": "maestro test e2e/flows/auth/login-happy-path.yaml",
-    "e2e:studio": "maestro studio"
+    "e2e:studio": "maestro studio",
+    "dev:sim-server": "node scripts/dev-sim-server.js"
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^5.1.1",

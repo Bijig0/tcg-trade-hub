@@ -12,6 +12,7 @@ import { MIN_RADIUS_KM, MAX_RADIUS_KM } from '@/config/constants';
 import useUpdateProfile from '../../hooks/useUpdateProfile/useUpdateProfile';
 import useCheckForUpdates from '../../hooks/useCheckForUpdates/useCheckForUpdates';
 import DevUserSwitcher from '../DevUserSwitcher/DevUserSwitcher';
+import DevSimulatorLauncher from '../DevSimulatorLauncher/DevSimulatorLauncher';
 
 type NotificationPrefs = {
   new_matches: boolean;
@@ -316,6 +317,9 @@ const SettingsScreen = () => {
               Quick-switch between test accounts
             </Text>
             <DevUserSwitcher />
+            <View className="mt-4">
+              <DevSimulatorLauncher />
+            </View>
           </View>
 
           <View className="px-4 py-4">
