@@ -62,6 +62,9 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const nextCardProgress = useSharedValue(0);
+  // Mirrors currentIndex on the UI thread so animated style role-swaps
+  // happen in the same frame as the translateX reset (no 1-frame flash).
+  const currentIndexSV = useSharedValue(0);
 
   const listings = data?.pages.flatMap((page) => page.listings) ?? [];
   const currentListing = listings[currentIndex] as ListingWithDistance | undefined;
@@ -101,10 +104,12 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
       );
 
       // Reset shared values BEFORE the state update so the promoted card
-      // renders at center from its very first frame. Using useEffect for
-      // this caused a one-frame flash (useEffect runs after paint).
+      // renders at center from its very first frame. currentIndexSV is
+      // updated here (same JS microtask) so the UI-thread animated styles
+      // swap front/back roles in the *same frame* as the translateX reset.
       translateX.value = 0;
       translateY.value = 0;
+      currentIndexSV.value = currentIndex + 1;
 
       if (__DEV__) {
         console.log(`[SWIPE-ADVANCE] reset translateX/Y to 0, about to setCurrentIndex`);
@@ -126,7 +131,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
         runOnJS(setIsSwiping)(false);
       });
     },
-    [currentIndex, listings, recordSwipe, hasNextPage, fetchNextPage, nextCardProgress, translateX, translateY],
+    [currentIndex, listings, recordSwipe, hasNextPage, fetchNextPage, nextCardProgress, translateX, translateY, currentIndexSV],
   );
 
   const animateOffScreen = useCallback(
@@ -167,21 +172,90 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
       }
     });
 
-  const cardAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      {
-        rotate: `${interpolate(
-          translateX.value,
-          [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
-          [-15, 0, 15],
-          Extrapolation.CLAMP,
-        )}deg`,
-      },
-    ],
-    zIndex: 2,
-  }));
+  // Per-slot animated styles driven by currentIndexSV (shared value) so the
+  // front/back role swap happens on the UI thread in the same frame as the
+  // translateX reset — eliminating the 1-frame flash of the departing card.
+  const slot0Style = useAnimatedStyle(() => {
+    const isFront = currentIndexSV.value % 2 === 0;
+    if (isFront) {
+      return {
+        transform: [
+          { translateX: translateX.value },
+          { translateY: translateY.value },
+          {
+            rotate: `${interpolate(
+              translateX.value,
+              [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
+              [-15, 0, 15],
+              Extrapolation.CLAMP,
+            )}deg`,
+          },
+        ],
+        zIndex: 2,
+        opacity: 1,
+      };
+    }
+    return {
+      transform: [
+        {
+          scale: interpolate(
+            nextCardProgress.value,
+            [0, 1],
+            [0.92, 1],
+            Extrapolation.CLAMP,
+          ),
+        },
+      ],
+      opacity: interpolate(
+        nextCardProgress.value,
+        [0, 1],
+        [0.6, 1],
+        Extrapolation.CLAMP,
+      ),
+      zIndex: 1,
+    };
+  });
+
+  const slot1Style = useAnimatedStyle(() => {
+    const isFront = currentIndexSV.value % 2 === 1;
+    if (isFront) {
+      return {
+        transform: [
+          { translateX: translateX.value },
+          { translateY: translateY.value },
+          {
+            rotate: `${interpolate(
+              translateX.value,
+              [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
+              [-15, 0, 15],
+              Extrapolation.CLAMP,
+            )}deg`,
+          },
+        ],
+        zIndex: 2,
+        opacity: 1,
+      };
+    }
+    return {
+      transform: [
+        {
+          scale: interpolate(
+            nextCardProgress.value,
+            [0, 1],
+            [0.92, 1],
+            Extrapolation.CLAMP,
+          ),
+        },
+      ],
+      opacity: interpolate(
+        nextCardProgress.value,
+        [0, 1],
+        [0.6, 1],
+        Extrapolation.CLAMP,
+      ),
+      zIndex: 1,
+    };
+  });
 
   const likeOverlayStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
@@ -199,26 +273,6 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
       [1, 0],
       Extrapolation.CLAMP,
     ),
-  }));
-
-  const nextCardStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        scale: interpolate(
-          nextCardProgress.value,
-          [0, 1],
-          [0.92, 1],
-          Extrapolation.CLAMP,
-        ),
-      },
-    ],
-    opacity: interpolate(
-      nextCardProgress.value,
-      [0, 1],
-      [0.6, 1],
-      Extrapolation.CLAMP,
-    ),
-    zIndex: 1,
   }));
 
   const handleButtonSwipe = (direction: 'like' | 'pass') => {
@@ -276,6 +330,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
                   if (!user) return;
                   await supabase.from('swipes').delete().eq('user_id', user.id);
                   setCurrentIndex(0);
+                  currentIndexSV.value = 0;
                   await queryClient.resetQueries({ queryKey: feedKeys.lists() });
                 },
               }
@@ -297,7 +352,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
           {slot0Listing && (
             <Animated.View
               className="absolute inset-x-4 bottom-2 top-2"
-              style={frontSlot === 0 ? cardAnimatedStyle : nextCardStyle}
+              style={slot0Style}
             >
               <SwipeCard
                 listing={slot0Listing}
@@ -326,7 +381,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
           {slot1Listing && (
             <Animated.View
               className="absolute inset-x-4 bottom-2 top-2"
-              style={frontSlot === 1 ? cardAnimatedStyle : nextCardStyle}
+              style={slot1Style}
             >
               <SwipeCard
                 listing={slot1Listing}
