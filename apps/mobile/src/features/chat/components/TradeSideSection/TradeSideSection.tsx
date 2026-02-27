@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Pencil, Star } from 'lucide-react-native';
+import { Pencil, Star, X } from 'lucide-react-native';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Card, { CardContent } from '@/components/ui/Card/Card';
 import TradeItemRow from '../TradeItemRow/TradeItemRow';
@@ -12,6 +12,7 @@ export type TradeSideSectionProps = {
   totalValue: number;
   isEditable?: boolean;
   onPress?: () => void;
+  onClear?: () => void;
   userProfile?: TradeUserProfile | null;
 };
 
