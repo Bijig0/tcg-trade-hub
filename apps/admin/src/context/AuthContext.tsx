@@ -8,7 +8,6 @@ import {
 } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { UserRolesArraySchema, type UserRole } from '@tcg-trade-hub/database';
-import { getSupabaseBrowserClient } from '@/lib/supabase.client';
 
 type AuthContextValue = {
   session: Session | null;
@@ -21,6 +20,14 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+const isDev = import.meta.env.DEV;
+
+/** Lazily import the Supabase client only on the browser. */
+const getClient = async () => {
+  const { getSupabaseBrowserClient } = await import('@/lib/supabase.client');
+  return getSupabaseBrowserClient();
+};
+
 /** Safely extract roles from a session's app_metadata. */
 const extractRoles = (session: Session | null): UserRole[] => {
   const parsed = UserRolesArraySchema.safeParse(
@@ -31,34 +38,42 @@ const extractRoles = (session: Session | null): UserRole[] => {
 
 export const AuthProvider = ({ children }: PropsWithChildren) => {
   const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!isDev);
 
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
+    if (isDev) return;
+    if (typeof window === 'undefined') return;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setIsLoading(false);
-    });
+    let subscription: { unsubscribe: () => void } | null = null;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
+    getClient()
+      .then((supabase) => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          setSession(session);
+          setIsLoading(false);
+        });
+
+        const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+          setSession(session);
+          setIsLoading(false);
+        });
+        subscription = data.subscription;
+      })
+      .catch(() => {
         setIsLoading(false);
-      },
-    );
+      });
 
-    return () => subscription.unsubscribe();
+    return () => subscription?.unsubscribe();
   }, []);
 
   const signOut = async () => {
-    const supabase = getSupabaseBrowserClient();
+    const supabase = await getClient();
     await supabase.auth.signOut();
     setSession(null);
   };
 
   const refreshSession = useCallback(async () => {
-    const supabase = getSupabaseBrowserClient();
+    const supabase = await getClient();
     const { data } = await supabase.auth.refreshSession();
     if (data.session) {
       setSession(data.session);
