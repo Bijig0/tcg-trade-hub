@@ -4,3 +4,4 @@ export type { Router } from './router';
 export type { Context } from './context';
 export { pipelineRegistry } from './pipelines';
 export type { PipelineName } from './pipelines';
+export type { GraphRouter } from './graph/graphRouter';

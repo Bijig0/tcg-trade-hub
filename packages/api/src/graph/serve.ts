@@ -23,6 +23,9 @@ import {
 import { WebSocketServer, type WebSocket } from "ws";
 import { z } from "zod";
 import { buildMaestroManifest } from "./maestroManifest";
+import { RPCHandler } from "@orpc/server/node";
+import { onError } from "@orpc/server";
+import { graphRouter } from "./graphRouter";
 
 const PORT = Number(process.env.GRAPH_PORT) || 4243;
 const DB_PATH = process.env.GRAPH_DB_PATH;
@@ -52,6 +55,18 @@ liveEvents.subscribe((event) => {
 // ---------------------------------------------------------------------------
 
 const maestroManifest = buildMaestroManifest();
+
+// ---------------------------------------------------------------------------
+// oRPC handler (type-safe graph status endpoint)
+// ---------------------------------------------------------------------------
+
+const rpcHandler = new RPCHandler(graphRouter, {
+  interceptors: [
+    onError((error) => {
+      console.error("[oRPC Error]", error);
+    }),
+  ],
+});
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -354,6 +369,18 @@ const server = createServer(async (req, res) => {
     if (url.pathname === "/api/ws/clients" && method === "GET") {
       respond(json({ count: wsClients.size }));
       return;
+    }
+
+    // ---- oRPC handler ----
+    if (url.pathname.startsWith("/api/rpc")) {
+      const { matched } = await rpcHandler.handle(req, res, {
+        prefix: "/api/rpc",
+        context: {
+          getWsClientCount: () => wsClients.size,
+          getPathCount: () => listPaths(db).length,
+        },
+      });
+      if (matched) return;
     }
 
     // ---- 404 ----
