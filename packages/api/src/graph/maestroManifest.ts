@@ -1,19 +1,14 @@
 /**
- * Scans Maestro YAML flow files for GRAPH_PATH_ID env annotations
- * and produces a manifest mapping tests to graph paths.
+ * Maestro test manifest with graph path coverage derived from code analysis.
+ * Coverage is determined by static analysis of testIDs in source code,
+ * not manual GRAPH_PATH_ID annotations.
  */
-import { readdirSync, readFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { buildDerivedManifest } from "./deriveTestCoverage";
+import type { CoverageEntry } from "./deriveTestCoverage";
 
 type TestEntry = {
   file: string;
   pathId: string;
-};
-
-type CoverageEntry = {
-  pathId: string;
-  testCount: number;
-  files: string[];
 };
 
 type MaestroManifest = {
@@ -22,61 +17,38 @@ type MaestroManifest = {
   uncoveredPaths: string[];
 };
 
-const FLOWS_DIR = join(__dirname, "../../../../apps/mobile/e2e/flows");
-
-const walkYaml = (dir: string): string[] => {
-  const results: string[] = [];
-  try {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        results.push(...walkYaml(full));
-      } else if (entry.name.endsWith(".yaml") || entry.name.endsWith(".yml")) {
-        results.push(full);
-      }
-    }
-  } catch {
-    // flows dir may not exist in CI
-  }
-  return results;
-};
-
-const GRAPH_PATH_RE = /^\s*GRAPH_PATH_ID:\s*["']?([^"'\s]+)["']?\s*$/m;
-
-const parseGraphPathId = (content: string): string | null => {
-  const match = content.match(GRAPH_PATH_RE);
-  return match ? match[1] : null;
-};
-
 /**
- * Builds the Maestro test manifest by scanning YAML flow files.
+ * Builds the Maestro test manifest by deriving graph path coverage
+ * from static analysis of source code (testIDs → routes → graph paths).
  */
-export const buildMaestroManifest = (): MaestroManifest => {
-  const yamlFiles = walkYaml(FLOWS_DIR);
-  const tests: TestEntry[] = [];
+const buildMaestroManifest = (): MaestroManifest => {
+  const derived = buildDerivedManifest();
 
-  for (const file of yamlFiles) {
-    const content = readFileSync(file, "utf-8");
-    const pathId = parseGraphPathId(content);
-    if (pathId) {
-      tests.push({ file: relative(FLOWS_DIR, file), pathId });
+  // Flatten DerivedTestEntry[] → TestEntry[] for backward compat
+  const tests: TestEntry[] = [];
+  for (const test of derived.tests) {
+    for (const path of test.paths) {
+      tests.push({ file: test.file, pathId: path.pathId });
     }
   }
 
-  // Group by pathId
-  const byPath = new Map<string, string[]>();
-  for (const t of tests) {
-    const existing = byPath.get(t.pathId) ?? [];
-    existing.push(t.file);
-    byPath.set(t.pathId, existing);
-  }
-
-  const coverage: CoverageEntry[] = Array.from(byPath.entries()).map(
-    ([pathId, files]) => ({ pathId, testCount: files.length, files }),
-  );
-
-  return { tests, coverage, uncoveredPaths: [] };
+  return {
+    tests,
+    coverage: derived.coverage,
+    uncoveredPaths: derived.uncoveredPaths,
+  };
 };
+
+export { buildMaestroManifest };
+export type { MaestroManifest, TestEntry };
+
+// Re-export richer types for consumers that want step-level detail
+export { buildDerivedManifest } from "./deriveTestCoverage";
+export type {
+  DerivedManifest,
+  DerivedTestEntry,
+  DerivedPathEntry,
+} from "./deriveTestCoverage";
 
 // Allow running as standalone script: npx tsx packages/api/src/graph/maestroManifest.ts
 if (require.main === module) {
