@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Pressable, TextInput } from 'react-native';
 import { Banknote, Plus, Star, X } from 'lucide-react-native';
 import Avatar from '@/components/ui/Avatar/Avatar';
@@ -59,6 +59,7 @@ const TradeSideSection = ({
   userProfile,
 }: TradeSideSectionProps) => {
   const styles = VARIANT_STYLES[variant];
+  const [showCashInput, setShowCashInput] = useState(cashAmount > 0);
   const cardsValue = items.reduce((s, i) => s + (i.marketPrice ?? 0) * i.quantity, 0);
   const combinedTotal = cardsValue + cashAmount;
 
@@ -141,30 +142,53 @@ const TradeSideSection = ({
         </Pressable>
       )}
 
-      {/* Cash section — integrated into the side */}
+      {/* Cash section — three states: collapsed add button, expanded input, or static display */}
       {isEditable && onChangeCash ? (
-        <View className={`mx-4 mb-3 rounded-lg border ${styles.cashBorder} ${styles.cashBg} px-3 py-2.5`}>
-          <View className="flex-row items-center gap-2">
-            <Banknote size={16} color={styles.cashAccent} />
-            <Text className="text-xs font-semibold uppercase text-muted-foreground">
-              Cash
-            </Text>
+        showCashInput || cashAmount > 0 ? (
+          <View className={`mx-4 mb-3 rounded-lg border ${styles.cashBorder} ${styles.cashBg} px-3 py-2.5`}>
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center gap-2">
+                <Banknote size={16} color={styles.cashAccent} />
+                <Text className="text-xs font-semibold uppercase text-muted-foreground">
+                  Cash
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => {
+                  onChangeCash(0);
+                  setShowCashInput(false);
+                }}
+                className="rounded-full p-1 active:opacity-70"
+                hitSlop={6}
+              >
+                <X size={14} color="#9ca3af" />
+              </Pressable>
+            </View>
+            <View className="mt-1.5 flex-row items-center gap-1.5">
+              <Text className="text-base font-bold text-foreground">$</Text>
+              <TextInput
+                className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 text-base text-foreground"
+                value={cashAmount > 0 ? String(cashAmount) : ''}
+                onChangeText={(text) => {
+                  const parsed = parseFloat(text.replace(/[^0-9.]/g, ''));
+                  onChangeCash(isNaN(parsed) ? 0 : parsed);
+                }}
+                keyboardType="decimal-pad"
+                placeholder="0.00"
+                placeholderTextColor="#9ca3af"
+                autoFocus
+              />
+            </View>
           </View>
-          <View className="mt-1.5 flex-row items-center gap-1.5">
-            <Text className="text-base font-bold text-foreground">$</Text>
-            <TextInput
-              className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 text-base text-foreground"
-              value={cashAmount > 0 ? String(cashAmount) : ''}
-              onChangeText={(text) => {
-                const parsed = parseFloat(text.replace(/[^0-9.]/g, ''));
-                onChangeCash(isNaN(parsed) ? 0 : parsed);
-              }}
-              keyboardType="decimal-pad"
-              placeholder="0.00"
-              placeholderTextColor="#9ca3af"
-            />
-          </View>
-        </View>
+        ) : (
+          <Pressable
+            onPress={() => setShowCashInput(true)}
+            className="mx-4 mb-3 flex-row items-center justify-center gap-1.5 rounded-lg border border-dashed border-muted-foreground/30 py-2.5 active:opacity-70"
+          >
+            <Banknote size={14} color="#9ca3af" />
+            <Text className="text-sm font-medium text-muted-foreground">Add Cash</Text>
+          </Pressable>
+        )
       ) : cashAmount > 0 ? (
         <View className={`mx-4 mb-3 flex-row items-center gap-2 rounded-lg ${styles.cashBg} px-3 py-2.5`}>
           <Banknote size={16} color={styles.cashAccent} />
