@@ -160,6 +160,8 @@ const ConversationsScreen = () => {
     <RefreshableScreen testID="messages-screen" queryKeys={[chatKeys.conversations()]}>
       {({ onRefresh, isRefreshing }) => (
         <FlatList
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1 }}
           data={conversations}
           keyExtractor={(item) => item.conversationId}
           renderItem={({ item }) => (
