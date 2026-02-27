@@ -263,12 +263,13 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
 
   return (
     <View className={cn('flex-1', className)}>
-      {/* Card stack */}
-      <View className="flex-1 items-center justify-center px-4">
+      {/* Card stack — both cards share identical absolute layout so
+           the next→current promotion never changes the layout box. */}
+      <View className="relative flex-1 px-4 py-2">
         {/* Next card (behind) */}
         {nextListing && (
           <Animated.View
-            className="absolute inset-0"
+            className="absolute inset-x-4 bottom-2 top-2"
             style={nextCardStyle}
           >
             <SwipeCard key={nextListing.id} listing={nextListing} />
@@ -278,7 +279,7 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
         {/* Current card (front) */}
         <GestureDetector gesture={panGesture}>
           <Animated.View
-            className="w-full flex-1"
+            className="absolute inset-x-4 bottom-2 top-2"
             style={cardAnimatedStyle}
           >
             <SwipeCard key={currentListing.id} listing={currentListing} onOpenDetail={handleOpenDetail} />
