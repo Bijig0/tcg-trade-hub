@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { listingKeys } from '../../queryKeys';
+import { devEmitter, createTraceId } from '@/services/devLiveEmitter/devLiveEmitter';
 
 type RespondInput = {
   offerId: string;
@@ -32,6 +33,13 @@ const useRespondToOffer = () => {
 
   return useMutation<RespondResult, Error, RespondInput>({
     mutationFn: async ({ offerId, listingId, action }) => {
+      const pipelineId = action === 'accepted' ? 'pipeline:acceptOffer' : 'pipeline:declineOffer';
+      const scoped = __DEV__
+        ? devEmitter.forPath(pipelineId, createTraceId(), `mobile:${action}Offer`)
+        : undefined;
+
+      scoped?.(0, 'started');
+
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -39,31 +47,38 @@ const useRespondToOffer = () => {
 
       if (!userId) throw new Error('Not authenticated');
 
-      if (action === 'accepted') {
-        const { data, error } = await supabase.rpc('accept_offer_v1', {
+      try {
+        if (action === 'accepted') {
+          const { data, error } = await supabase.rpc('accept_offer_v1', {
+            p_offer_id: offerId,
+            p_listing_id: listingId,
+            p_user_id: userId,
+          });
+
+          if (error) throw error;
+
+          const result = data as { match_id: string; conversation_id: string };
+          scoped?.(0, 'success');
+          return {
+            match_id: result.match_id,
+            conversation_id: result.conversation_id,
+          };
+        }
+
+        // Decline
+        const { error } = await supabase.rpc('decline_offer_v1', {
           p_offer_id: offerId,
-          p_listing_id: listingId,
           p_user_id: userId,
         });
 
         if (error) throw error;
 
-        const result = data as { match_id: string; conversation_id: string };
-        return {
-          match_id: result.match_id,
-          conversation_id: result.conversation_id,
-        };
+        scoped?.(0, 'success');
+        return { match_id: null, conversation_id: null };
+      } catch (err) {
+        scoped?.(0, 'error', { message: (err as Error).message });
+        throw err;
       }
-
-      // Decline
-      const { error } = await supabase.rpc('decline_offer_v1', {
-        p_offer_id: offerId,
-        p_user_id: userId,
-      });
-
-      if (error) throw error;
-
-      return { match_id: null, conversation_id: null };
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: listingKeys.offers(variables.listingId) });

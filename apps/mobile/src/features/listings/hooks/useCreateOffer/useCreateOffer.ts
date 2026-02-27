@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { listingKeys } from '../../queryKeys';
 import type { SelectedCard } from '../../schemas';
+import { devEmitter, createTraceId } from '@/services/devLiveEmitter/devLiveEmitter';
 
 type CreateOfferInput = {
   listingId: string;
@@ -26,6 +27,12 @@ const useCreateOffer = () => {
 
   return useMutation<CreateOfferResult, Error, CreateOfferInput>({
     mutationFn: async ({ listingId, selectedCards, cashAmount, message }) => {
+      const scoped = __DEV__
+        ? devEmitter.forPath('pipeline:createOffer', createTraceId(), 'mobile:createOffer')
+        : undefined;
+
+      scoped?.(0, 'started');
+
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -45,17 +52,23 @@ const useCreateOffer = () => {
         quantity: 1,
       }));
 
-      const { data, error } = await supabase.rpc('create_offer_v1', {
-        p_listing_id: listingId,
-        p_offerer_id: user.id,
-        p_cash_amount: cashAmount,
-        p_message: message ?? '',
-        p_items: JSON.stringify(items),
-      });
+      try {
+        const { data, error } = await supabase.rpc('create_offer_v1', {
+          p_listing_id: listingId,
+          p_offerer_id: user.id,
+          p_cash_amount: cashAmount,
+          p_message: message ?? '',
+          p_items: JSON.stringify(items),
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      return data as CreateOfferResult;
+        scoped?.(0, 'success');
+        return data as CreateOfferResult;
+      } catch (err) {
+        scoped?.(0, 'error', { message: (err as Error).message });
+        throw err;
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: listingKeys.offers(variables.listingId) });

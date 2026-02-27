@@ -1,6 +1,7 @@
 /**
  * Node.js-compatible graph API server.
  * Serves the same endpoints as flow-graph's Bun server so GraphViewer works.
+ * Includes live event ingestion, WebSocket broadcast, and Maestro manifest.
  */
 import { createServer } from "node:http";
 import {
@@ -15,12 +16,43 @@ import {
   listAnnotations,
   upsertAnnotation,
   deleteAnnotation,
+  createLiveEventStore,
 } from "flow-graph";
+import { WebSocketServer, type WebSocket } from "ws";
+import { buildMaestroManifest } from "./maestroManifest";
 
 const PORT = Number(process.env.GRAPH_PORT) || 4243;
 const DB_PATH = process.env.GRAPH_DB_PATH;
 
 const db = openDb(DB_PATH);
+
+// ---------------------------------------------------------------------------
+// Live event store + WebSocket
+// ---------------------------------------------------------------------------
+
+const liveEvents = createLiveEventStore(500);
+const wsClients = new Set<WebSocket>();
+
+liveEvents.subscribe((event) => {
+  const payload = JSON.stringify(event);
+  wsClients.forEach((ws) => {
+    try {
+      ws.send(payload);
+    } catch {
+      // ignore send errors on stale sockets
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Maestro manifest (built once at startup)
+// ---------------------------------------------------------------------------
+
+const maestroManifest = buildMaestroManifest();
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 const json = (data: unknown, status = 200) =>
   ({ body: JSON.stringify(data, null, 2), status });
@@ -38,6 +70,10 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
+
+// ---------------------------------------------------------------------------
+// HTTP server
+// ---------------------------------------------------------------------------
 
 const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);
@@ -58,7 +94,43 @@ const server = createServer(async (req, res) => {
   try {
     // ---- Health ----
     if (url.pathname === "/api/health") {
-      respond(json({ ok: true, timestamp: Date.now() }));
+      respond(json({ ok: true, timestamp: Date.now(), wsClients: wsClients.size }));
+      return;
+    }
+
+    // ---- Live Events API ----
+    if (url.pathname === "/api/events" && method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      const { pathId, stepIndex, status, traceId } = body;
+      if (!pathId || stepIndex == null || !status || !traceId) {
+        respond(json({ error: "Missing required fields: pathId, stepIndex, status, traceId" }, 400));
+        return;
+      }
+      const event = {
+        pathId,
+        stepIndex: Number(stepIndex),
+        status,
+        traceId,
+        timestamp: body.timestamp ?? Date.now(),
+        operationId: body.operationId,
+        message: body.message,
+        caller: body.caller,
+      };
+      liveEvents.add(event);
+      respond(json({ ok: true }, 201));
+      return;
+    }
+
+    if (url.pathname === "/api/events/recent" && method === "GET") {
+      const limit = Number(url.searchParams.get("limit")) || 100;
+      respond(json(liveEvents.getRecent(limit)));
+      return;
+    }
+
+    const traceMatch = url.pathname.match(/^\/api\/events\/trace\/(.+)$/);
+    if (traceMatch && method === "GET") {
+      const traceId = decodeURIComponent(traceMatch[1]);
+      respond(json(liveEvents.getByTrace(traceId)));
       return;
     }
 
@@ -155,6 +227,21 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    // ---- Maestro Manifest API ----
+    if (url.pathname === "/api/maestro/manifest" && method === "GET") {
+      respond(json(maestroManifest));
+      return;
+    }
+
+    if (url.pathname === "/api/maestro/coverage" && method === "GET") {
+      const allPathIds = listPaths(db).map((p: { id: string }) => p.id);
+      const coveredIds = new Set(maestroManifest.coverage.map((c) => c.pathId));
+      const covered = allPathIds.filter((id: string) => coveredIds.has(id));
+      const uncovered = allPathIds.filter((id: string) => !coveredIds.has(id));
+      respond(json({ covered, uncovered, total: allPathIds.length }));
+      return;
+    }
+
     // ---- 404 ----
     respond(json({ error: "Not found", path: url.pathname }, 404));
   } catch (err) {
@@ -163,6 +250,29 @@ const server = createServer(async (req, res) => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// WebSocket upgrade on /ws/live
+// ---------------------------------------------------------------------------
+
+const wss = new WebSocketServer({ noServer: true });
+
+server.on("upgrade", (req, socket, head) => {
+  const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);
+  if (url.pathname === "/ws/live") {
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      wsClients.add(ws);
+      ws.on("close", () => wsClients.delete(ws));
+      ws.on("error", () => wsClients.delete(ws));
+    });
+  } else {
+    socket.destroy();
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Start
+// ---------------------------------------------------------------------------
+
 server.listen(PORT, () => {
   console.log(`Graph API server running at http://localhost:${PORT}`);
   console.log(`  JSON:      http://localhost:${PORT}/api/graph.json`);
@@ -170,4 +280,7 @@ server.listen(PORT, () => {
   console.log(`  Paths API: http://localhost:${PORT}/api/paths`);
   console.log(`  Registry:  http://localhost:${PORT}/api/registry`);
   console.log(`  Health:    http://localhost:${PORT}/api/health`);
+  console.log(`  Live WS:   ws://localhost:${PORT}/ws/live`);
+  console.log(`  Events:    http://localhost:${PORT}/api/events (POST)`);
+  console.log(`  Maestro:   http://localhost:${PORT}/api/maestro/manifest`);
 });

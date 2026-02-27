@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { GraphViewer } from 'flow-graph/react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChatPanel } from '@/features/chat';
+import TestCoverage from '@/features/maestro/components/TestCoverage/TestCoverage';
 
 const GRAPH_SERVER_URL = 'http://localhost:4243';
 const HEALTH_POLL_INTERVAL = 5_000;
@@ -101,10 +102,18 @@ export const Route = createFileRoute('/_authed/dashboard')({
 function AdminDashboard() {
   const { health, retry } = useGraphHealth();
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isTestCoverageOpen, setIsTestCoverageOpen] = useState(false);
 
   const toggleChat = useCallback(() => {
     setIsChatOpen((prev) => !prev);
     // Trigger resize so Cytoscape reflows to fit the new container width
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+  }, []);
+
+  const toggleTestCoverage = useCallback(() => {
+    setIsTestCoverageOpen((prev) => !prev);
     requestAnimationFrame(() => {
       window.dispatchEvent(new Event('resize'));
     });
@@ -120,8 +129,9 @@ function AdminDashboard() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <HealthBar health={health} onRetry={retry} />
+      <HealthBar health={health} onRetry={retry} onToggleTestCoverage={toggleTestCoverage} />
       <div className="flex flex-1 overflow-hidden">
+        <TestCoverage isOpen={isTestCoverageOpen} onToggle={toggleTestCoverage} />
         <div className="flex-1 overflow-hidden">
           <GraphViewer
             serverUrl={GRAPH_SERVER_URL}
@@ -210,9 +220,9 @@ const ErrorState = ({ error, onRetry }: ErrorStateProps) => (
   </div>
 );
 
-type HealthBarProps = { health: HealthData; onRetry: () => void };
+type HealthBarProps = { health: HealthData; onRetry: () => void; onToggleTestCoverage?: () => void };
 
-const HealthBar = ({ health, onRetry }: HealthBarProps) => {
+const HealthBar = ({ health, onRetry, onToggleTestCoverage }: HealthBarProps) => {
   const isStale =
     health.lastChecked !== null &&
     Date.now() - health.lastChecked > HEALTH_POLL_INTERVAL * 3;
@@ -250,6 +260,15 @@ const HealthBar = ({ health, onRetry }: HealthBarProps) => {
           <span className="text-xs text-muted-foreground">
             checked {formatAgo(health.lastChecked)}
           </span>
+        )}
+        {onToggleTestCoverage && (
+          <button
+            onClick={onToggleTestCoverage}
+            className="rounded bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-accent"
+            title="Toggle Maestro test coverage panel"
+          >
+            E2E Coverage
+          </button>
         )}
         {health.status !== 'healthy' && (
           <button

@@ -1,4 +1,6 @@
 appId: com.tcgtradehub.app
+env:
+  GRAPH_PATH_ID: "state:listing"
 ---
 - launchApp:
     clearState: true
