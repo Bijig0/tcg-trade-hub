@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { PreRegistrationForm } from '@/components/PreRegistrationForm';
 import { Navbar } from '@/components/landing/Navbar';
 import { Hero } from '@/components/landing/Hero';
 import { SocialProofBar } from '@/components/landing/SocialProofBar';
@@ -150,20 +149,6 @@ function LandingPage() {
       <TrustSafety />
       <FaqSection />
 
-      {/* Registration */}
-      <section id="register" className="scroll-mt-20 px-4 py-16 lg:py-24">
-        <div className="mx-auto max-w-3xl">
-          <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
-            <h2 className="mb-1 text-center text-2xl font-bold text-foreground">
-              Be First in Your Area
-            </h2>
-            <p className="mb-8 text-center text-muted-foreground">
-              Pre-register with a card you want to trade. Your listing goes live on day one.
-            </p>
-            <PreRegistrationForm />
-          </div>
-        </div>
-      </section>
 
       <Footer />
       <JsonLd data={softwareAppJsonLd} />

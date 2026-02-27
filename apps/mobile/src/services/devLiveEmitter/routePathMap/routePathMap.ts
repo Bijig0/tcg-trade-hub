@@ -55,7 +55,12 @@ const ROUTE_PATH_MAP: Record<string, RoutePathMapping> = {
 
 /** Check if a segment looks like a dynamic value (UUID, number, etc.) */
 const isDynamicSegment = (seg: string): boolean =>
-  /^[0-9a-f-]{8,}$/i.test(seg) || /^\d+$/.test(seg);
+  // UUID pattern (hex + dashes, 8+ chars)
+  /^[0-9a-f-]{8,}$/i.test(seg) ||
+  // Pure number
+  /^\d+$/.test(seg) ||
+  // UUID-like with standard 8-4-4-4-12 structure
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(seg);
 
 /**
  * For dynamic segments, guess the param name based on the preceding route segment.

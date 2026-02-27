@@ -40,7 +40,7 @@ describe('resolveSegments', () => {
 
   it('resolves chat with conversationId', () => {
     expect(
-      resolveSegments(['(tabs)', '(messages)', 'chat', 'conv-uuid-1234-5678-abcd-ef1234567890']),
+      resolveSegments(['(tabs)', '(messages)', 'chat', 'f47ac10b-58cc-4372-a567-0e02b2c3d479']),
     ).toEqual({
       pathId: 'state:offer',
       label: 'Chat Thread',
