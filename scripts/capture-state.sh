@@ -9,6 +9,7 @@
 set -euo pipefail
 
 SKILL_DIR="$HOME/.claude/skills/ios-simulator-skill/ios-simulator-skill/scripts"
+VENV_PYTHON="$HOME/.claude/skills/ios-simulator-skill/.venv/bin/python3"
 OUTPUT_DIR="apps/mobile/e2e/.state-captures"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
@@ -19,12 +20,12 @@ echo "=== Capturing iOS Simulator State ==="
 
 # 1. Accessibility tree (screen_mapper)
 echo "  [1/3] Mapping UI elements..."
-python3 "$SKILL_DIR/screen_mapper.py" \
+"$VENV_PYTHON" "$SKILL_DIR/screen_mapper.py" \
   ${1:+--json} > "$OUTPUT_DIR/ui-tree-$TIMESTAMP.txt" 2>&1
 
 # 2. Full app state
 echo "  [2/3] Capturing app state..."
-python3 "$SKILL_DIR/app_state_capture.py" \
+"$VENV_PYTHON" "$SKILL_DIR/app_state_capture.py" \
   --output "$OUTPUT_DIR" \
   --inline > "$OUTPUT_DIR/app-state-$TIMESTAMP.txt" 2>&1
 
