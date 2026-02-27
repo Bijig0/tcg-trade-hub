@@ -132,6 +132,10 @@ function AdminDashboard() {
 
   const controlledPath =
     mobileLink.linkedSimulator && mobileLink.activePath ? mobileLink.activePath : undefined;
+  const controlledStep =
+    mobileLink.linkedSimulator && mobileLink.activeStep != null
+      ? mobileLink.activeStep
+      : undefined;
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -148,6 +152,7 @@ function AdminDashboard() {
             serverUrl={GRAPH_SERVER_URL}
             height="calc(100dvh - 41px)"
             activePath={controlledPath}
+            activeStep={controlledStep}
           />
         </div>
         <ChatPanel isOpen={isChatOpen} onToggle={toggleChat} />

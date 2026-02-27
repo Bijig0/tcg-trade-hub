@@ -367,9 +367,65 @@ describe('useMobileLink', () => {
       expect(result.current.activePath).toBe('state:listing');
       expect(result.current.lastEvent).toEqual({
         pathId: 'state:listing',
+        stepIndex: 0,
         message: 'Listings',
         timestamp: 1000,
       });
+    });
+
+    it('sets activeStep from WS event stepIndex', async () => {
+      const { result } = renderHook(() => useMobileLink());
+      await setupLinked(result);
+
+      act(() =>
+        simulateMessage({
+          pathId: 'state:listing',
+          stepIndex: 1,
+          caller: 'mobile:nav',
+          message: 'Listing Detail',
+          timestamp: 1000,
+        }),
+      );
+
+      expect(result.current.activePath).toBe('state:listing');
+      expect(result.current.activeStep).toBe(1);
+    });
+
+    it('defaults activeStep to 0 when stepIndex omitted', async () => {
+      const { result } = renderHook(() => useMobileLink());
+      await setupLinked(result);
+
+      act(() =>
+        simulateMessage({
+          pathId: 'state:offer',
+          caller: 'mobile:nav',
+          message: 'Messages',
+          timestamp: 1000,
+        }),
+      );
+
+      expect(result.current.activeStep).toBe(0);
+    });
+
+    it('clears activeStep on unlink', async () => {
+      const { result } = renderHook(() => useMobileLink());
+      await setupLinked(result);
+
+      act(() =>
+        simulateMessage({
+          pathId: 'state:listing',
+          stepIndex: 2,
+          caller: 'mobile:nav',
+          message: 'Edit Listing',
+          timestamp: 1000,
+        }),
+      );
+
+      expect(result.current.activeStep).toBe(2);
+
+      act(() => result.current.unlink());
+
+      expect(result.current.activeStep).toBeNull();
     });
 
     it('ignores events without caller: mobile:nav', async () => {

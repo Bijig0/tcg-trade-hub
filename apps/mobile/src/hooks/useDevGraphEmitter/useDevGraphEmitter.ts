@@ -1,33 +1,33 @@
 /**
- * Dev-only hook that emits graph events when the user navigates between tabs.
+ * Dev-only hook that emits graph events when the user navigates within the app.
  *
- * Watches `useSegments()` from Expo Router and emits a "started" event
- * on the primary pathId for the current tab. Only active when __DEV__ is true.
+ * Watches `useSegments()` from Expo Router and resolves the full segment path
+ * to a graph pathId + stepIndex, then emits a "started" event on the graph server.
+ * Only active when __DEV__ is true.
  */
 import { useEffect, useRef } from 'react';
 import { useSegments } from 'expo-router';
 import { devEmitter, createTraceId } from '@/services/devLiveEmitter/devLiveEmitter';
-import { ROUTE_PATH_MAP } from '@/services/devLiveEmitter/routePathMap';
+import { resolveSegments } from '@/services/devLiveEmitter/routePathMap/routePathMap';
 
 const useDevGraphEmitter = (): void => {
   const segments = useSegments();
-  const prevTabRef = useRef<string | null>(null);
+  const prevKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!__DEV__) return;
 
-    // The tab segment is the second element: ['(tabs)', '(listings)', ...]
-    const tabSegment = segments[1] as string | undefined;
-    if (!tabSegment || tabSegment === prevTabRef.current) return;
+    // Build a key from all segments to detect any navigation change
+    const key = segments.join('/');
+    if (key === prevKeyRef.current) return;
+    prevKeyRef.current = key;
 
-    prevTabRef.current = tabSegment;
-
-    const mapping = ROUTE_PATH_MAP[tabSegment];
+    const mapping = resolveSegments(segments);
     if (!mapping) return;
 
     const traceId = createTraceId();
     const scoped = devEmitter.forPath(mapping.pathId, traceId, 'mobile:nav');
-    scoped(0, 'started', { message: `Navigated to ${mapping.label}` });
+    scoped(mapping.stepIndex, 'started', { message: mapping.label });
   }, [segments]);
 };
 

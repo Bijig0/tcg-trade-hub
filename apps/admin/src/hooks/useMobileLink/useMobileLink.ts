@@ -25,6 +25,7 @@ const ErrorResponseSchema = z.object({
 
 const MobileLinkEventSchema = z.object({
   pathId: z.string().min(1),
+  stepIndex: z.number().int().min(0).optional(),
   caller: z.literal('mobile:nav'),
   message: z.string().optional(),
   timestamp: z.number().optional(),
@@ -32,6 +33,7 @@ const MobileLinkEventSchema = z.object({
 
 type MobileLinkEvent = {
   pathId: string;
+  stepIndex: number;
   message: string;
   timestamp: number;
 };
@@ -53,6 +55,7 @@ type UseMobileLinkReturn = {
   isBooting: boolean;
 
   activePath: string | null;
+  activeStep: number | null;
   lastEvent: MobileLinkEvent | null;
   connected: boolean;
 };
@@ -77,6 +80,7 @@ const useMobileLink = (): UseMobileLinkReturn => {
   // WebSocket state
   const [connected, setConnected] = useState(false);
   const [activePath, setActivePath] = useState<string | null>(null);
+  const [activeStep, setActiveStep] = useState<number | null>(null);
   const [lastEvent, setLastEvent] = useState<MobileLinkEvent | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -164,11 +168,13 @@ const useMobileLink = (): UseMobileLinkReturn => {
 
         const parsed: MobileLinkEvent = {
           pathId: result.data.pathId,
+          stepIndex: result.data.stepIndex ?? 0,
           message: result.data.message ?? result.data.pathId,
           timestamp: result.data.timestamp ?? Date.now(),
         };
 
         setActivePath(parsed.pathId);
+        setActiveStep(parsed.stepIndex);
         setLastEvent(parsed);
       } catch {
         /* ignore parse errors */
@@ -216,6 +222,7 @@ const useMobileLink = (): UseMobileLinkReturn => {
     cleanupWs();
     setLinkedSimulator(null);
     setActivePath(null);
+    setActiveStep(null);
     setLastEvent(null);
   }, [cleanupWs]);
 
@@ -232,6 +239,7 @@ const useMobileLink = (): UseMobileLinkReturn => {
     unlink,
     isBooting,
     activePath,
+    activeStep,
     lastEvent,
     connected,
   };
