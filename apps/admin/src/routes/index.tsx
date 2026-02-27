@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { GraphViewer } from 'flow-graph/react';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { ChatPanel } from '@/features/chat';
 
 const GRAPH_SERVER_URL = 'http://localhost:4243';
 const HEALTH_POLL_INTERVAL = 5_000;
@@ -99,6 +100,15 @@ export const Route = createFileRoute('/')({
 
 function AdminHome() {
   const { health, retry } = useGraphHealth();
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  const toggleChat = useCallback(() => {
+    setIsChatOpen((prev) => !prev);
+    // Trigger resize so Cytoscape reflows to fit the new container width
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+  }, []);
 
   if (health.status === 'connecting') {
     return <ConnectingState />;
@@ -111,7 +121,15 @@ function AdminHome() {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <HealthBar health={health} onRetry={retry} />
-      <GraphViewer serverUrl={GRAPH_SERVER_URL} height="calc(100dvh - 41px)" />
+      <div className="flex flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden">
+          <GraphViewer
+            serverUrl={GRAPH_SERVER_URL}
+            height="calc(100dvh - 41px)"
+          />
+        </div>
+        <ChatPanel isOpen={isChatOpen} onToggle={toggleChat} />
+      </div>
     </div>
   );
 }
