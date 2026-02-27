@@ -112,7 +112,7 @@ const PreviousOfferSheet = forwardRef<BottomSheet, PreviousOfferSheetProps>(
               totalValue={offeringTotal}
               variant="their"
               cashAmount={offeringCash}
-              note={previousOffer.offeringNote ?? undefined}
+              notes={previousOffer.offeringNotes}
               onCardPress={handleCardPress}
             />
 
@@ -134,7 +134,7 @@ const PreviousOfferSheet = forwardRef<BottomSheet, PreviousOfferSheetProps>(
               totalValue={requestingTotal}
               variant="my"
               cashAmount={requestingCash}
-              note={previousOffer.requestingNote ?? undefined}
+              notes={previousOffer.requestingNotes}
               onCardPress={handleCardPress}
             />
 

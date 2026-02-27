@@ -19,7 +19,8 @@ import CardPickerModal from '../CardPickerModal/CardPickerModal';
 import ValueComparisonBar from '../ValueComparisonBar/ValueComparisonBar';
 import TradeActionFooter from '../TradeActionFooter/TradeActionFooter';
 import PreviousOfferSheet from '../PreviousOfferSheet/PreviousOfferSheet';
-import type { CardOfferPayload } from '@tcg-trade-hub/database';
+import type { CardOfferPayload, NoteEntry } from '@tcg-trade-hub/database';
+import useOfferNotes from '../../hooks/useOfferNotes/useOfferNotes';
 
 export type OfferDetailScreenProps = {
   conversationId: string;
@@ -42,8 +43,9 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
   const [pickerSide, setPickerSide] = useState<'my' | 'their' | null>(null);
   const [myCash, setMyCash] = useState(0);
   const [theirCash, setTheirCash] = useState(0);
-  const [myNote, setMyNote] = useState('');
-  const [theirNote, setTheirNote] = useState('');
+  const [myNotes, setMyNotes] = useState<NoteEntry[]>([]);
+  const [theirNotes, setTheirNotes] = useState<NoteEntry[]>([]);
+  const { data: offerNotesData } = useOfferNotes(conversationId);
 
   const isEditable = tradeContext
     ? EDITABLE_STATUSES.has(tradeContext.negotiationStatus)
@@ -74,6 +76,21 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
       setTheirCash(direction === 'offering' ? amount : 0);
     }
   }, [tradeContext, isOfferSender]);
+
+  // Seed notes from latest offer — perspective swap:
+  // The payload stores notes from the sender's perspective (offering = sender's side).
+  // If current user IS the offer sender, my = offering, their = requesting.
+  // If current user is NOT the sender, my = requesting, their = offering.
+  useEffect(() => {
+    if (!offerNotesData) return;
+    if (isOfferSender) {
+      setMyNotes(offerNotesData.offeringNotes);
+      setTheirNotes(offerNotesData.requestingNotes);
+    } else {
+      setMyNotes(offerNotesData.requestingNotes);
+      setTheirNotes(offerNotesData.offeringNotes);
+    }
+  }, [offerNotesData, isOfferSender]);
 
   // Derive other user's ID
   const otherUserId = useMemo(() => {
@@ -225,6 +242,40 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
     [router],
   );
 
+  const handleAddMyNote = useCallback(
+    (text: string) => {
+      if (!user || !myProfile) return;
+      setMyNotes((prev) => [
+        ...prev,
+        {
+          author_id: user.id,
+          author_name: myProfile.displayName,
+          author_avatar_url: myProfile.avatarUrl,
+          text,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+    },
+    [user, myProfile],
+  );
+
+  const handleAddTheirNote = useCallback(
+    (text: string) => {
+      if (!user || !myProfile) return;
+      setTheirNotes((prev) => [
+        ...prev,
+        {
+          author_id: user.id,
+          author_name: myProfile.displayName,
+          author_avatar_url: myProfile.avatarUrl,
+          text,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+    },
+    [user, myProfile],
+  );
+
   const handlePropose = useCallback(() => {
     if (!mySide) return;
 
@@ -244,8 +295,8 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
       offering: myCards,
       requesting: theirCards,
       ...cashFields,
-      ...(myNote.trim() && { offering_note: myNote.trim() }),
-      ...(theirNote.trim() && { requesting_note: theirNote.trim() }),
+      ...(myNotes.length > 0 && { offering_notes: myNotes }),
+      ...(theirNotes.length > 0 && { requesting_notes: theirNotes }),
     };
 
     sendMessage.mutate(
@@ -259,7 +310,7 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
         onSuccess: () => router.back(),
       },
     );
-  }, [conversationId, editingMyItems, editingTheirItems, mySide, theirSide, sendMessage, router, myCash, theirCash, myNote, theirNote]);
+  }, [conversationId, editingMyItems, editingTheirItems, mySide, theirSide, sendMessage, router, myCash, theirCash, myNotes, theirNotes]);
 
   const handleAccept = useCallback(() => {
     // TODO: Implement accept offer via card_offer_response message
@@ -399,8 +450,9 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
           onRemoveItem={isEditable ? handleRemoveMyItem : undefined}
           onChangeCash={isEditable ? setMyCash : undefined}
           userProfile={myProfile}
-          note={myNote}
-          onChangeNote={isEditable ? setMyNote : undefined}
+          notes={myNotes}
+          onAddNote={isEditable ? handleAddMyNote : undefined}
+          currentUserId={user?.id}
           onCardPress={handleCardPress}
         />
 
@@ -428,9 +480,10 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
           onRemoveItem={isEditable ? handleRemoveTheirItem : undefined}
           onChangeCash={isEditable ? setTheirCash : undefined}
           userProfile={theirProfile}
+          notes={theirNotes}
+          onAddNote={isEditable ? handleAddTheirNote : undefined}
+          currentUserId={user?.id}
           onCardPress={handleCardPress}
-          note={theirNote}
-          onChangeNote={isEditable ? setTheirNote : undefined}
         />
 
         {/* Value comparison bar */}

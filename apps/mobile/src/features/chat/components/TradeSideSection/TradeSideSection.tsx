@@ -3,7 +3,9 @@ import { View, Text, Pressable, TextInput } from 'react-native';
 import { Banknote, Check, Plus, Star, X } from 'lucide-react-native';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import TradeItemRow from '../TradeItemRow/TradeItemRow';
+import NotesSection from '../NotesSection/NotesSection';
 import type { TradeContextItem, TradeUserProfile } from '../../hooks/useTradeContext/useTradeContext';
+import type { NoteEntry } from '@tcg-trade-hub/database';
 
 export type TradeSideSectionProps = {
   label: string;
@@ -17,8 +19,9 @@ export type TradeSideSectionProps = {
   onRemoveItem?: (index: number) => void;
   onChangeCash?: (amount: number) => void;
   userProfile?: TradeUserProfile | null;
-  note?: string;
-  onChangeNote?: (text: string) => void;
+  notes?: NoteEntry[];
+  onAddNote?: (text: string) => void;
+  currentUserId?: string;
   onCardPress?: (item: TradeContextItem) => void;
 };
 
@@ -60,8 +63,9 @@ const TradeSideSection = ({
   onRemoveItem,
   onChangeCash,
   userProfile,
-  note,
-  onChangeNote,
+  notes,
+  onAddNote,
+  currentUserId,
   onCardPress,
 }: TradeSideSectionProps) => {
   const styles = VARIANT_STYLES[variant];
@@ -242,26 +246,13 @@ const TradeSideSection = ({
         </View>
       ) : null}
 
-      {/* Note */}
-      {onChangeNote ? (
-        <View className="mx-4 mb-3 gap-1">
-          <Text className="text-xs font-semibold uppercase text-muted-foreground">Note</Text>
-          <TextInput
-            className="min-h-[48px] rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-            value={note}
-            onChangeText={onChangeNote}
-            placeholder={variant === 'my' ? 'Add a note about your cards...' : 'Add a note about what you want...'}
-            placeholderTextColor="#9ca3af"
-            multiline
-            textAlignVertical="top"
-            maxLength={500}
-          />
-        </View>
-      ) : note ? (
-        <View className="mx-4 mb-3 rounded-lg bg-accent/50 px-3 py-2">
-          <Text className="text-xs italic text-muted-foreground">&quot;{note}&quot;</Text>
-        </View>
-      ) : null}
+      {/* Notes */}
+      <NotesSection
+        notes={notes ?? []}
+        isEditable={!!onAddNote}
+        onAddNote={onAddNote}
+        currentUserId={currentUserId}
+      />
 
       {/* Total value — prominent */}
       <View className={`${styles.totalBg} px-4 py-3`}>

@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { chatKeys } from '../../queryKeys';
-import type { CardOfferPayload } from '@tcg-trade-hub/database';
+import normalizeOfferNotes from '../../utils/normalizeOfferNotes/normalizeOfferNotes';
+import type { CardOfferPayload, NoteEntry } from '@tcg-trade-hub/database';
 
 export type PreviousOffer = {
   offering: CardOfferPayload['offering'];
@@ -10,6 +11,8 @@ export type PreviousOffer = {
   cashDirection: 'offering' | 'requesting' | null;
   offeringNote: string | null;
   requestingNote: string | null;
+  offeringNotes: NoteEntry[];
+  requestingNotes: NoteEntry[];
   senderDisplayName: string;
   sentAt: string;
 };
@@ -31,7 +34,8 @@ const usePreviousOffer = (conversationId: string) => {
           created_at,
           sender:users!messages_sender_id_fkey (
             id,
-            display_name
+            display_name,
+            avatar_url
           )
         `,
         )
@@ -46,7 +50,17 @@ const usePreviousOffer = (conversationId: string) => {
       // Index 0 = most recent (current active offer), index 1 = previous offer
       const prev = data[1]!;
       const payload = prev.payload as CardOfferPayload;
-      const sender = prev.sender as unknown as { id: string; display_name: string };
+      const sender = prev.sender as unknown as {
+        id: string;
+        display_name: string;
+        avatar_url: string | null;
+      };
+
+      const normalized = normalizeOfferNotes(payload, {
+        id: sender.id,
+        name: sender.display_name,
+        avatarUrl: sender.avatar_url,
+      });
 
       return {
         offering: payload.offering ?? [],
@@ -55,6 +69,8 @@ const usePreviousOffer = (conversationId: string) => {
         cashDirection: payload.cash_direction ?? null,
         offeringNote: payload.offering_note ?? payload.note ?? null,
         requestingNote: payload.requesting_note ?? null,
+        offeringNotes: normalized.offeringNotes,
+        requestingNotes: normalized.requestingNotes,
         senderDisplayName: sender.display_name,
         sentAt: prev.created_at,
       };

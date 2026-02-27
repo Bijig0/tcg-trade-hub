@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { Navbar } from '@/components/landing/Navbar';
 import { Hero } from '@/components/landing/Hero';
 import { SocialProofBar } from '@/components/landing/SocialProofBar';
@@ -149,6 +149,24 @@ function LandingPage() {
       <TrustSafety />
       <FaqSection />
 
+
+      {/* Bottom CTA */}
+      <section className="px-4 py-16 text-center lg:py-24">
+        <div className="mx-auto max-w-2xl">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Ready to start trading?
+          </h2>
+          <p className="mt-3 text-lg text-muted-foreground">
+            Try the experience and sign up for early access in under a minute.
+          </p>
+          <Link
+            to="/get-started"
+            className="mt-6 inline-block rounded-xl bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Get Started
+          </Link>
+        </div>
+      </section>
 
       <Footer />
       <JsonLd data={softwareAppJsonLd} />

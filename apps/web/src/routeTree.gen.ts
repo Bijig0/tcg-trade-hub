@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as GetStartedRouteImport } from './routes/get-started'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiRpcSplatRouteImport } from './routes/api/rpc/$'
@@ -23,6 +24,11 @@ const TermsRoute = TermsRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GetStartedRoute = GetStartedRouteImport.update({
+  id: '/get-started',
+  path: '/get-started',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRoute = DemoRouteImport.update({
@@ -44,6 +50,7 @@ const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
+  '/get-started': typeof GetStartedRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
+  '/get-started': typeof GetStartedRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
@@ -59,21 +67,36 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
+  '/get-started': typeof GetStartedRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demo' | '/privacy' | '/terms' | '/api/rpc/$'
+  fullPaths:
+    | '/'
+    | '/demo'
+    | '/get-started'
+    | '/privacy'
+    | '/terms'
+    | '/api/rpc/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo' | '/privacy' | '/terms' | '/api/rpc/$'
-  id: '__root__' | '/' | '/demo' | '/privacy' | '/terms' | '/api/rpc/$'
+  to: '/' | '/demo' | '/get-started' | '/privacy' | '/terms' | '/api/rpc/$'
+  id:
+    | '__root__'
+    | '/'
+    | '/demo'
+    | '/get-started'
+    | '/privacy'
+    | '/terms'
+    | '/api/rpc/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DemoRoute: typeof DemoRoute
+  GetStartedRoute: typeof GetStartedRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
@@ -93,6 +116,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/get-started': {
+      id: '/get-started'
+      path: '/get-started'
+      fullPath: '/get-started'
+      preLoaderRoute: typeof GetStartedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo': {
@@ -122,6 +152,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DemoRoute: DemoRoute,
+  GetStartedRoute: GetStartedRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,

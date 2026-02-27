@@ -40,17 +40,11 @@ export const Navbar = () => {
         {/* Right side */}
         <div className="flex items-center gap-3">
           <Link
-            to="/demo"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline"
-          >
-            Try Demo
-          </Link>
-          <a
-            href="#register"
+            to="/get-started"
             className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
-            Get Early Access
-          </a>
+            Get Started
+          </Link>
         </div>
       </div>
     </nav>

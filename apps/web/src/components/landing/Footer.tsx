@@ -20,10 +20,10 @@ export const Footer = () => (
           Privacy
         </Link>
         <Link
-          to="/demo"
+          to="/get-started"
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          Demo
+          Get Started
         </Link>
       </nav>
     </div>

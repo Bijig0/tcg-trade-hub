@@ -57,12 +57,12 @@ export const Hero = () => (
           No shipping fees. No scam risk. Meet collectors near you and trade face-to-face.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
-          <a
-            href="#register"
+          <Link
+            to="/get-started"
             className="inline-block rounded-xl bg-primary px-8 py-3.5 text-center text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
-            Get Early Access
-          </a>
+            Get Started
+          </Link>
           <a
             href="#how-it-works"
             className="inline-block rounded-xl border border-border px-8 py-3.5 text-center text-sm font-semibold text-foreground transition-colors hover:bg-accent"

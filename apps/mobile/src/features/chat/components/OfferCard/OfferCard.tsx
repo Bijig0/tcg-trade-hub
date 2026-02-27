@@ -112,12 +112,21 @@ const OfferCard = ({
             </View>
           ) : null}
 
-          {(payload.offering_note ?? payload.note) ? (
+          {/* Notes — new multi-author format shows counts, legacy shows inline quote */}
+          {payload.offering_notes && payload.offering_notes.length > 0 ? (
+            <Text className="mt-2 text-xs text-muted-foreground">
+              {payload.offering_notes.length} {payload.offering_notes.length === 1 ? 'note' : 'notes'} on offering
+            </Text>
+          ) : (payload.offering_note ?? payload.note) ? (
             <Text className="mt-2 text-xs italic text-muted-foreground">
               Offering: &quot;{payload.offering_note ?? payload.note}&quot;
             </Text>
           ) : null}
-          {payload.requesting_note ? (
+          {payload.requesting_notes && payload.requesting_notes.length > 0 ? (
+            <Text className="mt-1 text-xs text-muted-foreground">
+              {payload.requesting_notes.length} {payload.requesting_notes.length === 1 ? 'note' : 'notes'} on requesting
+            </Text>
+          ) : payload.requesting_note ? (
             <Text className="mt-1 text-xs italic text-muted-foreground">
               Requesting: &quot;{payload.requesting_note}&quot;
             </Text>
