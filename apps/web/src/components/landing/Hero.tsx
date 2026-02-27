@@ -17,7 +17,7 @@ const StaticChatPreview = () => (
       </div>
     </div>
     {/* Messages */}
-    <div className="flex-1 space-y-3 overflow-hidden p-4">
+    <div className="flex-1 space-y-3 overflow-hidden p-4 pb-8">
       <div className="mx-auto w-fit rounded-full bg-secondary px-3 py-1 text-[10px] text-muted-foreground">
         You matched with TraderMike
       </div>
