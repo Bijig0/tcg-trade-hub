@@ -1,6 +1,11 @@
 const { getDefaultConfig } = require('expo/metro-config');
 const { withNativeWind } = require('nativewind/metro');
-const withStorybook = require('@storybook/react-native/metro/withStorybook');
+let withStorybook;
+try {
+  withStorybook = require('@storybook/react-native/metro/withStorybook');
+} catch {
+  withStorybook = null;
+}
 const path = require('path');
 const { FileStore } = require('metro-cache');
 
@@ -26,7 +31,9 @@ config.cacheStores = [
 
 const nativeWindConfig = withNativeWind(config, { input: './src/global.css' });
 
-module.exports = withStorybook(nativeWindConfig, {
-  enabled: process.env.EXPO_PUBLIC_STORYBOOK_ENABLED === 'true',
-  configPath: path.resolve(projectRoot, '.rnstorybook'),
-});
+module.exports = withStorybook
+  ? withStorybook(nativeWindConfig, {
+      enabled: process.env.EXPO_PUBLIC_STORYBOOK_ENABLED === 'true',
+      configPath: path.resolve(projectRoot, '.rnstorybook'),
+    })
+  : nativeWindConfig;
