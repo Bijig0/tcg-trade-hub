@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
+import { AuthProvider } from '@/context/AuthContext';
 import globalsCss from '../styles/globals.css?url';
 
 const queryClient = new QueryClient({
@@ -34,7 +35,9 @@ function RootComponent() {
   return (
     <RootDocument>
       <QueryClientProvider client={queryClient}>
-        <Outlet />
+        <AuthProvider>
+          <Outlet />
+        </AuthProvider>
       </QueryClientProvider>
     </RootDocument>
   );
@@ -46,6 +49,8 @@ export const Route = createRootRoute({
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { title: 'TCG Trade Hub — Admin' },
+      { name: 'supabase-url', content: process.env.SUPABASE_URL ?? '' },
+      { name: 'supabase-anon-key', content: process.env.SUPABASE_ANON_KEY ?? '' },
     ],
     links: [{ rel: 'stylesheet', href: globalsCss }],
   }),

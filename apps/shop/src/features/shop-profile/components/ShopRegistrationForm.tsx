@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { client } from '@/lib/orpc';
+import { useAuth } from '@/context/AuthContext';
 import type { TcgType } from '@tcg-trade-hub/database';
 
 type ShopRegistrationFormProps = {
@@ -15,6 +16,7 @@ const TCG_OPTIONS: { value: TcgType; label: string }[] = [
 
 export const ShopRegistrationForm = ({ onSuccess }: ShopRegistrationFormProps) => {
   const queryClient = useQueryClient();
+  const { refreshSession } = useAuth();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
@@ -26,7 +28,9 @@ export const ShopRegistrationForm = ({ onSuccess }: ShopRegistrationFormProps) =
   const mutation = useMutation({
     mutationFn: (data: Parameters<typeof client.shop.register>[0]) =>
       client.shop.register(data),
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Refresh JWT so it contains the new shop_owner role
+      await refreshSession();
       queryClient.invalidateQueries({ queryKey: ['shop'] });
       onSuccess();
     },

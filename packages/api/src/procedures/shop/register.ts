@@ -22,5 +22,16 @@ export const register = os
       throw new Error(`Failed to register shop: ${error.message}`);
     }
 
+    // Grant shop_owner role (non-fatal — shop record exists regardless)
+    if (context.adminSupabase) {
+      const { error: roleError } = await context.adminSupabase.rpc('add_user_role', {
+        target_user_id: userId,
+        role_to_add: 'shop_owner',
+      });
+      if (roleError) {
+        console.error('[shop.register] Failed to grant shop_owner role:', roleError.message);
+      }
+    }
+
     return { shop: data };
   });
