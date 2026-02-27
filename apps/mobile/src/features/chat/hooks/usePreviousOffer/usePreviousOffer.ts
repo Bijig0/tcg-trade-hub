@@ -8,7 +8,8 @@ export type PreviousOffer = {
   requesting: CardOfferPayload['requesting'];
   cashAmount: number;
   cashDirection: 'offering' | 'requesting' | null;
-  note: string | null;
+  offeringNote: string | null;
+  requestingNote: string | null;
   senderDisplayName: string;
   sentAt: string;
 };

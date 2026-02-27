@@ -47,7 +47,7 @@ export const CreateOfferFormSchema = z.object({
   listingId: z.string().uuid(),
   selectedCards: z.array(SelectedCardSchema),
   cashAmount: z.string().default('0'),
-  message: z.string().max(500).nullable().optional(),
+  offeringNote: z.string().max(500).nullable().optional(),
 });
 
 export type CreateOfferForm = z.infer<typeof CreateOfferFormSchema>;

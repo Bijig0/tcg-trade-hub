@@ -8,7 +8,7 @@ type CreateOfferInput = {
   listingId: string;
   selectedCards: SelectedCard[];
   cashAmount: number;
-  message: string | null;
+  offeringNote: string | null;
 };
 
 type CreateOfferResult = {
@@ -26,7 +26,7 @@ const useCreateOffer = () => {
   const queryClient = useQueryClient();
 
   return useMutation<CreateOfferResult, Error, CreateOfferInput>({
-    mutationFn: async ({ listingId, selectedCards, cashAmount, message }) => {
+    mutationFn: async ({ listingId, selectedCards, cashAmount, offeringNote }) => {
       const scoped = __DEV__
         ? devEmitter.forPath('pipeline:createOffer', createTraceId(), 'mobile:createOffer')
         : undefined;
@@ -57,7 +57,7 @@ const useCreateOffer = () => {
           p_listing_id: listingId,
           p_offerer_id: user.id,
           p_cash_amount: cashAmount,
-          p_message: message ?? '',
+          p_offerer_note: offeringNote ?? '',
           p_items: JSON.stringify(items),
         });
 

@@ -6,7 +6,7 @@ export const CreateOfferSchema = z.object({
   requesting: z.array(CardRefSchema).min(1, 'Must request at least one card'),
   cash_amount: z.number().positive().optional(),
   cash_direction: z.enum(['offering', 'requesting']).optional(),
-  note: z.string().max(500).optional(),
+  offering_note: z.string().max(500).optional(),
 });
 
 export type CreateOffer = z.infer<typeof CreateOfferSchema>;

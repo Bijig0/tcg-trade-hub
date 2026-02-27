@@ -1125,7 +1125,7 @@ export type Database = {
           p_cash_amount: number
           p_items: Json
           p_listing_id: string
-          p_message: string
+          p_offerer_note: string
           p_offerer_id: string
         }
         Returns: Json
