@@ -13,6 +13,7 @@ import useUpdateProfile from '../../hooks/useUpdateProfile/useUpdateProfile';
 import useCheckForUpdates from '../../hooks/useCheckForUpdates/useCheckForUpdates';
 import DevUserSwitcher from '../DevUserSwitcher/DevUserSwitcher';
 import DevSimulatorLauncher from '../DevSimulatorLauncher/DevSimulatorLauncher';
+import DevAdminLink from '../DevAdminLink/DevAdminLink';
 
 type NotificationPrefs = {
   new_matches: boolean;
@@ -319,6 +320,9 @@ const SettingsScreen = () => {
             <DevUserSwitcher />
             <View className="mt-4">
               <DevSimulatorLauncher />
+            </View>
+            <View className="mt-4">
+              <DevAdminLink />
             </View>
           </View>
 
