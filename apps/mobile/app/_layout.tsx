@@ -3,16 +3,17 @@ import '../src/global.css';
 import '@/lib/iconInterop';
 import '@/lib/imageInterop';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Slot, useRouter, useSegments, ErrorBoundary } from 'expo-router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ActivityIndicator, Alert, View, Text, ScrollView, LogBox } from 'react-native';
+import { ActivityIndicator, View, LogBox } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider, useAuth } from '@/context/AuthProvider';
 import { ThemeProvider } from '@/context/ThemeProvider';
 import ErrorToast from '@/components/ui/ErrorToast/ErrorToast';
+import useAutoUpdate from '@/hooks/useAutoUpdate/useAutoUpdate';
 
 // Log all errors to console with full stack traces
 const originalConsoleError = console.error;
@@ -63,33 +64,8 @@ const RootNavigator = () => {
     }
   }, [session, isLoading, isOnboarded, segments]);
 
-  useEffect(() => {
-    if (__DEV__) return;
-    let Updates: typeof import('expo-updates') | null = null;
-    try {
-      Updates = require('expo-updates');
-    } catch {
-      return;
-    }
-    const check = async () => {
-      try {
-        const update = await Updates!.checkForUpdateAsync();
-        if (!update.isAvailable) return;
-        await Updates!.fetchUpdateAsync();
-        Alert.alert(
-          'Update Available',
-          'A new version has been downloaded. Restart to apply it.',
-          [
-            { text: 'Later', style: 'cancel' },
-            { text: 'Restart Now', onPress: () => Updates!.reloadAsync() },
-          ],
-        );
-      } catch {
-        // Silent fail — user can manually check in Settings
-      }
-    };
-    check();
-  }, []);
+  // Auto-poll for OTA updates and seamlessly reload (preview/production builds only)
+  useAutoUpdate();
 
   if (isLoading) {
     return (
