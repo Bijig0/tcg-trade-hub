@@ -4,6 +4,8 @@
  * Includes live event ingestion, WebSocket broadcast, and Maestro manifest.
  */
 import { createServer } from "node:http";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import {
   openDb,
   generateGraphData,
@@ -69,6 +71,70 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
+};
+
+const execFileAsync = promisify(execFile);
+
+// ---------------------------------------------------------------------------
+// Simulator helpers
+// ---------------------------------------------------------------------------
+
+type SimulatorDevice = {
+  udid: string;
+  name: string;
+  state: "Booted" | "Shutdown" | "Shutting Down";
+  runtime: string;
+};
+
+const listSimulators = async (): Promise<SimulatorDevice[]> => {
+  const { stdout } = await execFileAsync("xcrun", [
+    "simctl",
+    "list",
+    "devices",
+    "available",
+    "--json",
+  ]);
+  const parsed = JSON.parse(stdout) as {
+    devices: Record<string, Array<{ udid: string; name: string; state: string }>>;
+  };
+
+  const devices: SimulatorDevice[] = [];
+  for (const [runtimeId, runtimeDevices] of Object.entries(parsed.devices)) {
+    const runtime = runtimeId.replace("com.apple.CoreSimulator.SimRuntime.", "").replace(/-/g, " ");
+    for (const d of runtimeDevices) {
+      devices.push({
+        udid: d.udid,
+        name: d.name,
+        state: d.state as SimulatorDevice["state"],
+        runtime,
+      });
+    }
+  }
+
+  // Booted first, then alphabetical by name
+  devices.sort((a, b) => {
+    if (a.state === "Booted" && b.state !== "Booted") return -1;
+    if (a.state !== "Booted" && b.state === "Booted") return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  return devices;
+};
+
+const bootSimulator = async (udid: string): Promise<{ name: string }> => {
+  // Get device name first
+  const devices = await listSimulators();
+  const device = devices.find((d) => d.udid === udid);
+  if (!device) throw new Error(`Simulator ${udid} not found`);
+
+  if (device.state !== "Booted") {
+    await execFileAsync("xcrun", ["simctl", "boot", udid]);
+  }
+
+  // Bring Simulator.app to foreground
+  await execFileAsync("open", ["-a", "Simulator"]);
+
+  return { name: device.name };
 };
 
 // ---------------------------------------------------------------------------
@@ -242,6 +308,29 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    // ---- Simulator API ----
+    if (url.pathname === "/api/simulators" && method === "GET") {
+      try {
+        const devices = await listSimulators();
+        respond(json(devices));
+      } catch (err) {
+        respond(json({ error: `Failed to list simulators: ${(err as Error).message}` }, 500));
+      }
+      return;
+    }
+
+    const simBootMatch = url.pathname.match(/^\/api\/simulators\/([^/]+)\/boot$/);
+    if (simBootMatch && method === "POST") {
+      const udid = decodeURIComponent(simBootMatch[1]);
+      try {
+        const { name } = await bootSimulator(udid);
+        respond(json({ ok: true, udid, name }));
+      } catch (err) {
+        respond(json({ error: `Failed to boot simulator: ${(err as Error).message}` }, 500));
+      }
+      return;
+    }
+
     // ---- 404 ----
     respond(json({ error: "Not found", path: url.pathname }, 404));
   } catch (err) {
@@ -283,4 +372,5 @@ server.listen(PORT, () => {
   console.log(`  Live WS:   ws://localhost:${PORT}/ws/live`);
   console.log(`  Events:    http://localhost:${PORT}/api/events (POST)`);
   console.log(`  Maestro:   http://localhost:${PORT}/api/maestro/manifest`);
+  console.log(`  Sims:      http://localhost:${PORT}/api/simulators`);
 });

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChatPanel } from '@/features/chat';
 import TestCoverage from '@/features/maestro/components/TestCoverage/TestCoverage';
 import useMobileLink from '@/hooks/useMobileLink/useMobileLink';
+import type { Simulator } from '@/hooks/useMobileLink/useMobileLink';
 
 const GRAPH_SERVER_URL = 'http://localhost:4243';
 const HEALTH_POLL_INTERVAL = 5_000;
@@ -130,7 +131,7 @@ function AdminDashboard() {
   }
 
   const controlledPath =
-    mobileLink.isLinked && mobileLink.activePath ? mobileLink.activePath : undefined;
+    mobileLink.linkedSimulator && mobileLink.activePath ? mobileLink.activePath : undefined;
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -231,13 +232,7 @@ const ErrorState = ({ error, onRetry }: ErrorStateProps) => (
   </div>
 );
 
-type MobileLinkState = {
-  isLinked: boolean;
-  toggleLink: () => void;
-  activePath: string | null;
-  lastEvent: { pathId: string; message: string; timestamp: number } | null;
-  connected: boolean;
-};
+type MobileLinkState = ReturnType<typeof useMobileLink>;
 
 type HealthBarProps = {
   health: HealthData;
@@ -275,49 +270,7 @@ const HealthBar = ({ health, onRetry, onToggleTestCoverage, mobileLink }: Health
         {mobileLink && (
           <>
             <span className="text-xs text-muted-foreground">|</span>
-            <button
-              onClick={mobileLink.toggleLink}
-              className={`flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                mobileLink.isLinked
-                  ? 'bg-primary/10 text-primary hover:bg-primary/20'
-                  : 'bg-secondary text-secondary-foreground hover:bg-accent'
-              }`}
-              title={mobileLink.isLinked ? 'Click to unlink from mobile' : 'Click to follow mobile navigation'}
-            >
-              {mobileLink.isLinked && (
-                <span
-                  className={`inline-block h-1.5 w-1.5 rounded-full ${
-                    mobileLink.connected ? 'bg-green-500' : 'bg-muted-foreground'
-                  }`}
-                />
-              )}
-              <svg
-                className="h-3 w-3"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                {mobileLink.isLinked ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1M18 6l-6 6"
-                  />
-                )}
-              </svg>
-              {mobileLink.isLinked
-                ? mobileLink.lastEvent
-                  ? `Linked: ${mobileLink.lastEvent.message}`
-                  : 'Linked'
-                : 'Link to Mobile'}
-            </button>
+            <SimulatorDropdown mobileLink={mobileLink} />
           </>
         )}
       </div>
@@ -352,6 +305,178 @@ const HealthBar = ({ health, onRetry, onToggleTestCoverage, mobileLink }: Health
         )}
       </div>
     </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Simulator Dropdown
+// ---------------------------------------------------------------------------
+
+type SimulatorDropdownProps = {
+  mobileLink: MobileLinkState;
+};
+
+const PhoneIcon = () => (
+  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"
+    />
+  </svg>
+);
+
+const SimulatorDropdown = ({ mobileLink }: SimulatorDropdownProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  const handleSelectSimulator = (udid: string) => {
+    mobileLink.linkTo(udid);
+    setIsOpen(false);
+  };
+
+  // ---- Linked state: show device name + unlink button ----
+  if (mobileLink.linkedSimulator) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span
+          className={`inline-block h-1.5 w-1.5 rounded-full ${
+            mobileLink.connected ? 'bg-green-500' : 'bg-muted-foreground'
+          }`}
+        />
+        <span className="text-xs font-medium text-primary" title={`UDID: ${mobileLink.linkedSimulator.udid.slice(0, 8)}...`}>
+          {mobileLink.linkedSimulator.name}
+        </span>
+        {mobileLink.lastEvent && (
+          <span className="text-xs text-muted-foreground">
+            — {mobileLink.lastEvent.message}
+          </span>
+        )}
+        <button
+          onClick={mobileLink.unlink}
+          className="ml-1 rounded p-0.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+          title="Unlink simulator"
+        >
+          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    );
+  }
+
+  // ---- Unlinked state: button + dropdown ----
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => {
+          setIsOpen((prev) => !prev);
+          if (!isOpen) mobileLink.refreshSimulators();
+        }}
+        className="flex items-center gap-1.5 rounded bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-accent"
+        title="Select a simulator to link"
+      >
+        <PhoneIcon />
+        {mobileLink.isBooting ? 'Booting...' : 'Link to Mobile'}
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border border-border bg-card shadow-lg">
+          {mobileLink.isLoadingSimulators ? (
+            <div className="flex items-center justify-center px-3 py-4">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary" />
+              <span className="ml-2 text-xs text-muted-foreground">Loading simulators...</span>
+            </div>
+          ) : mobileLink.simulatorError || mobileLink.simulators.length === 0 ? (
+            <div className="px-3 py-4 text-center">
+              <p className="text-xs text-muted-foreground">
+                {mobileLink.simulatorError ?? 'No simulators available'}
+              </p>
+              <button
+                onClick={() => mobileLink.refreshSimulators()}
+                className="mt-2 rounded bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-accent"
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            <>
+              <ul className="max-h-48 overflow-y-auto py-1">
+                {mobileLink.simulators.map((sim) => (
+                  <SimulatorRow
+                    key={sim.udid}
+                    simulator={sim}
+                    isBooting={mobileLink.isBooting}
+                    onSelect={handleSelectSimulator}
+                  />
+                ))}
+              </ul>
+              <div className="border-t border-border px-3 py-1.5">
+                <button
+                  onClick={() => mobileLink.refreshSimulators()}
+                  className="flex w-full items-center gap-1.5 rounded px-1 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"
+                    />
+                  </svg>
+                  Refresh
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+type SimulatorRowProps = {
+  simulator: Simulator;
+  isBooting: boolean;
+  onSelect: (udid: string) => void;
+};
+
+const SimulatorRow = ({ simulator, isBooting, onSelect }: SimulatorRowProps) => {
+  const isBooted = simulator.state === 'Booted';
+
+  return (
+    <li>
+      <button
+        onClick={() => onSelect(simulator.udid)}
+        disabled={isBooting}
+        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition-colors hover:bg-secondary disabled:opacity-50"
+      >
+        <span
+          className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${
+            isBooted ? 'bg-green-500' : 'bg-muted-foreground/40'
+          }`}
+        />
+        <span className="flex-1 truncate font-medium text-foreground">
+          {simulator.name}
+        </span>
+        <span className="shrink-0 text-muted-foreground">
+          {isBooted ? 'Booted' : simulator.state}
+        </span>
+      </button>
+    </li>
   );
 };
 
