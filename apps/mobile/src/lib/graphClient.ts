@@ -24,15 +24,21 @@ const link = new RPCLink({
           ? input.url
           : String(input);
     console.log('[graphClient] fetch →', url);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5_000);
+
     return fetch(input, {
       ...init,
-      signal: AbortSignal.timeout(5_000),
+      signal: controller.signal,
     })
       .then((res) => {
+        clearTimeout(timeout);
         console.log('[graphClient] fetch ←', res.status, res.statusText);
         return res;
       })
       .catch((err) => {
+        clearTimeout(timeout);
         console.error('[graphClient] fetch FAILED:', err?.message ?? err);
         throw err;
       });
