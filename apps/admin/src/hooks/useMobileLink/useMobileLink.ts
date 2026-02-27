@@ -1,20 +1,44 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { z } from 'zod';
 
 const GRAPH_SERVER_URL = 'http://localhost:4243';
 const WS_URL = 'ws://localhost:4243/ws/live';
 const RECONNECT_DELAY = 3_000;
+const UDID_PATTERN = /^[0-9A-F-]{36}$/i;
 
-export type Simulator = {
-  udid: string;
-  name: string;
-  state: 'Booted' | 'Shutdown' | 'Shutting Down';
-  runtime: string;
-};
+// ---- Zod schemas ----
+
+const SimulatorSchema = z.object({
+  udid: z.string().min(1),
+  name: z.string().min(1),
+  state: z.enum(['Booted', 'Shutdown', 'Shutting Down']),
+  runtime: z.string(),
+});
+
+export type Simulator = z.infer<typeof SimulatorSchema>;
+
+const SimulatorListSchema = z.array(SimulatorSchema);
+
+const ErrorResponseSchema = z.object({
+  error: z.string(),
+});
+
+const MobileLinkEventSchema = z.object({
+  pathId: z.string().min(1),
+  caller: z.literal('mobile:nav'),
+  message: z.string().optional(),
+  timestamp: z.number().optional(),
+});
 
 type MobileLinkEvent = {
   pathId: string;
   message: string;
   timestamp: number;
+};
+
+const extractErrorMessage = (err: unknown): string => {
+  if (err instanceof Error) return err.message;
+  return String(err);
 };
 
 type UseMobileLinkReturn = {
@@ -68,16 +92,17 @@ const useMobileLink = (): UseMobileLinkReturn => {
         signal: AbortSignal.timeout(5_000),
       });
       if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(body.error ?? `HTTP ${res.status}`);
+        const body = ErrorResponseSchema.safeParse(await res.json().catch(() => null));
+        throw new Error(body.success ? body.data.error : `HTTP ${res.status}`);
       }
-      const devices = (await res.json()) as Simulator[];
+      const raw = await res.json();
+      const devices = SimulatorListSchema.parse(raw);
       setSimulators(devices);
     } catch (err) {
       const message =
         err instanceof TypeError
           ? 'Cannot reach graph server'
-          : (err as Error).message;
+          : extractErrorMessage(err);
       setSimulatorError(message);
       setSimulators([]);
     } finally {
@@ -133,19 +158,14 @@ const useMobileLink = (): UseMobileLinkReturn => {
 
     ws.onmessage = (msg) => {
       try {
-        const event = JSON.parse(String(msg.data)) as {
-          pathId?: string;
-          caller?: string;
-          message?: string;
-          timestamp?: number;
-        };
-
-        if (event.caller !== 'mobile:nav' || !event.pathId) return;
+        const raw = JSON.parse(String(msg.data));
+        const result = MobileLinkEventSchema.safeParse(raw);
+        if (!result.success) return;
 
         const parsed: MobileLinkEvent = {
-          pathId: event.pathId,
-          message: event.message ?? event.pathId,
-          timestamp: event.timestamp ?? Date.now(),
+          pathId: result.data.pathId,
+          message: result.data.message ?? result.data.pathId,
+          timestamp: result.data.timestamp ?? Date.now(),
         };
 
         setActivePath(parsed.pathId);
@@ -162,6 +182,11 @@ const useMobileLink = (): UseMobileLinkReturn => {
 
   const linkTo = useCallback(
     async (udid: string) => {
+      if (!UDID_PATTERN.test(udid)) {
+        setSimulatorError('Invalid simulator UDID');
+        return;
+      }
+
       const sim = simulators.find((s) => s.udid === udid);
       if (!sim) return;
 
@@ -172,14 +197,14 @@ const useMobileLink = (): UseMobileLinkReturn => {
           signal: AbortSignal.timeout(30_000),
         });
         if (!res.ok) {
-          const body = (await res.json().catch(() => ({}))) as { error?: string };
-          throw new Error(body.error ?? `HTTP ${res.status}`);
+          const body = ErrorResponseSchema.safeParse(await res.json().catch(() => null));
+          throw new Error(body.success ? body.data.error : `HTTP ${res.status}`);
         }
 
         setLinkedSimulator({ ...sim, state: 'Booted' });
         connectWs();
       } catch (err) {
-        setSimulatorError(`Boot failed: ${(err as Error).message}`);
+        setSimulatorError(`Boot failed: ${extractErrorMessage(err)}`);
       } finally {
         setIsBooting(false);
       }

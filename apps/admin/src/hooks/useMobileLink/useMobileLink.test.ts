@@ -8,9 +8,9 @@ import type { Simulator } from './useMobileLink';
 // ---------------------------------------------------------------------------
 
 const MOCK_SIMULATORS: Simulator[] = [
-  { udid: 'AAAA-1111', name: 'iPhone 16 Pro', state: 'Booted', runtime: 'iOS 18.2' },
-  { udid: 'BBBB-2222', name: 'iPhone 16 Pro Max', state: 'Shutdown', runtime: 'iOS 18.2' },
-  { udid: 'CCCC-3333', name: 'iPhone 16', state: 'Shutdown', runtime: 'iOS 18.2' },
+  { udid: 'AAAAAAAA-1111-2222-3333-444444444444', name: 'iPhone 16 Pro', state: 'Booted', runtime: 'iOS 18.2' },
+  { udid: 'BBBBBBBB-1111-2222-3333-444444444444', name: 'iPhone 16 Pro Max', state: 'Shutdown', runtime: 'iOS 18.2' },
+  { udid: 'CCCCCCCC-1111-2222-3333-444444444444', name: 'iPhone 16', state: 'Shutdown', runtime: 'iOS 18.2' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -177,7 +177,7 @@ describe('useMobileLink', () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ ok: true, udid: 'AAAA-1111', name: 'iPhone 16 Pro' }),
+          json: () => Promise.resolve({ ok: true, udid: 'AAAAAAAA-1111-2222-3333-444444444444', name: 'iPhone 16 Pro' }),
         });
 
       const { result } = renderHook(() => useMobileLink());
@@ -187,7 +187,7 @@ describe('useMobileLink', () => {
       });
 
       await act(async () => {
-        result.current.linkTo('AAAA-1111');
+        result.current.linkTo('AAAAAAAA-1111-2222-3333-444444444444');
       });
 
       await waitFor(() => {
@@ -195,11 +195,11 @@ describe('useMobileLink', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'http://localhost:4243/api/simulators/AAAA-1111/boot',
+        'http://localhost:4243/api/simulators/AAAAAAAA-1111-2222-3333-444444444444/boot',
         expect.objectContaining({ method: 'POST' }),
       );
       expect(result.current.linkedSimulator).toEqual({
-        udid: 'AAAA-1111',
+        udid: 'AAAAAAAA-1111-2222-3333-444444444444',
         name: 'iPhone 16 Pro',
         state: 'Booted',
         runtime: 'iOS 18.2',
@@ -228,7 +228,7 @@ describe('useMobileLink', () => {
       });
 
       act(() => {
-        result.current.linkTo('BBBB-2222');
+        result.current.linkTo('BBBBBBBB-1111-2222-3333-444444444444');
       });
 
       await waitFor(() => {
@@ -238,7 +238,7 @@ describe('useMobileLink', () => {
       await act(async () => {
         resolveBootFetch!({
           ok: true,
-          json: () => Promise.resolve({ ok: true, udid: 'BBBB-2222', name: 'iPhone 16 Pro Max' }),
+          json: () => Promise.resolve({ ok: true, udid: 'BBBBBBBB-1111-2222-3333-444444444444', name: 'iPhone 16 Pro Max' }),
         });
       });
 
@@ -266,7 +266,7 @@ describe('useMobileLink', () => {
       });
 
       await act(async () => {
-        result.current.linkTo('AAAA-1111');
+        result.current.linkTo('AAAAAAAA-1111-2222-3333-444444444444');
       });
 
       await waitFor(() => {
@@ -285,7 +285,7 @@ describe('useMobileLink', () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ ok: true, udid: 'AAAA-1111', name: 'iPhone 16 Pro' }),
+          json: () => Promise.resolve({ ok: true, udid: 'AAAAAAAA-1111-2222-3333-444444444444', name: 'iPhone 16 Pro' }),
         });
 
       const { result } = renderHook(() => useMobileLink());
@@ -295,7 +295,7 @@ describe('useMobileLink', () => {
       });
 
       await act(async () => {
-        result.current.linkTo('AAAA-1111');
+        result.current.linkTo('AAAAAAAA-1111-2222-3333-444444444444');
       });
 
       await waitFor(() => {
@@ -333,7 +333,7 @@ describe('useMobileLink', () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ ok: true, udid: 'AAAA-1111', name: 'iPhone 16 Pro' }),
+          json: () => Promise.resolve({ ok: true, udid: 'AAAAAAAA-1111-2222-3333-444444444444', name: 'iPhone 16 Pro' }),
         });
 
       await waitFor(() => {
@@ -341,7 +341,7 @@ describe('useMobileLink', () => {
       });
 
       await act(async () => {
-        result.current.linkTo('AAAA-1111');
+        result.current.linkTo('AAAAAAAA-1111-2222-3333-444444444444');
       });
 
       await waitFor(() => {
@@ -427,6 +427,63 @@ describe('useMobileLink', () => {
 
       // Only the one WS from the link, no reconnects
       expect(wsInstances).toHaveLength(1);
+    });
+
+    it('ignores malformed WS messages (wrong pathId type)', async () => {
+      const { result } = renderHook(() => useMobileLink());
+      await setupLinked(result);
+
+      act(() =>
+        simulateMessage({
+          pathId: 123,
+          caller: 'mobile:nav',
+          message: 'bad',
+          timestamp: 1000,
+        }),
+      );
+
+      expect(result.current.activePath).toBeNull();
+      expect(result.current.lastEvent).toBeNull();
+    });
+  });
+
+  describe('Zod validation', () => {
+    it('rejects malformed simulator list from API', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve([{ udid: 123, name: null }]),
+      });
+
+      const { result } = renderHook(() => useMobileLink());
+
+      await waitFor(() => {
+        expect(result.current.isLoadingSimulators).toBe(false);
+      });
+
+      expect(result.current.simulators).toEqual([]);
+      expect(result.current.simulatorError).toBeTruthy();
+    });
+
+    it('rejects invalid UDID in linkTo without making fetch call', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(MOCK_SIMULATORS),
+      });
+
+      const { result } = renderHook(() => useMobileLink());
+
+      await waitFor(() => {
+        expect(result.current.simulators).toHaveLength(3);
+      });
+
+      const callsBefore = fetchMock.mock.calls.length;
+
+      await act(async () => {
+        result.current.linkTo('not-a-udid');
+      });
+
+      expect(result.current.simulatorError).toBe('Invalid simulator UDID');
+      expect(fetchMock.mock.calls.length).toBe(callsBefore);
     });
   });
 });

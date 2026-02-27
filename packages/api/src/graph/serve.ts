@@ -21,6 +21,7 @@ import {
   createLiveEventStore,
 } from "flow-graph";
 import { WebSocketServer, type WebSocket } from "ws";
+import { z } from "zod";
 import { buildMaestroManifest } from "./maestroManifest";
 
 const PORT = Number(process.env.GRAPH_PORT) || 4243;
@@ -79,6 +80,20 @@ const execFileAsync = promisify(execFile);
 // Simulator helpers
 // ---------------------------------------------------------------------------
 
+const UDID_PATTERN = /^[0-9A-F-]{36}$/i;
+
+const SimctlDeviceSchema = z.object({
+  udid: z.string(),
+  name: z.string(),
+  state: z.string(),
+});
+
+const SimctlOutputSchema = z.object({
+  devices: z.record(z.string(), z.array(SimctlDeviceSchema)),
+});
+
+const VALID_STATES = new Set(["Booted", "Shutdown", "Shutting Down"]);
+
 type SimulatorDevice = {
   udid: string;
   name: string;
@@ -93,10 +108,8 @@ const listSimulators = async (): Promise<SimulatorDevice[]> => {
     "devices",
     "available",
     "--json",
-  ]);
-  const parsed = JSON.parse(stdout) as {
-    devices: Record<string, Array<{ udid: string; name: string; state: string }>>;
-  };
+  ], { timeout: 10_000 });
+  const parsed = SimctlOutputSchema.parse(JSON.parse(stdout));
 
   const devices: SimulatorDevice[] = [];
   for (const [runtimeId, runtimeDevices] of Object.entries(parsed.devices)) {
@@ -105,7 +118,7 @@ const listSimulators = async (): Promise<SimulatorDevice[]> => {
       devices.push({
         udid: d.udid,
         name: d.name,
-        state: d.state as SimulatorDevice["state"],
+        state: VALID_STATES.has(d.state) ? d.state as SimulatorDevice["state"] : "Shutdown",
         runtime,
       });
     }
@@ -128,11 +141,11 @@ const bootSimulator = async (udid: string): Promise<{ name: string }> => {
   if (!device) throw new Error(`Simulator ${udid} not found`);
 
   if (device.state !== "Booted") {
-    await execFileAsync("xcrun", ["simctl", "boot", udid]);
+    await execFileAsync("xcrun", ["simctl", "boot", udid], { timeout: 30_000 });
   }
 
   // Bring Simulator.app to foreground
-  await execFileAsync("open", ["-a", "Simulator"]);
+  await execFileAsync("open", ["-a", "Simulator"], { timeout: 5_000 });
 
   return { name: device.name };
 };
@@ -314,7 +327,8 @@ const server = createServer(async (req, res) => {
         const devices = await listSimulators();
         respond(json(devices));
       } catch (err) {
-        respond(json({ error: `Failed to list simulators: ${(err as Error).message}` }, 500));
+        console.error("listSimulators error:", err);
+        respond(json({ error: "Failed to list simulators" }, 500));
       }
       return;
     }
@@ -322,11 +336,16 @@ const server = createServer(async (req, res) => {
     const simBootMatch = url.pathname.match(/^\/api\/simulators\/([^/]+)\/boot$/);
     if (simBootMatch && method === "POST") {
       const udid = decodeURIComponent(simBootMatch[1]);
+      if (!UDID_PATTERN.test(udid)) {
+        respond(json({ error: "Invalid UDID format" }, 400));
+        return;
+      }
       try {
         const { name } = await bootSimulator(udid);
         respond(json({ ok: true, udid, name }));
       } catch (err) {
-        respond(json({ error: `Failed to boot simulator: ${(err as Error).message}` }, 500));
+        console.error("bootSimulator error:", err);
+        respond(json({ error: "Failed to boot simulator" }, 500));
       }
       return;
     }
