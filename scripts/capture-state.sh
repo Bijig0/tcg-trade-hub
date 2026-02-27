@@ -9,9 +9,13 @@
 set -euo pipefail
 
 SKILL_DIR="$HOME/.claude/skills/ios-simulator-skill/ios-simulator-skill/scripts"
-VENV_PYTHON="$HOME/.claude/skills/ios-simulator-skill/.venv/bin/python3"
+VENV_BIN="$HOME/.claude/skills/ios-simulator-skill/.venv/bin"
+VENV_PYTHON="$VENV_BIN/python3"
 OUTPUT_DIR="apps/mobile/e2e/.state-captures"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+# Add venv bin to PATH so scripts can find the `idb` command
+export PATH="$VENV_BIN:$PATH"
 
 # Ensure output directory exists
 mkdir -p "$OUTPUT_DIR"
