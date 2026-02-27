@@ -43,6 +43,7 @@ import type {
   CardOfferResponsePayload,
   MeetupResponsePayload,
   CardOfferPayload,
+  CardRef,
   MessageRow,
 } from '@tcg-trade-hub/database';
 
@@ -249,6 +250,22 @@ const ChatThread = ({
     [conversationId, sendMessage],
   );
 
+  const handleOfferCardPress = useCallback(
+    (card: CardRef) => {
+      router.push({
+        pathname: '/(tabs)/(listings)/listing-card-detail',
+        params: {
+          cardExternalId: card.externalId,
+          cardName: card.name,
+          cardImageUrl: card.imageUrl,
+          tcg: card.tcg,
+          condition: (card.condition as string) ?? '',
+        },
+      });
+    },
+    [router],
+  );
+
   const renderMessage = useCallback(
     ({ item }: { item: MessageWithSender }) => {
       const isOwn = item.sender_id === user?.id;
@@ -296,6 +313,7 @@ const ChatThread = ({
                 onAccept={() => handleAcceptOffer(item.id)}
                 onDecline={() => handleDeclineOffer(item.id)}
                 onCounter={() => handleCounterOffer(item)}
+                onCardPress={handleOfferCardPress}
               />
             );
 
@@ -370,6 +388,7 @@ const ChatThread = ({
       handleCounterOffer,
       handleAcceptMeetup,
       handleDeclineMeetup,
+      handleOfferCardPress,
       handleLongPress,
     ],
   );
