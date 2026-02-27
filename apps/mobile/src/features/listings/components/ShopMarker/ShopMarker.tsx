@@ -23,7 +23,7 @@ const ShopMarker = ({ shop }: ShopMarkerProps) => {
       }}
     >
       <View className="items-center">
-        <View className="h-8 w-8 items-center justify-center rounded-full bg-purple-600 shadow-sm">
+        <View className="h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-purple-600 shadow-md">
           <Store size={16} color="white" />
         </View>
         <View className="h-0 w-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-purple-600" />

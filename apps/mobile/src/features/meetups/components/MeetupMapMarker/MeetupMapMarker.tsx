@@ -15,7 +15,7 @@ const MeetupMapMarker = ({ coordinate, title }: MeetupMapMarkerProps) => {
   return (
     <Marker coordinate={coordinate}>
       <View className="items-center">
-        <View className="h-9 w-9 items-center justify-center rounded-full bg-amber-500 shadow-sm">
+        <View className="h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-amber-500 shadow-md">
           <MapPin size={18} color="white" />
         </View>
         <View className="h-0 w-0 border-l-[5px] border-r-[5px] border-t-[5px] border-transparent border-t-amber-500" />

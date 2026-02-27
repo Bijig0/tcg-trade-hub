@@ -24,7 +24,7 @@ const TraderMarker = ({ shop, onPress }: TraderMarkerProps) => {
       onPress={() => onPress?.(shop)}
     >
       <View className="items-center">
-        <View className="rounded-full bg-amber-500 px-2.5 py-1.5 shadow-sm">
+        <View className="rounded-full border-2 border-white bg-amber-500 px-2.5 py-1.5 shadow-md">
           <Text className="text-xs font-bold text-white" numberOfLines={1}>
             {shop.name.charAt(0)}
           </Text>
