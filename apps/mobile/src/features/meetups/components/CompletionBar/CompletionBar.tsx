@@ -14,10 +14,10 @@ type CompletionBarProps = {
 };
 
 /**
- * Two-column completion status bar for meetups.
+ * Stacked completion status bar for meetups.
  *
- * Left half shows the current user with a SlideToConfirm gesture
- * (or a "Done" badge if already completed). Right half shows the other
+ * Top row shows the current user with a SlideToConfirm gesture
+ * (or a "Done" badge if already completed). Bottom row shows the other
  * user with a "Waiting" or "Done" indicator.
  */
 const CompletionBar = ({
@@ -39,9 +39,9 @@ const CompletionBar = ({
     <View className="gap-3">
       <Text className="text-sm font-semibold text-foreground">Completion Status</Text>
 
-      <View className="flex-row gap-3">
+      <View className="gap-2">
         {/* Current user side */}
-        <View className="flex-1 rounded-xl bg-muted/50 p-3">
+        <View className="rounded-xl bg-muted/50 p-3">
           <View className="mb-2 flex-row items-center gap-2">
             <View className="h-6 w-6 items-center justify-center rounded-full bg-primary">
               <Text className="text-[10px] font-bold text-primary-foreground">You</Text>
@@ -62,7 +62,7 @@ const CompletionBar = ({
         </View>
 
         {/* Other user side */}
-        <View className="flex-1 rounded-xl bg-muted/50 p-3">
+        <View className="rounded-xl bg-muted/50 p-3">
           <View className="mb-2 flex-row items-center gap-2">
             <Avatar uri={otherUserAvatarUrl} fallback={otherInitials} size="sm" />
             <Text className="flex-1 text-xs font-medium text-foreground" numberOfLines={1}>
