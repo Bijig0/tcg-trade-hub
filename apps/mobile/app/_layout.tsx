@@ -14,6 +14,7 @@ import { AuthProvider, useAuth } from '@/context/AuthProvider';
 import { ThemeProvider } from '@/context/ThemeProvider';
 import ErrorToast from '@/components/ui/ErrorToast/ErrorToast';
 import useAutoUpdate from '@/hooks/useAutoUpdate/useAutoUpdate';
+import useDevGraphEmitter from '@/hooks/useDevGraphEmitter/useDevGraphEmitter';
 
 // Log all errors to console with full stack traces
 const originalConsoleError = console.error;
@@ -63,6 +64,12 @@ const RootNavigator = () => {
       }
     }
   }, [session, isLoading, isOnboarded, segments]);
+
+  // Dev-only: emit graph events on tab navigation
+  if (__DEV__) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useDevGraphEmitter();
+  }
 
   // Auto-poll for OTA updates and seamlessly reload (preview/production builds only)
   const { isUpdating } = useAutoUpdate();

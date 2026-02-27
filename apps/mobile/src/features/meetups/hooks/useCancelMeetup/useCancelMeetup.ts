@@ -3,8 +3,9 @@ import { Alert } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthProvider';
 import { meetupKeys } from '../../queryKeys';
-import { assertTransition } from '@tcg-trade-hub/database';
+import { assertTransition, stateStepIndex } from '@tcg-trade-hub/database';
 import type { MeetupStatus } from '@tcg-trade-hub/database';
+import { devEmitter, createTraceId } from '@/services/devLiveEmitter/devLiveEmitter';
 
 type CancelMeetupParams = {
   meetupId: string;
@@ -23,37 +24,50 @@ const useCancelMeetup = () => {
     mutationFn: async ({ meetupId, conversationId }: CancelMeetupParams) => {
       if (!user) throw new Error('Not authenticated');
 
-      // Fetch current meetup to validate transition
-      const { data: currentMeetup, error: fetchError } = await supabase
-        .from('meetups')
-        .select('status')
-        .eq('id', meetupId)
-        .single();
+      const stepIdx = stateStepIndex('meetup', 'confirmed', 'cancelled');
+      const scoped = __DEV__
+        ? devEmitter.forPath('state:meetup', createTraceId(), 'mobile:cancelMeetup')
+        : undefined;
 
-      if (fetchError) throw fetchError;
+      scoped?.(stepIdx, 'started');
 
-      assertTransition('meetup', currentMeetup.status as MeetupStatus, 'cancelled');
+      try {
+        // Fetch current meetup to validate transition
+        const { data: currentMeetup, error: fetchError } = await supabase
+          .from('meetups')
+          .select('status')
+          .eq('id', meetupId)
+          .single();
 
-      // Update meetup status to cancelled
-      const { error: meetupError } = await supabase
-        .from('meetups')
-        .update({ status: 'cancelled' })
-        .eq('id', meetupId);
+        if (fetchError) throw fetchError;
 
-      if (meetupError) throw meetupError;
+        assertTransition('meetup', currentMeetup.status as MeetupStatus, 'cancelled');
 
-      // Send system message in the conversation
-      const { error: messageError } = await supabase.from('messages').insert({
-        conversation_id: conversationId,
-        sender_id: user.id,
-        type: 'system',
-        body: 'Meetup was cancelled.',
-        payload: { event: 'meetup_cancelled' },
-      });
+        // Update meetup status to cancelled
+        const { error: meetupError } = await supabase
+          .from('meetups')
+          .update({ status: 'cancelled' })
+          .eq('id', meetupId);
 
-      if (messageError) throw messageError;
+        if (meetupError) throw meetupError;
 
-      return { meetupId };
+        // Send system message in the conversation
+        const { error: messageError } = await supabase.from('messages').insert({
+          conversation_id: conversationId,
+          sender_id: user.id,
+          type: 'system',
+          body: 'Meetup was cancelled.',
+          payload: { event: 'meetup_cancelled' },
+        });
+
+        if (messageError) throw messageError;
+
+        scoped?.(stepIdx, 'success');
+        return { meetupId };
+      } catch (err) {
+        scoped?.(stepIdx, 'error', { message: (err as Error).message });
+        throw err;
+      }
     },
     onSuccess: ({ meetupId }) => {
       queryClient.invalidateQueries({ queryKey: meetupKeys.all });

@@ -173,3 +173,30 @@ export const isActionableMeetup = (status: MeetupStatus): boolean =>
  */
 export const isActionableShopEvent = (status: ShopEventStatus): boolean =>
   status === 'draft' || status === 'published';
+
+// ---------------------------------------------------------------------------
+// Step index computation (shared with graph-sync and mobile live emitter)
+// ---------------------------------------------------------------------------
+
+/**
+ * Deterministic step index for a transition within an entity's state machine path.
+ * Steps are ordered by source status (insertion order in the map), then by target index.
+ *
+ * Used by both the graph-sync registry builder and the mobile dev live emitter
+ * to compute identical step indexes for the same transition.
+ */
+export const stateStepIndex = (
+  entity: EntityName,
+  from: string,
+  to: string,
+): number => {
+  const transitions = TRANSITION_MAPS[entity];
+  let idx = 0;
+  for (const [status, targets] of Object.entries(transitions)) {
+    for (const target of targets) {
+      if (status === from && target === to) return idx;
+      idx++;
+    }
+  }
+  return idx;
+};

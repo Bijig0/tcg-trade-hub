@@ -11,6 +11,7 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.1",
     "vitest": "^3.0.0"
   },
   "dependencies": {
@@ -19,7 +20,8 @@
     "@orpc/tanstack-query": "^1.13.0",
     "@supabase/supabase-js": "^2.47.0",
     "@tcg-trade-hub/database": "workspace:*",
-    "zod": "^3.24.0",
-    "flow-graph": "link:../../../flow-graph"
+    "flow-graph": "link:../../../flow-graph",
+    "ws": "^8.19.0",
+    "zod": "^3.24.0"
   }
 }

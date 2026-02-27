@@ -6,17 +6,16 @@ import {
   MEETUP_TRANSITIONS,
   REPORT_TRANSITIONS,
   SHOP_EVENT_TRANSITIONS,
+  stateStepIndex,
 } from "@tcg-trade-hub/database";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type TransitionMap = Record<string, readonly string[]>;
-
 interface EntityConfig {
   name: string;
-  transitions: TransitionMap;
+  transitions: Record<string, readonly string[]>;
   table: string;
 }
 
@@ -55,7 +54,7 @@ const buildTransitionEntries = (entity: EntityConfig): ExternalEntry[] => {
           paths: [
             {
               flow: `state:${entity.name}`,
-              step: stepIndex(entity.transitions, from, to),
+              step: stateStepIndex(entity.name as Parameters<typeof stateStepIndex>[0], from, to),
               label: `${from} → ${to}`,
               connectionFilter: [
                 { from: `ext:${entity.name}:${from}`, to: `ext:${entity.name}:${to}` },
@@ -68,25 +67,6 @@ const buildTransitionEntries = (entity: EntityConfig): ExternalEntry[] => {
   }
 
   return entries;
-};
-
-/**
- * Deterministic step index for a transition within an entity's state machine path.
- * Steps are ordered by source status (insertion order in the map), then by target index.
- */
-const stepIndex = (
-  transitions: TransitionMap,
-  from: string,
-  to: string,
-): number => {
-  let idx = 0;
-  for (const [status, targets] of Object.entries(transitions)) {
-    for (const target of targets) {
-      if (status === from && target === to) return idx;
-      idx++;
-    }
-  }
-  return idx;
 };
 
 // ---------------------------------------------------------------------------

@@ -246,7 +246,7 @@ importers:
         version: 1.13.5
       '@orpc/server':
         specifier: ^1.13.0
-        version: 1.13.5
+        version: 1.13.5(ws@8.19.0)
       '@orpc/tanstack-query':
         specifier: ^1.13.0
         version: 1.13.5(@orpc/client@1.13.5)(@tanstack/query-core@5.90.20)
@@ -310,7 +310,7 @@ importers:
         version: 1.13.5
       '@orpc/server':
         specifier: ^1.13.0
-        version: 1.13.5
+        version: 1.13.5(ws@8.19.0)
       '@orpc/tanstack-query':
         specifier: ^1.13.0
         version: 1.13.5(@orpc/client@1.13.5)(@tanstack/query-core@5.90.20)
@@ -386,7 +386,7 @@ importers:
         version: 1.13.5
       '@orpc/server':
         specifier: ^1.13.0
-        version: 1.13.5
+        version: 1.13.5(ws@8.19.0)
       '@orpc/tanstack-query':
         specifier: ^1.13.0
         version: 1.13.5(@orpc/client@1.13.5)(@tanstack/query-core@5.90.20)
@@ -399,10 +399,16 @@ importers:
       flow-graph:
         specifier: link:../../../flow-graph
         version: link:../../../flow-graph
+      ws:
+        specifier: ^8.19.0
+        version: 8.19.0
       zod:
         specifier: ^3.24.0
         version: 3.25.76
     devDependencies:
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
       vitest:
         specifier: ^3.0.0
         version: 3.2.4
@@ -2595,7 +2601,7 @@ packages:
     resolution: {integrity: sha512-l02yMZWJ9hJ2Z0PF14UsP2Hd71jbUbNgvA5/hxzGkx9ci89cgJ3F9yv3clpwz8VElfh2Qp9jta+peKgiRV1a5A==}
     dev: false
 
-  /@orpc/server@1.13.5:
+  /@orpc/server@1.13.5(ws@8.19.0):
     resolution: {integrity: sha512-RiSzyZ8hp3XmG6F98czJNV3BsRW/5zjUnOk1v16KIiuYk3p46bYEpzhHJT5Sxr5DOjmm4xHTV+fe0gczyyf+gA==}
     peerDependencies:
       crossws: '>=0.3.4'
@@ -2617,6 +2623,7 @@ packages:
       '@orpc/standard-server-node': 1.13.5
       '@orpc/standard-server-peer': 1.13.5
       cookie: 1.1.1
+      ws: 8.19.0
     transitivePeerDependencies:
       - '@opentelemetry/api'
       - fastify
@@ -4168,7 +4175,6 @@ packages:
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
     dependencies:
       '@types/node': 25.2.2
-    dev: false
 
   /@types/yargs-parser@21.0.3:
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}

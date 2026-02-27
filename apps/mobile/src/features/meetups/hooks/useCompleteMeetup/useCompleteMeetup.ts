@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { meetupKeys } from '../../queryKeys';
+import { devEmitter, createTraceId } from '@/services/devLiveEmitter/devLiveEmitter';
+import { stateStepIndex } from '@tcg-trade-hub/database';
 
 type CompleteMeetupParams = {
   meetupId: string;
@@ -28,6 +30,13 @@ const useCompleteMeetup = (onBothCompleted?: (meetupId: string) => void) => {
 
   return useMutation({
     mutationFn: async ({ meetupId }: CompleteMeetupParams) => {
+      const stepIdx = stateStepIndex('meetup', 'confirmed', 'completed');
+      const scoped = __DEV__
+        ? devEmitter.forPath('pipeline:completeMeetup', createTraceId(), 'mobile:completeMeetup')
+        : undefined;
+
+      scoped?.(stepIdx, 'started');
+
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -35,15 +44,21 @@ const useCompleteMeetup = (onBothCompleted?: (meetupId: string) => void) => {
 
       if (!userId) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase.rpc('complete_meetup_v1', {
-        p_meetup_id: meetupId,
-        p_user_id: userId,
-      });
+      try {
+        const { data, error } = await supabase.rpc('complete_meetup_v1', {
+          p_meetup_id: meetupId,
+          p_user_id: userId,
+        });
 
-      if (error) throw error;
-      if (!data) throw new Error('No response from complete_meetup_v1');
+        if (error) throw error;
+        if (!data) throw new Error('No response from complete_meetup_v1');
 
-      return data as CompleteMeetupResponse;
+        scoped?.(stepIdx, 'success');
+        return data as CompleteMeetupResponse;
+      } catch (err) {
+        scoped?.(stepIdx, 'error', { message: (err as Error).message });
+        throw err;
+      }
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: meetupKeys.all });

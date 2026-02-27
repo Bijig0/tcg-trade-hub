@@ -6,6 +6,7 @@ import { collectionKeys } from '../../../collection/queryKeys';
 import generateBundleTitle from '../../utils/generateBundleTitle/generateBundleTitle';
 import type { SelectedCard } from '../../schemas';
 import type { ListingRow, ListingType, ListingItemInsert, TradeWant } from '@tcg-trade-hub/database';
+import { devEmitter, createTraceId } from '@/services/devLiveEmitter/devLiveEmitter';
 
 type BundleListingInput = {
   type: ListingType;
@@ -25,6 +26,12 @@ const useCreateBundleListing = () => {
 
   return useMutation<ListingRow, Error, BundleListingInput>({
     mutationFn: async ({ type, selectedCards, cashAmount, description, tradeWants }) => {
+      const scoped = __DEV__
+        ? devEmitter.forPath('flow:p2p-trade', createTraceId(), 'mobile:createListing')
+        : undefined;
+
+      scoped?.(0, 'started');
+
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -113,7 +120,21 @@ const useCreateBundleListing = () => {
         }
       }
 
+      scoped?.(0, 'success');
       return listing as ListingRow;
+    },
+    onError: (err: Error) => {
+      if (__DEV__) {
+        devEmitter.emit({
+          pathId: 'flow:p2p-trade',
+          stepIndex: 0,
+          status: 'error',
+          traceId: 'late-error',
+          timestamp: Date.now(),
+          caller: 'mobile:createListing',
+          message: err.message,
+        });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: listingKeys.myListings() });
