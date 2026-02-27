@@ -262,45 +262,51 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
 
   return (
     <View className={cn('flex-1', className)}>
-      {/* Card stack — both cards share identical absolute layout so
-           the next→current promotion never changes the layout box. */}
-      <View className="relative flex-1 px-4 py-2">
-        {/* Next card (behind) */}
-        {nextListing && (
-          <Animated.View
-            className="absolute inset-x-4 bottom-2 top-2"
-            style={nextCardStyle}
-          >
-            <SwipeCard listing={nextListing} />
-          </Animated.View>
-        )}
+      {/* Card stack — keyed by listing ID so React preserves the component
+           instance (and its loaded Image) when a card is promoted from
+           back → front. The departing card is unmounted (already off-screen)
+           and the new back card mounts behind the front (hidden). */}
+      <GestureDetector gesture={panGesture}>
+        <Animated.View className="relative flex-1 px-4 py-2">
+          {[nextListing, currentListing]
+            .filter((l): l is ListingWithDistance => l != null)
+            .map((listing) => {
+              const isCurrent = listing.id === currentListing?.id;
+              return (
+                <Animated.View
+                  key={listing.id}
+                  className="absolute inset-x-4 bottom-2 top-2"
+                  style={isCurrent ? cardAnimatedStyle : nextCardStyle}
+                >
+                  <SwipeCard
+                    listing={listing}
+                    onOpenDetail={isCurrent ? handleOpenDetail : undefined}
+                  />
 
-        {/* Current card (front) */}
-        <GestureDetector gesture={panGesture}>
-          <Animated.View
-            className="absolute inset-x-4 bottom-2 top-2"
-            style={cardAnimatedStyle}
-          >
-            <SwipeCard listing={currentListing} onOpenDetail={handleOpenDetail} />
+                  {isCurrent && (
+                    <>
+                      {/* Like overlay */}
+                      <Animated.View
+                        className="absolute left-6 top-10 rounded-lg border-4 border-emerald-500 px-4 py-2"
+                        style={[likeOverlayStyle, { transform: [{ rotate: '-15deg' }] }]}
+                      >
+                        <Text className="text-3xl font-black text-emerald-500">LIKE</Text>
+                      </Animated.View>
 
-            {/* Like overlay */}
-            <Animated.View
-              className="absolute left-6 top-10 rounded-lg border-4 border-emerald-500 px-4 py-2"
-              style={[likeOverlayStyle, { transform: [{ rotate: '-15deg' }] }]}
-            >
-              <Text className="text-3xl font-black text-emerald-500">LIKE</Text>
-            </Animated.View>
-
-            {/* Pass overlay */}
-            <Animated.View
-              className="absolute right-6 top-10 rounded-lg border-4 border-red-500 px-4 py-2"
-              style={[passOverlayStyle, { transform: [{ rotate: '15deg' }] }]}
-            >
-              <Text className="text-3xl font-black text-red-500">PASS</Text>
-            </Animated.View>
-          </Animated.View>
-        </GestureDetector>
-      </View>
+                      {/* Pass overlay */}
+                      <Animated.View
+                        className="absolute right-6 top-10 rounded-lg border-4 border-red-500 px-4 py-2"
+                        style={[passOverlayStyle, { transform: [{ rotate: '15deg' }] }]}
+                      >
+                        <Text className="text-3xl font-black text-red-500">PASS</Text>
+                      </Animated.View>
+                    </>
+                  )}
+                </Animated.View>
+              );
+            })}
+        </Animated.View>
+      </GestureDetector>
 
       {/* Action buttons */}
       <View className="flex-row items-center justify-center gap-6 pb-6 pt-4">
