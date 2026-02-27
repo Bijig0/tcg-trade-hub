@@ -118,11 +118,11 @@ const MyListingsScreen = () => {
 
   const tabItems: SegmentedFilterItem<ListingTab>[] = useMemo(
     () => [
-      { value: 'active', label: 'Active', count: counts.active, testID: 'listings-tab-active' },
-      { value: 'matched', label: 'Matched', count: counts.matched, testID: 'listings-tab-matched' },
-      { value: 'history', label: 'History', count: counts.history, testID: 'listings-tab-history' },
+      { value: 'active', label: 'Active', count: isLoading ? undefined : counts.active, testID: 'listings-tab-active' },
+      { value: 'matched', label: 'Matched', count: isLoading ? undefined : counts.matched, testID: 'listings-tab-matched' },
+      { value: 'history', label: 'History', count: isLoading ? undefined : counts.history, testID: 'listings-tab-history' },
     ],
-    [counts],
+    [counts, isLoading],
   );
 
   const currentData = groups[activeTab];
@@ -172,37 +172,10 @@ const MyListingsScreen = () => {
 
   const keyExtractor = (item: MyListingWithOffers) => item.id;
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <View className="flex-1 bg-background">
-        <View className="flex-row border-b border-border">
-          {['Active', 'Matched', 'History'].map((label) => (
-            <View key={label} className="flex-1 items-center pb-2.5 pt-3">
-              <Skeleton className="h-4 w-16 rounded" />
-            </View>
-          ))}
-        </View>
-        <View className="flex-1 gap-3 px-4 pt-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <View key={`skeleton-${i}`} className="flex-row rounded-xl border border-border bg-card p-3">
-              <Skeleton className="h-20 w-14 rounded-lg" />
-              <View className="ml-3 flex-1 gap-2">
-                <Skeleton className="h-4 w-20 rounded" />
-                <Skeleton className="h-5 w-36 rounded" />
-                <Skeleton className="h-3 w-16 rounded" />
-              </View>
-            </View>
-          ))}
-        </View>
-      </View>
-    );
-  }
-
   const allListings = listings ?? [];
 
   // First-time empty state -- no listings at all
-  if (allListings.length === 0) {
+  if (!isLoading && allListings.length === 0) {
     return (
       <View className="flex-1 bg-background">
         <View className="flex-1 px-6 pt-12">
@@ -238,7 +211,7 @@ const MyListingsScreen = () => {
   }
 
   return (
-    <RefreshableScreen queryKeys={[listingKeys.myListings()]}>
+    <RefreshableScreen queryKeys={[listingKeys.myListings()]} edges={[]}>
       {({ onRefresh, isRefreshing }) => (
         <View testID="listings-screen" className="flex-1 bg-background">
           <SegmentedFilter
@@ -247,18 +220,33 @@ const MyListingsScreen = () => {
             onValueChange={setActiveTab}
           />
 
-          <SectionList
-            sections={sections}
-            keyExtractor={keyExtractor}
-            renderItem={renderItem}
-            renderSectionHeader={renderSectionHeader}
-            ListEmptyComponent={renderEmptyState}
-            refreshing={isRefreshing}
-            onRefresh={onRefresh}
-            contentContainerClassName="pb-24"
-            contentContainerStyle={sections.length === 0 ? { flex: 1 } : undefined}
-            stickySectionHeadersEnabled={false}
-          />
+          {isLoading ? (
+            <View className="flex-1 gap-3 px-4 pt-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <View key={`skeleton-${i}`} className="flex-row rounded-xl border border-border bg-card p-3">
+                  <Skeleton className="h-20 w-14 rounded-lg" />
+                  <View className="ml-3 flex-1 gap-2">
+                    <Skeleton className="h-4 w-20 rounded" />
+                    <Skeleton className="h-5 w-36 rounded" />
+                    <Skeleton className="h-3 w-16 rounded" />
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <SectionList
+              sections={sections}
+              keyExtractor={keyExtractor}
+              renderItem={renderItem}
+              renderSectionHeader={renderSectionHeader}
+              ListEmptyComponent={renderEmptyState}
+              refreshing={isRefreshing}
+              onRefresh={onRefresh}
+              contentContainerClassName="pb-24"
+              contentContainerStyle={sections.length === 0 ? { flex: 1 } : undefined}
+              stickySectionHeadersEnabled={false}
+            />
+          )}
 
           <Pressable
             testID="listings-create-fab"
