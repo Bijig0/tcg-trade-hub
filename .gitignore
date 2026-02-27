@@ -17,3 +17,4 @@ android/
 graph.db
 graph.db-shm
 graph.db-wal
+.vercel

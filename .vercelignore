@@ -1,0 +1,7 @@
+node_modules
+apps/mobile
+.metro-cache
+*.tsbuildinfo
+.expo
+android
+ios
