@@ -17,9 +17,12 @@
 
 const http = require('http');
 const { execSync, exec } = require('child_process');
+const path = require('path');
+const fs = require('fs');
 
 const PORT = 8083;
 const EXPO_PORT = 8082;
+const EXPO_GO_BUNDLE_ID = 'host.exp.Exponent';
 
 // Preference order — same ranking as scripts/dev.sh
 const SIM_PREFERENCES = [
@@ -89,6 +92,84 @@ const pickBestSim = () => {
     .sort((a, b) => a.rank - b.rank);
 
   return ranked.length > 0 ? { udid: ranked[0].udid, name: ranked[0].name } : null;
+};
+
+/**
+ * Find the Expo Go .app bundle from any simulator that already has it installed.
+ * Searches CoreSimulator device directories for the app bundle.
+ * Returns the absolute path or null.
+ */
+const findExpoGoApp = () => {
+  const simDevicesDir = path.join(
+    process.env.HOME,
+    'Library/Developer/CoreSimulator/Devices',
+  );
+  if (!fs.existsSync(simDevicesDir)) return null;
+
+  // Check all booted sims first (more likely to have it), then all others
+  const sims = listIPhoneSims();
+  const bootedUdids = sims.filter((s) => s.state === 'Booted').map((s) => s.udid);
+  const allUdids = [...bootedUdids, ...sims.filter((s) => s.state !== 'Booted').map((s) => s.udid)];
+
+  for (const udid of allUdids) {
+    const bundleDir = path.join(simDevicesDir, udid, 'data/Containers/Bundle/Application');
+    if (!fs.existsSync(bundleDir)) continue;
+
+    try {
+      const appDirs = fs.readdirSync(bundleDir);
+      for (const appDir of appDirs) {
+        const appPath = path.join(bundleDir, appDir);
+        const entries = fs.readdirSync(appPath);
+        const expoApp = entries.find(
+          (e) => e.startsWith('Expo') && e.endsWith('.app'),
+        );
+        if (expoApp) {
+          return path.join(appPath, expoApp);
+        }
+      }
+    } catch {
+      // permission errors, missing dirs — skip
+    }
+  }
+  return null;
+};
+
+/**
+ * Ensure Expo Go is installed on the target simulator.
+ * If not present, copies it from another sim that has it.
+ * Returns true if Expo Go is available, false otherwise.
+ */
+const ensureExpoGo = (targetUdid) => {
+  // Check if already installed
+  try {
+    const output = execSync(
+      `xcrun simctl listapps "${targetUdid}" 2>/dev/null`,
+      { encoding: 'utf-8' },
+    );
+    if (output.includes(EXPO_GO_BUNDLE_ID)) {
+      console.log('Expo Go already installed on target simulator');
+      return true;
+    }
+  } catch {
+    // listapps may fail if sim just booted — continue to install
+  }
+
+  // Find Expo Go from another simulator
+  const appPath = findExpoGoApp();
+  if (!appPath) {
+    console.warn('Could not find Expo Go on any simulator. Install it on your primary sim first.');
+    return false;
+  }
+
+  console.log(`Installing Expo Go from: ${appPath}`);
+  try {
+    execSync(`xcrun simctl install "${targetUdid}" "${appPath}"`);
+    console.log('Expo Go installed successfully');
+    return true;
+  } catch (err) {
+    console.warn(`Failed to install Expo Go: ${err.message}`);
+    return false;
+  }
 };
 
 /**
@@ -174,17 +255,22 @@ const handler = async (req, res) => {
       // Wait for the sim to finish booting
       await waitForBoot(sim.udid);
 
-      // Open Expo Go on the new simulator
-      try {
-        execSync(
-          `xcrun simctl openurl "${sim.udid}" exp://localhost:${EXPO_PORT}`,
-        );
-      } catch {
-        // Expo Go might not be installed — still report success for the boot
+      // Ensure Expo Go is installed, then open it
+      const hasExpoGo = ensureExpoGo(sim.udid);
+      if (hasExpoGo) {
+        // Small delay to let the sim UI settle after boot + install
+        await new Promise((r) => setTimeout(r, 2000));
+        try {
+          execSync(
+            `xcrun simctl openurl "${sim.udid}" exp://localhost:${EXPO_PORT}`,
+          );
+        } catch {
+          console.warn('Could not open Expo Go URL — you may need to open it manually');
+        }
+      } else {
         console.warn(
-          'Could not open Expo Go. Install it: xcrun simctl install ' +
-            sim.udid +
-            ' /path/to/Expo Go.app',
+          'Expo Go not available. Install it on your primary simulator first, ' +
+            'then relaunch. The 2nd sim will pick it up automatically.',
         );
       }
 
