@@ -17,7 +17,7 @@ const StaticChatPreview = () => (
       </div>
     </div>
     {/* Messages */}
-    <div className="flex-1 space-y-3 overflow-y-auto p-4 pb-10">
+    <div className="flex-1 space-y-3 overflow-hidden p-4 pb-8">
       <div className="mx-auto w-fit rounded-full bg-secondary px-3 py-1 text-[10px] text-muted-foreground">
         You matched with TraderMike
       </div>
@@ -72,7 +72,7 @@ export const Hero = () => (
       </div>
 
       {/* Phone preview — desktop only */}
-      <div className="hidden w-full max-w-[380px] lg:block">
+      <div className="hidden w-full max-w-[380px] lg:block [&>div]:max-h-[900px]">
         <PhoneFrame>
           <StaticChatPreview />
         </PhoneFrame>
