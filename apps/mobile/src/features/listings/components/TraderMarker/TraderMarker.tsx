@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { Marker, Callout } from 'react-native-maps';
+import { Marker } from 'react-native-maps';
 import type { RelevantShop } from '../../schemas';
 
 type TraderMarkerProps = {
@@ -10,7 +10,7 @@ type TraderMarkerProps = {
 
 /**
  * Custom map marker for shops showing a name pill.
- * Replaces the old trader-based marker since listings no longer carry trader locations.
+ * Tapping opens shop details in the bottom sheet.
  */
 const TraderMarker = ({ shop, onPress }: TraderMarkerProps) => {
   if (shop.lat === 0 && shop.lng === 0) return null;
@@ -31,16 +31,6 @@ const TraderMarker = ({ shop, onPress }: TraderMarkerProps) => {
         </View>
         <View className="h-0 w-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-amber-500" />
       </View>
-      <Callout>
-        <View className="min-w-[120px] p-1">
-          <Text className="text-sm font-semibold" numberOfLines={1}>
-            {shop.name}
-          </Text>
-          <Text className="text-xs text-gray-500">
-            {shop.address}
-          </Text>
-        </View>
-      </Callout>
     </Marker>
   );
 };
