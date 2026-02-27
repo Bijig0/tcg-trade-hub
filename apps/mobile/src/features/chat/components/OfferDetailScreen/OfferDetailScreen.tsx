@@ -94,7 +94,7 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
     if (isListingOwner) {
       return {
         mySide: {
-          label: 'My Listing',
+          label: 'My Offer',
           items: tradeContext.listingItems,
           totalValue: tradeContext.listingTotalValue,
         },
