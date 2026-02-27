@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { View, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { ImageOff } from 'lucide-react-native';
@@ -39,6 +39,15 @@ const PhotoCarousel = ({
   const hasPhotos = photos.length > 0;
   const imageUri = hasPhotos ? photos[photoIndex] ?? '' : fallbackImageUrl;
 
+  // Track the previous URI so we can skip the fade transition when the
+  // listing changes (image already visible on the back card) but keep
+  // the transition for photo navigation within the same listing.
+  const prevUriRef = useRef(imageUri);
+  const prevPhotosRef = useRef(photos);
+  const isListingChange = prevPhotosRef.current !== photos;
+  prevUriRef.current = imageUri;
+  prevPhotosRef.current = photos;
+
   // Reset error state when the displayed image URL changes
   useEffect(() => {
     setImageError(false);
@@ -65,7 +74,7 @@ const PhotoCarousel = ({
           className="h-full w-full bg-muted"
           contentFit="contain"
           cachePolicy="disk"
-          transition={200}
+          transition={isListingChange ? 0 : 200}
           placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
           placeholderContentFit="contain"
           onError={handleImageError}
