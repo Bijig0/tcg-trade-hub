@@ -89,6 +89,30 @@ const MeetupDetailScreen = () => {
     return FALLBACK_REGION;
   }, [meetup?.shopCoords]);
 
+  const handleDirectionsReady = useCallback(
+    (result: { distance: number; duration: number }) => {
+      setRouteInfo(result);
+      if (meetup?.shopCoords && userLocation && mapRef.current) {
+        mapRef.current.fitToCoordinates(
+          [userLocation, meetup.shopCoords],
+          { edgePadding: { top: 80, right: 60, bottom: 320, left: 60 }, animated: true },
+        );
+      }
+    },
+    [meetup?.shopCoords, userLocation],
+  );
+
+  const handleGetDirections = useCallback(() => {
+    if (meetup?.shopCoords) {
+      const locationName = shop?.name ?? meetup.location_name ?? 'Location TBD';
+      openMapsNavigation({
+        latitude: meetup.shopCoords.latitude,
+        longitude: meetup.shopCoords.longitude,
+        label: locationName,
+      });
+    }
+  }, [meetup?.shopCoords, meetup?.location_name, shop?.name]);
+
   if (isLoading) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['top']}>
@@ -176,29 +200,6 @@ const MeetupDetailScreen = () => {
   };
 
   const showDirections = status === 'confirmed' && !!userLocation && !!meetup.shopCoords;
-
-  const handleDirectionsReady = useCallback(
-    (result: { distance: number; duration: number }) => {
-      setRouteInfo(result);
-      if (meetup?.shopCoords && userLocation && mapRef.current) {
-        mapRef.current.fitToCoordinates(
-          [userLocation, meetup.shopCoords],
-          { edgePadding: { top: 80, right: 60, bottom: 320, left: 60 }, animated: true },
-        );
-      }
-    },
-    [meetup?.shopCoords, userLocation],
-  );
-
-  const handleGetDirections = useCallback(() => {
-    if (meetup?.shopCoords) {
-      openMapsNavigation({
-        latitude: meetup.shopCoords.latitude,
-        longitude: meetup.shopCoords.longitude,
-        label: locationName,
-      });
-    }
-  }, [meetup?.shopCoords, locationName]);
 
   return (
     <View className="flex-1 bg-background">
