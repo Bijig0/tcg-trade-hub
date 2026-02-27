@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const POLL_INTERVAL_MS = 10_000;
 
@@ -7,10 +7,12 @@ const POLL_INTERVAL_MS = 10_000;
  * Designed for live development: Claude pushes an EAS update via a stop hook,
  * and this hook picks it up within seconds and seamlessly reloads.
  *
+ * Returns `{ isUpdating }` so the layout can show a visual overlay.
  * Only active in non-dev mode (i.e., preview/production builds not connected to Metro).
  */
 const useAutoUpdate = () => {
   const checking = useRef(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     if (__DEV__) return;
@@ -36,11 +38,16 @@ const useAutoUpdate = () => {
         console.log('[AutoUpdate] Update found, downloading...');
         await Updates.fetchUpdateAsync();
         console.log('[AutoUpdate] Downloaded, reloading...');
+
+        setIsUpdating(true);
+        // Brief delay so the overlay renders before reload
+        await new Promise((resolve) => setTimeout(resolve, 400));
         await Updates.reloadAsync();
       } catch (error) {
         // Silent fail — will retry on next poll
         console.warn('[AutoUpdate] Check failed:', error);
         checking.current = false;
+        setIsUpdating(false);
       }
     };
 
@@ -54,6 +61,8 @@ const useAutoUpdate = () => {
       clearInterval(interval);
     };
   }, []);
+
+  return { isUpdating };
 };
 
 export default useAutoUpdate;
