@@ -350,6 +350,12 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    // ---- WebSocket client count (used by mobile DevAdminLink) ----
+    if (url.pathname === "/api/ws/clients" && method === "GET") {
+      respond(json({ count: wsClients.size }));
+      return;
+    }
+
     // ---- 404 ----
     respond(json({ error: "Not found", path: url.pathname }, 404));
   } catch (err) {
