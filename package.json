@@ -11,7 +11,8 @@
     "test": "turbo test",
     "clean": "turbo clean",
     "graph:sync": "npx tsx packages/api/src/graph-sync.ts",
-    "dev:graph": "npx tsx packages/api/src/graph-sync.ts && npx tsx packages/api/src/graph/serve.ts"
+    "dev:graph": "npx tsx packages/api/src/graph-sync.ts && npx tsx packages/api/src/graph/serve.ts",
+    "studio": "pnpm --filter @tcg-trade-hub/mobile e2e:studio"
   },
   "devDependencies": {
     "turbo": "^2.3.0"
