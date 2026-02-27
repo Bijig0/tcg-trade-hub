@@ -4,18 +4,11 @@ import {
   HeadContent,
   Scripts,
 } from '@tanstack/react-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { AuthProvider } from '@/context/AuthContext';
+import { queryClient } from '@/lib/queryClient';
 import globalsCss from '../styles/globals.css?url';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60 * 1000,
-    },
-  },
-});
 
 const RootDocument = ({ children }: Readonly<{ children: ReactNode }>) => {
   return (

@@ -16,17 +16,21 @@ export const SignupForm = ({ onSuccess }: SignupFormProps) => {
     setError(null);
     setIsLoading(true);
 
-    const supabase = getSupabaseBrowserClient();
-    const { error } = await supabase.auth.signUp({ email, password });
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const { error } = await supabase.auth.signUp({ email, password });
 
-    setIsLoading(false);
+      if (error) {
+        setError(error.message);
+        return;
+      }
 
-    if (error) {
-      setError(error.message);
-      return;
+      onSuccess();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
     }
-
-    onSuccess();
   };
 
   return (

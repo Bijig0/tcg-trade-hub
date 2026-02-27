@@ -9,6 +9,7 @@ import {
 import type { Session, User } from '@supabase/supabase-js';
 import { UserRolesArraySchema, type UserRole } from '@tcg-trade-hub/database';
 import { getSupabaseBrowserClient } from '@/lib/supabase.client';
+import { queryClient } from '@/lib/queryClient';
 
 type AuthContextValue = {
   session: Session | null;
@@ -54,14 +55,19 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
   const signOut = async () => {
     const supabase = getSupabaseBrowserClient();
     await supabase.auth.signOut();
+    queryClient.clear();
     setSession(null);
   };
 
   const refreshSession = useCallback(async () => {
-    const supabase = getSupabaseBrowserClient();
-    const { data } = await supabase.auth.refreshSession();
-    if (data.session) {
-      setSession(data.session);
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const { data } = await supabase.auth.refreshSession();
+      if (data.session) {
+        setSession(data.session);
+      }
+    } catch {
+      setSession(null);
     }
   }, []);
 

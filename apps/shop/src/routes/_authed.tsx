@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
+import { createFileRoute, Outlet, Navigate } from '@tanstack/react-router';
 import { useAuth } from '@/context/AuthContext';
 
 export const Route = createFileRoute('/_authed')({
@@ -17,10 +17,7 @@ function AuthedLayout() {
   }
 
   if (!user) {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/auth/login';
-    }
-    return null;
+    return <Navigate to="/auth/login" />;
   }
 
   return <Outlet />;
