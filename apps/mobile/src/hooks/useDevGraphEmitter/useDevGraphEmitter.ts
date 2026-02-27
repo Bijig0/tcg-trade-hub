@@ -22,9 +22,14 @@ const useDevGraphEmitter = (): void => {
     if (key === prevKeyRef.current) return;
     prevKeyRef.current = key;
 
+    console.log('[useDevGraphEmitter] segments:', key);
     const mapping = resolveSegments(segments);
-    if (!mapping) return;
+    if (!mapping) {
+      console.log('[useDevGraphEmitter] no mapping for segments');
+      return;
+    }
 
+    console.log('[useDevGraphEmitter] resolved:', mapping.pathId, `step=${mapping.stepIndex}`, mapping.label);
     const traceId = createTraceId();
     const scoped = devEmitter.forPath(mapping.pathId, traceId, 'mobile:nav');
     scoped(mapping.stepIndex, 'started', { message: mapping.label });

@@ -41,16 +41,24 @@ const GRAPH_SERVER_URL =
 
 const createDevLiveEmitter = (): LiveEmitter => {
   const emit = (event: LiveEventPayload): void => {
-    try {
-      fetch(`${GRAPH_SERVER_URL}/api/events`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(event),
-        signal: AbortSignal.timeout(2_000),
-      }).catch(() => {});
-    } catch {
-      // fire and forget
-    }
+    console.log('[devEmitter] →', event.pathId, `step=${event.stepIndex}`, event.status, event.message ?? '');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2_000);
+
+    fetch(`${GRAPH_SERVER_URL}/api/events`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(event),
+      signal: controller.signal,
+    })
+      .then((res) => {
+        clearTimeout(timeout);
+        console.log('[devEmitter] ←', res.status, res.statusText);
+      })
+      .catch((err) => {
+        clearTimeout(timeout);
+        console.error('[devEmitter] FAILED:', err?.message ?? err);
+      });
   };
 
   const forPath = (
