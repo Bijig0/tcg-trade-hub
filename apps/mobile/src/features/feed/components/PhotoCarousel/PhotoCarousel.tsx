@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { View, Pressable } from 'react-native';
-import { Image } from 'expo-image';
+import { Image, type ImageLoadEventData } from 'expo-image';
 import { ImageOff } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import { ListingTypeBadge } from '@/features/listings';
@@ -35,9 +35,33 @@ const PhotoCarousel = ({
 }: PhotoCarouselProps) => {
   const [imageError, setImageError] = useState(false);
   const handleImageError = useCallback(() => setImageError(true), []);
+  const carouselIdRef = useRef(Math.random().toString(36).slice(2, 6));
 
   const hasPhotos = photos.length > 0;
   const imageUri = hasPhotos ? photos[photoIndex] ?? '' : fallbackImageUrl;
+
+  // DEBUG: track URI changes
+  const prevUriRef = useRef(imageUri);
+  if (prevUriRef.current !== imageUri) {
+    const oldShort = prevUriRef.current.split('/').pop()?.slice(0, 30) ?? 'empty';
+    const newShort = imageUri.split('/').pop()?.slice(0, 30) ?? 'empty';
+    console.log(`[PHOTO-URI-CHANGE] carousel=${carouselIdRef.current} OLD="${oldShort}" NEW="${newShort}"`);
+    prevUriRef.current = imageUri;
+  }
+
+  // DEBUG: track mount/unmount
+  useEffect(() => {
+    const cid = carouselIdRef.current;
+    const uriShort = imageUri.split('/').pop()?.slice(0, 30) ?? 'empty';
+    console.log(`[PHOTO-MOUNT] carousel=${cid} uri="${uriShort}"`);
+    return () => {
+      console.log(`[PHOTO-UNMOUNT] carousel=${cid}`);
+    };
+  }, []);
+
+  const handleImageLoad = useCallback((e: ImageLoadEventData) => {
+    console.log(`[PHOTO-LOADED] carousel=${carouselIdRef.current} w=${e.source.width} h=${e.source.height} cacheType=${e.cacheType} url="${e.source.url?.split('/').pop()?.slice(0, 30) ?? '?'}"`);
+  }, []);
 
   // Reset error state when the displayed image URL changes
   useEffect(() => {
@@ -68,6 +92,7 @@ const PhotoCarousel = ({
           transition={200}
           placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
           placeholderContentFit="contain"
+          onLoad={handleImageLoad}
           onError={handleImageError}
         />
       ) : (

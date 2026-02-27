@@ -67,10 +67,23 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
   const currentListing = listings[currentIndex] as ListingWithDistance | undefined;
   const nextListing = listings[currentIndex + 1] as ListingWithDistance | undefined;
 
+  // DEBUG: log every render with card identities
+  if (__DEV__) {
+    const cId = currentListing?.id?.slice(0, 8) ?? 'none';
+    const cTitle = currentListing?.title?.slice(0, 20) ?? 'none';
+    const nId = nextListing?.id?.slice(0, 8) ?? 'none';
+    const nTitle = nextListing?.title?.slice(0, 20) ?? 'none';
+    console.log(`[SWIPE-RENDER] idx=${currentIndex} current=${cId}("${cTitle}") next=${nId}("${nTitle}") txVal=${translateX.value.toFixed(0)} ncp=${nextCardProgress.value.toFixed(2)}`);
+  }
+
   const advanceCard = useCallback(
     (direction: 'like' | 'pass') => {
       const listing = listings[currentIndex] as ListingWithDistance | undefined;
       if (!listing) return;
+
+      if (__DEV__) {
+        console.log(`[SWIPE-ADVANCE] direction=${direction} fromIdx=${currentIndex} departing=${listing.id.slice(0, 8)} translateX=${translateX.value.toFixed(0)} nextCardProgress=${nextCardProgress.value.toFixed(2)}`);
+      }
 
       recordSwipe.mutate(
         { listingId: listing.id, direction },
@@ -90,8 +103,15 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
       translateX.value = 0;
       translateY.value = 0;
 
+      if (__DEV__) {
+        console.log(`[SWIPE-ADVANCE] reset translateX/Y to 0, about to setCurrentIndex`);
+      }
+
       setCurrentIndex((prev) => {
         const nextIdx = prev + 1;
+        if (__DEV__) {
+          console.log(`[SWIPE-ADVANCE] setCurrentIndex ${prev} -> ${nextIdx}`);
+        }
         if (nextIdx >= listings.length - 3 && hasNextPage) {
           fetchNextPage();
         }
@@ -272,6 +292,9 @@ const FeedSwipeView = ({ className }: FeedSwipeViewProps) => {
             .filter((l): l is ListingWithDistance => l != null)
             .map((listing) => {
               const isCurrent = listing.id === currentListing?.id;
+              if (__DEV__) {
+                console.log(`[SWIPE-MAP] key=${listing.id.slice(0, 8)} title="${listing.title?.slice(0, 20)}" role=${isCurrent ? 'FRONT' : 'BACK'}`);
+              }
               return (
                 <Animated.View
                   key={listing.id}

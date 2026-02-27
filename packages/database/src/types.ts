@@ -644,7 +644,7 @@ export type Database = {
           created_at: string
           id: string
           listing_id: string
-          message: string | null
+          offerer_note: string | null
           offerer_id: string
           parent_offer_id: string | null
           status: Database["public"]["Enums"]["offer_status"]
@@ -655,7 +655,7 @@ export type Database = {
           created_at?: string
           id?: string
           listing_id: string
-          message?: string | null
+          offerer_note?: string | null
           offerer_id: string
           parent_offer_id?: string | null
           status?: Database["public"]["Enums"]["offer_status"]
@@ -666,7 +666,7 @@ export type Database = {
           created_at?: string
           id?: string
           listing_id?: string
-          message?: string | null
+          offerer_note?: string | null
           offerer_id?: string
           parent_offer_id?: string | null
           status?: Database["public"]["Enums"]["offer_status"]

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Info } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
@@ -23,6 +23,23 @@ export type SwipeCardProps = {
 const SwipeCard = ({ listing, className, onOpenDetail }: SwipeCardProps) => {
   const items = listing.items ?? [];
   const isBundle = items.length > 1;
+  const mountIdRef = useRef(Math.random().toString(36).slice(2, 6));
+
+  // DEBUG: track mount/unmount
+  useEffect(() => {
+    const mid = mountIdRef.current;
+    console.log(`[SWIPECARD-MOUNT] instance=${mid} listing=${listing.id.slice(0, 8)} title="${listing.title?.slice(0, 20)}"`);
+    return () => {
+      console.log(`[SWIPECARD-UNMOUNT] instance=${mid} listing=${listing.id.slice(0, 8)}`);
+    };
+  }, []);
+
+  // DEBUG: track prop changes
+  const prevListingIdForLog = useRef(listing.id);
+  if (prevListingIdForLog.current !== listing.id) {
+    console.log(`[SWIPECARD-PROP-CHANGE] instance=${mountIdRef.current} OLD=${prevListingIdForLog.current.slice(0, 8)} NEW=${listing.id.slice(0, 8)} title="${listing.title?.slice(0, 20)}"`);
+    prevListingIdForLog.current = listing.id;
+  }
 
   const [selectedItemIndex, setSelectedItemIndex] = useState(0);
   const [photoIndex, setPhotoIndex] = useState(0);

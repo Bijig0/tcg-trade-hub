@@ -254,7 +254,7 @@ export const OfferRowSchema = z.object({
   offerer_id: z.string().uuid(),
   status: OfferStatusSchema,
   cash_amount: z.number(),
-  message: z.string().nullable(),
+  offerer_note: z.string().nullable(),
   parent_offer_id: z.string().uuid().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
@@ -267,7 +267,7 @@ export const OfferInsertSchema = OfferRowSchema.omit({
   updated_at: true,
 }).extend({
   cash_amount: z.number().default(0),
-  message: z.string().nullable().optional(),
+  offerer_note: z.string().nullable().optional(),
   parent_offer_id: z.string().uuid().nullable().optional(),
 });
 
@@ -512,6 +512,9 @@ export const CardOfferPayloadSchema = z.object({
   requesting: z.array(CardRefSchema),
   cash_amount: z.number().optional(),
   cash_direction: z.enum(['offering', 'requesting']).optional(),
+  offering_note: z.string().optional(),
+  requesting_note: z.string().optional(),
+  /** @deprecated Use offering_note / requesting_note. Kept for backward compat with old messages. */
   note: z.string().optional(),
 });
 
