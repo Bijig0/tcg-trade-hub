@@ -1,10 +1,14 @@
 #!/bin/bash
-# Captures full iOS simulator state for AI context
+# Captures iOS simulator state for AI context
 # Usage: ./scripts/capture-state.sh [--json]
 #
-# Requires:
-#   - iOS simulator booted with the app running
-#   - ios-simulator-skill installed at ~/.claude/skills/ios-simulator-skill/
+# Captures:
+#   1. Screenshot (xcrun simctl — always works)
+#   2. UI hierarchy via idb (optional — requires idb_companion)
+#   3. App state via idb (optional — requires idb_companion)
+#
+# Note: For full UI hierarchy in Claude Code, use Maestro MCP's
+# inspect_view_hierarchy tool instead — it doesn't need idb.
 
 set -euo pipefail
 
@@ -22,23 +26,41 @@ mkdir -p "$OUTPUT_DIR"
 
 echo "=== Capturing iOS Simulator State ==="
 
-# 1. Accessibility tree (screen_mapper)
-echo "  [1/3] Mapping UI elements..."
-"$VENV_PYTHON" "$SKILL_DIR/screen_mapper.py" \
-  ${1:+--json} > "$OUTPUT_DIR/ui-tree-$TIMESTAMP.txt" 2>&1
+# 1. Screenshot (always works with xcrun simctl)
+echo "  [1/3] Taking screenshot..."
+if xcrun simctl io booted screenshot "$OUTPUT_DIR/screenshot-$TIMESTAMP.png" 2>/dev/null; then
+  echo "        -> $OUTPUT_DIR/screenshot-$TIMESTAMP.png"
+else
+  echo "        -> SKIPPED (no simulator booted)"
+fi
 
-# 2. Full app state
-echo "  [2/3] Capturing app state..."
-"$VENV_PYTHON" "$SKILL_DIR/app_state_capture.py" \
-  --output "$OUTPUT_DIR" \
-  --inline > "$OUTPUT_DIR/app-state-$TIMESTAMP.txt" 2>&1
+# 2. UI element tree (requires idb_companion)
+echo "  [2/3] Mapping UI elements..."
+if "$VENV_PYTHON" "$SKILL_DIR/screen_mapper.py" \
+    ${1:+--json} > "$OUTPUT_DIR/ui-tree-$TIMESTAMP.txt" 2>&1; then
+  echo "        -> $OUTPUT_DIR/ui-tree-$TIMESTAMP.txt"
+else
+  echo "        -> SKIPPED (idb_companion not available)"
+  echo "           Install: brew tap facebook/fb && brew install idb-companion"
+  echo "           Alternative: Use Maestro MCP inspect_view_hierarchy in Claude Code"
+  rm -f "$OUTPUT_DIR/ui-tree-$TIMESTAMP.txt"
+fi
 
-# 3. Screenshot
-echo "  [3/3] Taking screenshot..."
-xcrun simctl io booted screenshot "$OUTPUT_DIR/screenshot-$TIMESTAMP.png" 2>/dev/null \
-  && echo "  Screenshot saved." \
-  || echo "  Warning: Screenshot failed (is a simulator booted?)"
+# 3. Full app state (requires idb_companion)
+echo "  [3/3] Capturing app state..."
+if "$VENV_PYTHON" "$SKILL_DIR/app_state_capture.py" \
+    --output "$OUTPUT_DIR" \
+    --inline > "$OUTPUT_DIR/app-state-$TIMESTAMP.txt" 2>&1; then
+  echo "        -> $OUTPUT_DIR/app-state-$TIMESTAMP.txt"
+else
+  echo "        -> SKIPPED (idb_companion not available)"
+  rm -f "$OUTPUT_DIR/app-state-$TIMESTAMP.txt"
+fi
 
 echo ""
-echo "State captured to $OUTPUT_DIR/*-$TIMESTAMP.*"
-echo "Pass these files as context to Claude Code."
+echo "Captured to: $OUTPUT_DIR/*-$TIMESTAMP.*"
+echo ""
+echo "Tip: In Claude Code, Maestro MCP provides richer state capture:"
+echo "  - inspect_view_hierarchy  (full UI tree)"
+echo "  - take_screenshot         (screenshot)"
+echo "  - run_flow                (E2E test execution)"

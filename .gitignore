@@ -10,6 +10,9 @@ ios/
 android/
 *.db
 
+# State captures (runtime output)
+.state-captures/
+
 # Graph DB (generated at runtime)
 graph.db
 graph.db-shm
