@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeftRight, ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthProvider';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import useTradeContext from '../../hooks/useTradeContext/useTradeContext';
@@ -157,6 +157,22 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
   const handleClearTheirSide = useCallback(() => {
     setEditingTheirItems([]);
   }, []);
+
+  const handleRemoveMyItem = useCallback(
+    (index: number) => {
+      const current = editingMyItems ?? mySide?.items ?? [];
+      setEditingMyItems(current.filter((_, i) => i !== index));
+    },
+    [editingMyItems, mySide],
+  );
+
+  const handleRemoveTheirItem = useCallback(
+    (index: number) => {
+      const current = editingTheirItems ?? theirSide?.items ?? [];
+      setEditingTheirItems(current.filter((_, i) => i !== index));
+    },
+    [editingTheirItems, theirSide],
+  );
 
   const handlePickerConfirm = useCallback(
     (items: TradeContextItem[]) => {
@@ -313,18 +329,23 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
           label={mySide.label}
           items={displayMyItems}
           totalValue={displayMyTotal}
+          variant="my"
           isEditable={isEditable}
           onPress={isEditable ? () => setPickerSide('my') : undefined}
           onClear={isEditable ? handleClearMySide : undefined}
+          onRemoveItem={isEditable ? handleRemoveMyItem : undefined}
           userProfile={myProfile}
         />
 
-        {/* Value comparison bar */}
-        <ValueComparisonBar myValue={displayMyTotal} theirValue={displayTheirTotal} />
-
-        {/* Swap icon */}
-        <View className="items-center py-1">
-          <ArrowLeftRight size={20} color="#9ca3af" />
+        {/* "FOR" trade divider */}
+        <View className="flex-row items-center gap-3 py-1">
+          <View className="h-px flex-1 bg-border" />
+          <View className="rounded-full bg-foreground px-4 py-1.5">
+            <Text className="text-xs font-bold uppercase tracking-widest text-background">
+              for
+            </Text>
+          </View>
+          <View className="h-px flex-1 bg-border" />
         </View>
 
         {/* Their side */}
@@ -332,11 +353,16 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
           label={theirSide.label}
           items={displayTheirItems}
           totalValue={displayTheirTotal}
+          variant="their"
           isEditable={isEditable}
           onPress={isEditable ? () => setPickerSide('their') : undefined}
           onClear={isEditable ? handleClearTheirSide : undefined}
+          onRemoveItem={isEditable ? handleRemoveTheirItem : undefined}
           userProfile={theirProfile}
         />
+
+        {/* Value comparison bar */}
+        <ValueComparisonBar myValue={displayMyTotal} theirValue={displayTheirTotal} />
 
         {/* Cash editor */}
         <CashEditor

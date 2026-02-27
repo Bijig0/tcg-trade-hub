@@ -1,29 +1,34 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, Pressable } from 'react-native';
+import { X } from 'lucide-react-native';
 import Badge from '@/components/ui/Badge/Badge';
 import { CONDITION_LABELS } from '@/config/constants';
 import type { TradeContextItem } from '../../hooks/useTradeContext/useTradeContext';
 
 export type TradeItemRowProps = {
   item: TradeContextItem;
+  onRemove?: () => void;
 };
 
-/** Single card row in the offer detail — thumbnail, name, condition badge, quantity, market price */
-const TradeItemRow = ({ item }: TradeItemRowProps) => {
+/** Single card row — thumbnail, name, condition badge, quantity, market price, optional remove */
+const TradeItemRow = ({ item, onRemove }: TradeItemRowProps) => {
   const conditionLabel = CONDITION_LABELS[item.condition as keyof typeof CONDITION_LABELS];
 
   return (
-    <View className="flex-row items-center gap-3 py-1.5">
+    <View className="flex-row items-center gap-3 border-b border-border/50 py-2 last:border-b-0">
       <Image
         source={{ uri: item.cardImageUrl }}
-        className="h-14 w-10 rounded"
+        className="h-16 w-12 rounded-lg"
         resizeMode="cover"
       />
       <View className="flex-1 gap-0.5">
+        <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>
+          {item.cardName}
+        </Text>
         <View className="flex-row items-center gap-1.5">
-          <Text className="flex-shrink text-sm font-medium text-foreground" numberOfLines={1}>
-            {item.cardName}
-          </Text>
+          {conditionLabel && (
+            <Badge variant="secondary" className="self-start">{conditionLabel}</Badge>
+          )}
           {item.quantity > 1 && (
             <View className="rounded-full bg-accent px-1.5 py-0.5">
               <Text className="text-[10px] font-semibold text-muted-foreground">
@@ -32,14 +37,20 @@ const TradeItemRow = ({ item }: TradeItemRowProps) => {
             </View>
           )}
         </View>
-        {conditionLabel && (
-          <Badge variant="secondary" className="self-start">{conditionLabel}</Badge>
-        )}
       </View>
       {item.marketPrice != null && (
-        <Text className="text-sm font-medium text-foreground">
+        <Text className="text-sm font-bold text-foreground">
           ${item.marketPrice.toFixed(2)}
         </Text>
+      )}
+      {onRemove && (
+        <Pressable
+          onPress={onRemove}
+          className="ml-1 rounded-full bg-destructive/10 p-1.5 active:opacity-70"
+          hitSlop={6}
+        >
+          <X size={12} color="#ef4444" />
+        </Pressable>
       )}
     </View>
   );
