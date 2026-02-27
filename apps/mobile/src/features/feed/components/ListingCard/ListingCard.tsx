@@ -13,18 +13,20 @@ import formatDistance from '../../utils/formatDistance/formatDistance';
 export type ListingCardProps = {
   listing: ListingWithDistance;
   className?: string;
+  /** Base path for listing detail navigation. Defaults to the Listings tab. */
+  detailBasePath?: string;
 };
 
 /**
  * Compact card for the feed list view showing bundle preview.
  */
-const ListingCard = ({ listing, className }: ListingCardProps) => {
+const ListingCard = ({ listing, className, detailBasePath = '/(tabs)/(listings)' }: ListingCardProps) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const items = listing.items ?? [];
   const handlePress = () => {
     queryClient.setQueryData(feedKeys.detail(listing.id), listing);
-    router.push(`/(tabs)/(listings)/listing/${listing.id}`);
+    router.push(`${detailBasePath}/listing/${listing.id}`);
   };
 
   return (

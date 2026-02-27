@@ -161,7 +161,7 @@ const BrowseMapScreen = () => {
 
   const renderItem = useCallback(
     ({ item }: { item: ListingWithDistance }) => (
-      <ListingCard listing={item} className="mx-4 mb-3" />
+      <ListingCard listing={item} className="mx-4 mb-3" detailBasePath="/(tabs)/(discover)" />
     ),
     [],
   );
