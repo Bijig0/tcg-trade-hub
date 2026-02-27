@@ -3,6 +3,7 @@ import { GraphViewer } from 'flow-graph/react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChatPanel } from '@/features/chat';
 import TestCoverage from '@/features/maestro/components/TestCoverage/TestCoverage';
+import useMobileLink from '@/hooks/useMobileLink/useMobileLink';
 
 const GRAPH_SERVER_URL = 'http://localhost:4243';
 const HEALTH_POLL_INTERVAL = 5_000;
@@ -103,6 +104,7 @@ function AdminDashboard() {
   const { health, retry } = useGraphHealth();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isTestCoverageOpen, setIsTestCoverageOpen] = useState(false);
+  const mobileLink = useMobileLink();
 
   const toggleChat = useCallback(() => {
     setIsChatOpen((prev) => !prev);
@@ -127,15 +129,24 @@ function AdminDashboard() {
     return <ErrorState error={health.error!} onRetry={retry} />;
   }
 
+  const controlledPath =
+    mobileLink.isLinked && mobileLink.activePath ? mobileLink.activePath : undefined;
+
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <HealthBar health={health} onRetry={retry} onToggleTestCoverage={toggleTestCoverage} />
+      <HealthBar
+        health={health}
+        onRetry={retry}
+        onToggleTestCoverage={toggleTestCoverage}
+        mobileLink={mobileLink}
+      />
       <div className="flex flex-1 overflow-hidden">
         <TestCoverage isOpen={isTestCoverageOpen} onToggle={toggleTestCoverage} />
         <div className="flex-1 overflow-hidden">
           <GraphViewer
             serverUrl={GRAPH_SERVER_URL}
             height="calc(100dvh - 41px)"
+            activePath={controlledPath}
           />
         </div>
         <ChatPanel isOpen={isChatOpen} onToggle={toggleChat} />
@@ -220,9 +231,22 @@ const ErrorState = ({ error, onRetry }: ErrorStateProps) => (
   </div>
 );
 
-type HealthBarProps = { health: HealthData; onRetry: () => void; onToggleTestCoverage?: () => void };
+type MobileLinkState = {
+  isLinked: boolean;
+  toggleLink: () => void;
+  activePath: string | null;
+  lastEvent: { pathId: string; message: string; timestamp: number } | null;
+  connected: boolean;
+};
 
-const HealthBar = ({ health, onRetry, onToggleTestCoverage }: HealthBarProps) => {
+type HealthBarProps = {
+  health: HealthData;
+  onRetry: () => void;
+  onToggleTestCoverage?: () => void;
+  mobileLink?: MobileLinkState;
+};
+
+const HealthBar = ({ health, onRetry, onToggleTestCoverage, mobileLink }: HealthBarProps) => {
   const isStale =
     health.lastChecked !== null &&
     Date.now() - health.lastChecked > HEALTH_POLL_INTERVAL * 3;
@@ -248,6 +272,54 @@ const HealthBar = ({ health, onRetry, onToggleTestCoverage }: HealthBarProps) =>
             {isStale ? 'Stale' : health.status === 'healthy' ? 'Connected' : 'Disconnected'}
           </span>
         </div>
+        {mobileLink && (
+          <>
+            <span className="text-xs text-muted-foreground">|</span>
+            <button
+              onClick={mobileLink.toggleLink}
+              className={`flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium transition-colors ${
+                mobileLink.isLinked
+                  ? 'bg-primary/10 text-primary hover:bg-primary/20'
+                  : 'bg-secondary text-secondary-foreground hover:bg-accent'
+              }`}
+              title={mobileLink.isLinked ? 'Click to unlink from mobile' : 'Click to follow mobile navigation'}
+            >
+              {mobileLink.isLinked && (
+                <span
+                  className={`inline-block h-1.5 w-1.5 rounded-full ${
+                    mobileLink.connected ? 'bg-green-500' : 'bg-muted-foreground'
+                  }`}
+                />
+              )}
+              <svg
+                className="h-3 w-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                {mobileLink.isLinked ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1M18 6l-6 6"
+                  />
+                )}
+              </svg>
+              {mobileLink.isLinked
+                ? mobileLink.lastEvent
+                  ? `Linked: ${mobileLink.lastEvent.message}`
+                  : 'Linked'
+                : 'Link to Mobile'}
+            </button>
+          </>
+        )}
       </div>
 
       <div className="flex items-center gap-4">
