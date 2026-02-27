@@ -74,7 +74,7 @@ export const Hero = () => (
 
       {/* Phone preview — desktop only */}
       <div className="hidden w-full max-w-[380px] lg:block">
-        <PhoneFrame>
+        <PhoneFrame className="h-auto">
           <StaticChatPreview />
         </PhoneFrame>
       </div>

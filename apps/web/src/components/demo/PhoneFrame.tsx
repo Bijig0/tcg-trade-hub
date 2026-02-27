@@ -2,11 +2,12 @@ import type { ReactNode } from 'react';
 
 type PhoneFrameProps = {
   children: ReactNode;
+  className?: string;
 };
 
-export const PhoneFrame = ({ children }: PhoneFrameProps) => {
+export const PhoneFrame = ({ children, className }: PhoneFrameProps) => {
   return (
-    <div className="mx-auto flex h-[85vh] max-h-[800px] w-full max-w-[420px] flex-col overflow-hidden rounded-[2.5rem] border-2 border-border bg-background shadow-2xl">
+    <div className={`mx-auto flex w-full max-w-[420px] flex-col overflow-hidden rounded-[2.5rem] border-2 border-border bg-background shadow-2xl ${className ?? 'h-[85vh] max-h-[800px]'}`}>
       {/* Status bar */}
       <div className="flex items-center justify-between px-8 pb-1 pt-3 text-xs text-muted-foreground">
         <span>9:41</span>
