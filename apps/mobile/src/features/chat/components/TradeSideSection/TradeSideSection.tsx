@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { Plus, Star, X } from 'lucide-react-native';
+import { View, Text, Pressable, TextInput } from 'react-native';
+import { Banknote, Plus, Star, X } from 'lucide-react-native';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import TradeItemRow from '../TradeItemRow/TradeItemRow';
 import type { TradeContextItem, TradeUserProfile } from '../../hooks/useTradeContext/useTradeContext';
@@ -10,10 +10,12 @@ export type TradeSideSectionProps = {
   items: TradeContextItem[];
   totalValue: number;
   variant: 'my' | 'their';
+  cashAmount?: number;
   isEditable?: boolean;
   onPress?: () => void;
   onClear?: () => void;
   onRemoveItem?: (index: number) => void;
+  onChangeCash?: (amount: number) => void;
   userProfile?: TradeUserProfile | null;
 };
 
@@ -25,6 +27,9 @@ const VARIANT_STYLES = {
     totalBg: 'bg-primary/10',
     totalText: 'text-primary',
     dotColor: 'bg-primary',
+    cashBg: 'bg-primary/5',
+    cashBorder: 'border-primary/20',
+    cashAccent: '#3b82f6',
   },
   their: {
     border: 'border-amber-500/40',
@@ -33,22 +38,29 @@ const VARIANT_STYLES = {
     totalBg: 'bg-amber-500/10',
     totalText: 'text-amber-600',
     dotColor: 'bg-amber-500',
+    cashBg: 'bg-amber-500/5',
+    cashBorder: 'border-amber-500/20',
+    cashAccent: '#f59e0b',
   },
 } as const;
 
-/** Card container showing one side of a trade — color-coded, with user info, items, and total */
+/** Card container showing one side of a trade — color-coded, with user info, items, cash, and total */
 const TradeSideSection = ({
   label,
   items,
   totalValue,
   variant,
+  cashAmount = 0,
   isEditable,
   onPress,
   onClear,
   onRemoveItem,
+  onChangeCash,
   userProfile,
 }: TradeSideSectionProps) => {
   const styles = VARIANT_STYLES[variant];
+  const cardsValue = items.reduce((s, i) => s + (i.marketPrice ?? 0) * i.quantity, 0);
+  const combinedTotal = cardsValue + cashAmount;
 
   const content = (
     <View className={`overflow-hidden rounded-2xl border-2 ${styles.border} bg-card`}>
@@ -129,6 +141,39 @@ const TradeSideSection = ({
         </Pressable>
       )}
 
+      {/* Cash section — integrated into the side */}
+      {isEditable && onChangeCash ? (
+        <View className={`mx-4 mb-3 rounded-lg border ${styles.cashBorder} ${styles.cashBg} px-3 py-2.5`}>
+          <View className="flex-row items-center gap-2">
+            <Banknote size={16} color={styles.cashAccent} />
+            <Text className="text-xs font-semibold uppercase text-muted-foreground">
+              Cash
+            </Text>
+          </View>
+          <View className="mt-1.5 flex-row items-center gap-1.5">
+            <Text className="text-base font-bold text-foreground">$</Text>
+            <TextInput
+              className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 text-base text-foreground"
+              value={cashAmount > 0 ? String(cashAmount) : ''}
+              onChangeText={(text) => {
+                const parsed = parseFloat(text.replace(/[^0-9.]/g, ''));
+                onChangeCash(isNaN(parsed) ? 0 : parsed);
+              }}
+              keyboardType="decimal-pad"
+              placeholder="0.00"
+              placeholderTextColor="#9ca3af"
+            />
+          </View>
+        </View>
+      ) : cashAmount > 0 ? (
+        <View className={`mx-4 mb-3 flex-row items-center gap-2 rounded-lg ${styles.cashBg} px-3 py-2.5`}>
+          <Banknote size={16} color={styles.cashAccent} />
+          <Text className="text-sm font-medium text-foreground">
+            + ${cashAmount.toFixed(2)} cash
+          </Text>
+        </View>
+      ) : null}
+
       {/* Total value — prominent */}
       <View className={`${styles.totalBg} px-4 py-3`}>
         <View className="flex-row items-center justify-between">
@@ -136,11 +181,12 @@ const TradeSideSection = ({
             Total Value
           </Text>
           <Text className={`text-lg font-bold ${styles.totalText}`}>
-            ${totalValue.toFixed(2)}
+            ${combinedTotal.toFixed(2)}
           </Text>
         </View>
         <Text className="text-xs text-muted-foreground">
           {items.length} {items.length === 1 ? 'card' : 'cards'}
+          {cashAmount > 0 ? ` + $${cashAmount.toFixed(2)} cash` : ''}
         </Text>
       </View>
     </View>

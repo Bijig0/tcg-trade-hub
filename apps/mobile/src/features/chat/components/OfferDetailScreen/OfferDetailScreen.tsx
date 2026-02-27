@@ -15,7 +15,6 @@ import NegotiationStatusBadge from '../NegotiationStatusBadge/NegotiationStatusB
 import TradeSideSection from '../TradeSideSection/TradeSideSection';
 import CardPickerModal from '../CardPickerModal/CardPickerModal';
 import ValueComparisonBar from '../ValueComparisonBar/ValueComparisonBar';
-import CashEditor from '../CashEditor/CashEditor';
 import TradeActionFooter from '../TradeActionFooter/TradeActionFooter';
 import type { CardOfferPayload } from '@tcg-trade-hub/database';
 
@@ -36,8 +35,8 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
   const [editingMyItems, setEditingMyItems] = useState<TradeContextItem[] | null>(null);
   const [editingTheirItems, setEditingTheirItems] = useState<TradeContextItem[] | null>(null);
   const [pickerSide, setPickerSide] = useState<'my' | 'their' | null>(null);
-  const [editingCashAmount, setEditingCashAmount] = useState(0);
-  const [editingCashDirection, setEditingCashDirection] = useState<'offering' | 'requesting'>('offering');
+  const [myCash, setMyCash] = useState(0);
+  const [theirCash, setTheirCash] = useState(0);
   const [offerNote, setOfferNote] = useState('');
 
   const isEditable = tradeContext
@@ -47,13 +46,28 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
   const isListingOwner = tradeContext?.listingOwnerId === user?.id;
   const isOfferSender = tradeContext?.offererId === user?.id;
 
-  // Sync cash state from context when loaded
+  // Sync cash state from context — map direction-based model to per-side amounts
   useEffect(() => {
-    if (tradeContext) {
-      setEditingCashAmount(tradeContext.offerCashAmount);
-      setEditingCashDirection(tradeContext.offerCashDirection ?? 'offering');
+    if (!tradeContext) return;
+    const amount = tradeContext.offerCashAmount;
+    const direction = tradeContext.offerCashDirection;
+
+    if (amount <= 0 || !direction) {
+      setMyCash(0);
+      setTheirCash(0);
+      return;
     }
-  }, [tradeContext]);
+
+    // "offering" means the offerer is adding cash to their side
+    // "requesting" means the offerer is requesting cash from the listing owner
+    if (isOfferSender) {
+      setMyCash(direction === 'offering' ? amount : 0);
+      setTheirCash(direction === 'requesting' ? amount : 0);
+    } else {
+      setMyCash(direction === 'requesting' ? amount : 0);
+      setTheirCash(direction === 'offering' ? amount : 0);
+    }
+  }, [tradeContext, isOfferSender]);
 
   // Derive other user's ID
   const otherUserId = useMemo(() => {
@@ -119,7 +133,7 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
         ),
       },
       theirSide: {
-        label: 'Their Listing',
+        label: 'Their Offer',
         items: tradeContext.listingItems,
         totalValue: tradeContext.listingTotalValue,
       },
@@ -129,14 +143,16 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
   // Display items (merged editing + DB state)
   const displayMyItems = editingMyItems ?? mySide?.items ?? [];
   const displayTheirItems = editingTheirItems ?? theirSide?.items ?? [];
-  const displayMyTotal = displayMyItems.reduce(
+  const displayMyCardsTotal = displayMyItems.reduce(
     (s, i) => s + (i.marketPrice ?? 0) * i.quantity,
     0,
   );
-  const displayTheirTotal = displayTheirItems.reduce(
+  const displayTheirCardsTotal = displayTheirItems.reduce(
     (s, i) => s + (i.marketPrice ?? 0) * i.quantity,
     0,
   );
+  const displayMyTotal = displayMyCardsTotal + myCash;
+  const displayTheirTotal = displayTheirCardsTotal + theirCash;
 
   const hasChanges = editingMyItems !== null || editingTheirItems !== null;
 
@@ -192,13 +208,19 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
     const myCards = (editingMyItems ?? mySide.items).map(toCardRef);
     const theirCards = (editingTheirItems ?? theirSide?.items ?? []).map(toCardRef);
 
+    // Derive net cash from per-side amounts
+    const netCash = myCash - theirCash;
+    const cashFields =
+      netCash > 0
+        ? { cash_amount: netCash, cash_direction: 'offering' as const }
+        : netCash < 0
+          ? { cash_amount: Math.abs(netCash), cash_direction: 'requesting' as const }
+          : {};
+
     const payload: CardOfferPayload = {
       offering: myCards,
       requesting: theirCards,
-      ...(editingCashAmount > 0 && {
-        cash_amount: editingCashAmount,
-        cash_direction: editingCashDirection,
-      }),
+      ...cashFields,
       ...(offerNote.trim() && { note: offerNote.trim() }),
     };
 
@@ -213,7 +235,7 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
         onSuccess: () => router.back(),
       },
     );
-  }, [conversationId, editingMyItems, editingTheirItems, mySide, theirSide, sendMessage, router, editingCashAmount, editingCashDirection, offerNote]);
+  }, [conversationId, editingMyItems, editingTheirItems, mySide, theirSide, sendMessage, router, myCash, theirCash, offerNote]);
 
   const handleAccept = useCallback(() => {
     // TODO: Implement accept offer via card_offer_response message
@@ -330,10 +352,12 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
           items={displayMyItems}
           totalValue={displayMyTotal}
           variant="my"
+          cashAmount={myCash}
           isEditable={isEditable}
           onPress={isEditable ? () => setPickerSide('my') : undefined}
           onClear={isEditable ? handleClearMySide : undefined}
           onRemoveItem={isEditable ? handleRemoveMyItem : undefined}
+          onChangeCash={isEditable ? setMyCash : undefined}
           userProfile={myProfile}
         />
 
@@ -354,24 +378,17 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
           items={displayTheirItems}
           totalValue={displayTheirTotal}
           variant="their"
+          cashAmount={theirCash}
           isEditable={isEditable}
           onPress={isEditable ? () => setPickerSide('their') : undefined}
           onClear={isEditable ? handleClearTheirSide : undefined}
           onRemoveItem={isEditable ? handleRemoveTheirItem : undefined}
+          onChangeCash={isEditable ? setTheirCash : undefined}
           userProfile={theirProfile}
         />
 
         {/* Value comparison bar */}
         <ValueComparisonBar myValue={displayMyTotal} theirValue={displayTheirTotal} />
-
-        {/* Cash editor */}
-        <CashEditor
-          amount={editingCashAmount}
-          direction={editingCashDirection}
-          isEditable={isEditable}
-          onChangeAmount={setEditingCashAmount}
-          onChangeDirection={setEditingCashDirection}
-        />
 
         {/* Note section */}
         {isEditable ? (
