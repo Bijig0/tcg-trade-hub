@@ -150,6 +150,14 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
     [displayTheirItems],
   );
 
+  const handleClearMySide = useCallback(() => {
+    setEditingMyItems([]);
+  }, []);
+
+  const handleClearTheirSide = useCallback(() => {
+    setEditingTheirItems([]);
+  }, []);
+
   const handlePickerConfirm = useCallback(
     (items: TradeContextItem[]) => {
       if (pickerSide === 'my') {
@@ -307,6 +315,7 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
           totalValue={displayMyTotal}
           isEditable={isEditable}
           onPress={isEditable ? () => setPickerSide('my') : undefined}
+          onClear={isEditable ? handleClearMySide : undefined}
           userProfile={myProfile}
         />
 
@@ -325,6 +334,7 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
           totalValue={displayTheirTotal}
           isEditable={isEditable}
           onPress={isEditable ? () => setPickerSide('their') : undefined}
+          onClear={isEditable ? handleClearTheirSide : undefined}
           userProfile={theirProfile}
         />
 

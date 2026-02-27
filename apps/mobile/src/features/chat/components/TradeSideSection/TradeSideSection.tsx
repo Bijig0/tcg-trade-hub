@@ -17,7 +17,7 @@ export type TradeSideSectionProps = {
 };
 
 /** Card container showing one side of a trade — user info, section label, item list, total value */
-const TradeSideSection = ({ label, items, totalValue, isEditable, onPress, userProfile }: TradeSideSectionProps) => {
+const TradeSideSection = ({ label, items, totalValue, isEditable, onPress, onClear, userProfile }: TradeSideSectionProps) => {
   const content = (
     <Card>
       {/* User info row */}
@@ -48,9 +48,21 @@ const TradeSideSection = ({ label, items, totalValue, isEditable, onPress, userP
           {label}
         </Text>
         {isEditable && (
-          <View className="flex-row items-center gap-1">
-            <Text className="text-[10px] text-muted-foreground">Tap to edit</Text>
-            <Pencil size={12} color="#9ca3af" />
+          <View className="flex-row items-center gap-2.5">
+            {onClear && items.length > 0 && (
+              <Pressable
+                onPress={onClear}
+                className="flex-row items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 active:opacity-70"
+                hitSlop={4}
+              >
+                <X size={10} color="#ef4444" />
+                <Text className="text-[10px] font-medium text-destructive">Clear</Text>
+              </Pressable>
+            )}
+            <View className="flex-row items-center gap-1">
+              <Text className="text-[10px] text-muted-foreground">Tap to edit</Text>
+              <Pencil size={12} color="#9ca3af" />
+            </View>
           </View>
         )}
       </View>
