@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, RotateCcw } from 'lucide-react-native';
@@ -42,7 +42,8 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
   const [pickerSide, setPickerSide] = useState<'my' | 'their' | null>(null);
   const [myCash, setMyCash] = useState(0);
   const [theirCash, setTheirCash] = useState(0);
-  const [offerNote, setOfferNote] = useState('');
+  const [myNote, setMyNote] = useState('');
+  const [theirNote, setTheirNote] = useState('');
 
   const isEditable = tradeContext
     ? EDITABLE_STATUSES.has(tradeContext.negotiationStatus)
@@ -207,6 +208,23 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
     [pickerSide],
   );
 
+  const handleCardPress = useCallback(
+    (item: TradeContextItem) => {
+      router.push({
+        pathname: '/(tabs)/(listings)/listing-card-detail',
+        params: {
+          cardExternalId: item.cardExternalId,
+          cardName: item.cardName,
+          cardImageUrl: item.cardImageUrl,
+          tcg: item.tcg,
+          condition: item.condition,
+          marketPrice: item.marketPrice != null ? String(item.marketPrice) : '',
+        },
+      });
+    },
+    [router],
+  );
+
   const handlePropose = useCallback(() => {
     if (!mySide) return;
 
@@ -226,7 +244,8 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
       offering: myCards,
       requesting: theirCards,
       ...cashFields,
-      ...(offerNote.trim() && { note: offerNote.trim() }),
+      ...(myNote.trim() && { offering_note: myNote.trim() }),
+      ...(theirNote.trim() && { requesting_note: theirNote.trim() }),
     };
 
     sendMessage.mutate(
@@ -240,7 +259,7 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
         onSuccess: () => router.back(),
       },
     );
-  }, [conversationId, editingMyItems, editingTheirItems, mySide, theirSide, sendMessage, router, myCash, theirCash, offerNote]);
+  }, [conversationId, editingMyItems, editingTheirItems, mySide, theirSide, sendMessage, router, myCash, theirCash, myNote, theirNote]);
 
   const handleAccept = useCallback(() => {
     // TODO: Implement accept offer via card_offer_response message
@@ -380,6 +399,9 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
           onRemoveItem={isEditable ? handleRemoveMyItem : undefined}
           onChangeCash={isEditable ? setMyCash : undefined}
           userProfile={myProfile}
+          note={myNote}
+          onChangeNote={isEditable ? setMyNote : undefined}
+          onCardPress={handleCardPress}
         />
 
         {/* "FOR" trade divider */}
@@ -406,38 +428,14 @@ const OfferDetailScreen = ({ conversationId }: OfferDetailScreenProps) => {
           onRemoveItem={isEditable ? handleRemoveTheirItem : undefined}
           onChangeCash={isEditable ? setTheirCash : undefined}
           userProfile={theirProfile}
+          onCardPress={handleCardPress}
+          note={theirNote}
+          onChangeNote={isEditable ? setTheirNote : undefined}
         />
 
         {/* Value comparison bar */}
         <ValueComparisonBar myValue={displayMyTotal} theirValue={displayTheirTotal} />
 
-        {/* Note section */}
-        {isEditable ? (
-          <View className="gap-1.5">
-            <Text className="text-xs font-semibold uppercase text-muted-foreground">
-              Note
-            </Text>
-            <TextInput
-              className="min-h-[60px] rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
-              value={offerNote}
-              onChangeText={setOfferNote}
-              placeholder="Add a note to your offer..."
-              placeholderTextColor="#9ca3af"
-              multiline
-              textAlignVertical="top"
-              maxLength={500}
-            />
-          </View>
-        ) : offerNote.trim() ? (
-          <View className="rounded-lg bg-accent px-4 py-3">
-            <Text className="text-xs font-semibold uppercase text-muted-foreground">
-              Note
-            </Text>
-            <Text className="mt-1 text-sm italic text-foreground">
-              "{offerNote}"
-            </Text>
-          </View>
-        ) : null}
       </ScrollView>
 
       {/* Status-based action footer */}

@@ -17,6 +17,9 @@ export type TradeSideSectionProps = {
   onRemoveItem?: (index: number) => void;
   onChangeCash?: (amount: number) => void;
   userProfile?: TradeUserProfile | null;
+  note?: string;
+  onChangeNote?: (text: string) => void;
+  onCardPress?: (item: TradeContextItem) => void;
 };
 
 const VARIANT_STYLES = {
@@ -57,6 +60,9 @@ const TradeSideSection = ({
   onRemoveItem,
   onChangeCash,
   userProfile,
+  note,
+  onChangeNote,
+  onCardPress,
 }: TradeSideSectionProps) => {
   const styles = VARIANT_STYLES[variant];
   const [showCashInput, setShowCashInput] = useState(false);
@@ -124,6 +130,7 @@ const TradeSideSection = ({
               key={i}
               item={item}
               onRemove={isEditable && onRemoveItem ? () => onRemoveItem(i) : undefined}
+              onCardPress={onCardPress}
             />
           ))
         )}
@@ -232,6 +239,27 @@ const TradeSideSection = ({
           <Text className="text-sm font-medium text-foreground">
             + ${cashAmount.toFixed(2)} cash
           </Text>
+        </View>
+      ) : null}
+
+      {/* Note */}
+      {onChangeNote ? (
+        <View className="mx-4 mb-3 gap-1">
+          <Text className="text-xs font-semibold uppercase text-muted-foreground">Note</Text>
+          <TextInput
+            className="min-h-[48px] rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+            value={note}
+            onChangeText={onChangeNote}
+            placeholder={variant === 'my' ? 'Add a note about your cards...' : 'Add a note about what you want...'}
+            placeholderTextColor="#9ca3af"
+            multiline
+            textAlignVertical="top"
+            maxLength={500}
+          />
+        </View>
+      ) : note ? (
+        <View className="mx-4 mb-3 rounded-lg bg-accent/50 px-3 py-2">
+          <Text className="text-xs italic text-muted-foreground">&quot;{note}&quot;</Text>
         </View>
       ) : null}
 

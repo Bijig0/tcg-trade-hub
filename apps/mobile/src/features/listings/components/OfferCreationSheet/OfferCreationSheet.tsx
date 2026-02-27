@@ -22,7 +22,7 @@ const OfferCreationSheet = ({ listing, bottomSheetRef }: OfferCreationSheetProps
   const createOffer = useCreateOffer();
   const [selectedCards, setSelectedCards] = useState<SelectedCard[]>([]);
   const [cashAmount, setCashAmount] = useState('');
-  const [message, setMessage] = useState('');
+  const [offeringNote, setOfferingNote] = useState('');
 
   const handleToggleCard = useCallback(
     (card: NormalizedCard, condition: CardCondition, fromCollection: boolean, selectionId: string) => {
@@ -53,13 +53,13 @@ const OfferCreationSheet = ({ listing, bottomSheetRef }: OfferCreationSheetProps
         listingId: listing.id,
         selectedCards,
         cashAmount: parseFloat(cashAmount) || 0,
-        message: message || null,
+        offeringNote: offeringNote || null,
       },
       {
         onSuccess: () => {
           setSelectedCards([]);
           setCashAmount('');
-          setMessage('');
+          setOfferingNote('');
           bottomSheetRef.current?.close();
           Alert.alert('Success', 'Your offer has been sent!');
         },
@@ -118,12 +118,12 @@ const OfferCreationSheet = ({ listing, bottomSheetRef }: OfferCreationSheetProps
           </View>
 
           <Text className="mt-4 text-sm font-medium text-muted-foreground">
-            Message (optional):
+            Note about your offer (optional):
           </Text>
           <TextInput
-            value={message}
-            onChangeText={setMessage}
-            placeholder="Add a note..."
+            value={offeringNote}
+            onChangeText={setOfferingNote}
+            placeholder="Add a note about your cards..."
             multiline
             maxLength={500}
             textAlignVertical="top"

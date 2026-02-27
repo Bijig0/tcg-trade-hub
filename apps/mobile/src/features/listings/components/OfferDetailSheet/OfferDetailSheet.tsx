@@ -133,10 +133,10 @@ const OfferDetailSheet = forwardRef<BottomSheet, OfferDetailSheetProps>(
           </View>
 
           {/* Message */}
-          {offer.message && (
+          {offer.offerer_note && (
             <View className="mt-3 px-4">
               <Text className="text-sm italic text-muted-foreground">
-                &ldquo;{offer.message}&rdquo;
+                &ldquo;{offer.offerer_note}&rdquo;
               </Text>
             </View>
           )}

@@ -8,13 +8,14 @@ import type { TradeContextItem } from '../../hooks/useTradeContext/useTradeConte
 export type TradeItemRowProps = {
   item: TradeContextItem;
   onRemove?: () => void;
+  onCardPress?: (item: TradeContextItem) => void;
 };
 
 /** Single card row — thumbnail, name, condition badge, quantity, market price, optional remove */
-const TradeItemRow = ({ item, onRemove }: TradeItemRowProps) => {
+const TradeItemRow = ({ item, onRemove, onCardPress }: TradeItemRowProps) => {
   const conditionLabel = CONDITION_LABELS[item.condition as keyof typeof CONDITION_LABELS];
 
-  return (
+  const row = (
     <View className="flex-row items-center gap-3 border-b border-border/50 py-2 last:border-b-0">
       <Image
         source={{ uri: item.cardImageUrl }}
@@ -54,6 +55,16 @@ const TradeItemRow = ({ item, onRemove }: TradeItemRowProps) => {
       )}
     </View>
   );
+
+  if (onCardPress) {
+    return (
+      <Pressable onPress={() => onCardPress(item)} className="active:opacity-70">
+        {row}
+      </Pressable>
+    );
+  }
+
+  return row;
 };
 
 export default TradeItemRow;

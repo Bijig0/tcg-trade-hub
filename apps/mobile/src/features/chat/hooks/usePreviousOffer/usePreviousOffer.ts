@@ -53,7 +53,8 @@ const usePreviousOffer = (conversationId: string) => {
         requesting: payload.requesting ?? [],
         cashAmount: payload.cash_amount ?? 0,
         cashDirection: payload.cash_direction ?? null,
-        note: payload.note ?? null,
+        offeringNote: payload.offering_note ?? payload.note ?? null,
+        requestingNote: payload.requesting_note ?? null,
         senderDisplayName: sender.display_name,
         sentAt: prev.created_at,
       };

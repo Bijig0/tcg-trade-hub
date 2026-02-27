@@ -108,9 +108,14 @@ const OfferCard = ({
             </View>
           ) : null}
 
-          {payload.note ? (
+          {(payload.offering_note ?? payload.note) ? (
             <Text className="mt-2 text-xs italic text-muted-foreground">
-              "{payload.note}"
+              Offering: &quot;{payload.offering_note ?? payload.note}&quot;
+            </Text>
+          ) : null}
+          {payload.requesting_note ? (
+            <Text className="mt-1 text-xs italic text-muted-foreground">
+              Requesting: &quot;{payload.requesting_note}&quot;
             </Text>
           ) : null}
         </CardContent>
