@@ -524,6 +524,7 @@ const ChatThread = ({
           {/* Input bar */}
           <View className="flex-row items-end gap-2 border-t border-border px-4 py-2">
             <TextInput
+              testID="chat-message-input"
               value={text}
               onChangeText={handleTextChange}
               placeholder="Type a message..."
@@ -535,6 +536,7 @@ const ChatThread = ({
               onBlur={sendTypingStop}
             />
             <Pressable
+              testID="chat-send-button"
               onPress={handleSend}
               disabled={!text.trim() || sendMessage.isPending}
               className={cn(

@@ -1,0 +1,27 @@
+appId: com.tcgtradehub.app
+env:
+  GRAPH_PATH_ID: "state:offer"
+tags:
+  - messages
+  - smoke
+---
+# Send a text message in an existing conversation
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: "../_subflows/login.yaml"
+- runFlow: "../_subflows/navigate-to-messages.yaml"
+
+# Open the conversation with Alex Chen (seeded in seed.sql)
+- tapOn: "Alex Chen"
+- waitForAnimationToEnd
+
+# Type and send a message
+- tapOn:
+    id: "chat-message-input"
+- inputText: "Hello from Maestro"
+- tapOn:
+    id: "chat-send-button"
+
+# Verify the message appears in the chat
+- assertVisible: "Hello from Maestro"
