@@ -12,7 +12,7 @@ import useCreateOffer from '../../hooks/useCreateOffer/useCreateOffer';
 import findMatchingCollectionCards from '../../utils/findMatchingCollectionCards/findMatchingCollectionCards';
 import { CONDITION_LABELS } from '@/config/constants';
 import type { TradeOpportunity } from '../../schemas';
-import type { NormalizedCard, TradeWant, CollectionRow } from '@tcg-trade-hub/database';
+import type { NormalizedCard, TradeWant } from '@tcg-trade-hub/database';
 
 type MatchConfirmSheetProps = {
   opportunity: TradeOpportunity | null;
@@ -150,7 +150,11 @@ const MatchConfirmSheet = forwardRef<BottomSheet, MatchConfirmSheetProps>(
             {matchedCards.length > 0 ? (
               <View className="gap-2">
                 {matchedCards.slice(0, 5).map((card) => (
-                  <View key={card.id} className="flex-row items-center gap-2">
+                  <Pressable
+                    key={card.id}
+                    onPress={() => handleCardPress(card)}
+                    className="flex-row items-center gap-2 active:opacity-70"
+                  >
                     {card.image_url ? (
                       <Image
                         source={{ uri: card.image_url }}
@@ -173,7 +177,7 @@ const MatchConfirmSheet = forwardRef<BottomSheet, MatchConfirmSheetProps>(
                     <Text className="text-xs text-muted-foreground">
                       {card.market_price != null ? `$${card.market_price.toFixed(2)}` : '—'}
                     </Text>
-                  </View>
+                  </Pressable>
                 ))}
                 {matchedCards.length > 5 && (
                   <Text className="text-xs text-muted-foreground">
