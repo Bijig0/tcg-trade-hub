@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { PreRegistrationForm } from '@/components/PreRegistrationForm';
 
 export const Route = createFileRoute('/')({
@@ -19,6 +19,12 @@ function LandingPage() {
             TCG Trade Hub connects local Pokemon, Magic: The Gathering, and Yu-Gi-Oh! collectors
             to buy, sell, and trade cards face-to-face. No shipping. No scams. Just trades.
           </p>
+          <Link
+            to="/demo"
+            className="mt-6 inline-block rounded-xl bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Try the Demo
+          </Link>
         </div>
       </header>
 
