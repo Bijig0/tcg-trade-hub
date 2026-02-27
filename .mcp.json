@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "maestro": {
+      "command": "/Users/a61403/.maestro/bin/maestro",
+      "args": ["mcp"]
+    },
+    "expo": {
+      "command": "npx",
+      "args": [
+        "expo-mcp",
+        "--tools",
+        "automation_take_screenshot,automation_tap_by_testid,automation_find_view_by_testid,expo_router_sitemap,open_devtools,search_documentation,learn"
+      ]
+    }
+  }
+}
