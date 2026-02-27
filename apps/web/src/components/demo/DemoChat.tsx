@@ -5,8 +5,7 @@ import { PhoneFrame } from './PhoneFrame';
 import { DemoChatHeader } from './DemoChatHeader';
 import { DemoMessageBubble } from './DemoMessageBubble';
 import { DemoSystemMessage } from './DemoSystemMessage';
-import { DemoOfferCard } from './DemoOfferCard';
-import { DemoMeetupCard } from './DemoMeetupCard';
+import { ReservationCard } from './ReservationCard';
 import { TradeEditor } from './TradeEditor';
 import { EmailCaptureStep } from './EmailCaptureStep';
 import { demoConversation } from './demoConversation';
@@ -53,7 +52,7 @@ export const DemoChat = () => {
     <PhoneFrame>
       {phase === 'chat' && (
         <div className="flex flex-1 flex-col overflow-hidden">
-          <DemoChatHeader name="TraderMike" />
+          <DemoChatHeader name="TCG Trade Hub" />
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {demoConversation.map((msg) => {
               if (msg.type === 'system') {
@@ -68,16 +67,13 @@ export const DemoChat = () => {
                   />
                 );
               }
-              if (msg.type === 'card_offer') {
+              if (msg.type === 'reservation_card') {
                 return (
-                  <DemoOfferCard
+                  <ReservationCard
                     key={msg.id}
-                    onCounterOffer={() => setPhase('trade-editor')}
+                    onBuildList={() => setPhase('trade-editor')}
                   />
                 );
-              }
-              if (msg.type === 'meetup_proposal') {
-                return <DemoMeetupCard key={msg.id} />;
               }
               return null;
             })}

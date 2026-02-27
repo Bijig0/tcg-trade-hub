@@ -1,6 +1,54 @@
 import { Link } from '@tanstack/react-router';
-import { PhoneFrame } from '@/components/demo/PhoneFrame';
-import { DemoOfferCard } from '@/components/demo/DemoOfferCard';
+import { PhoneFrame } from './PhoneFrame';
+
+const CardChip = ({ name, set, price }: { name: string; set: string; price: string }) => (
+  <div className="flex items-center gap-2 rounded-lg bg-background/60 px-3 py-2">
+    <div className="h-8 w-6 rounded bg-primary/20 text-[8px] flex items-center justify-center text-primary font-bold">
+      TCG
+    </div>
+    <div className="min-w-0">
+      <p className="text-xs font-medium text-foreground truncate">{name}</p>
+      <p className="text-[10px] text-muted-foreground">{set} &middot; {price}</p>
+    </div>
+  </div>
+);
+
+const StaticOfferCard = () => (
+  <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="bg-primary/10 px-4 py-2.5">
+      <p className="text-xs font-semibold text-primary">Trade Offer</p>
+    </div>
+    <div className="space-y-3 p-4">
+      <div>
+        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Offering
+        </p>
+        <CardChip name="Charizard ex" set="151" price="$185" />
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted-foreground">&darr;</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+      <div>
+        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Requesting
+        </p>
+        <div className="space-y-1.5">
+          <CardChip name="Umbreon ex" set="Obsidian Flames" price="$95" />
+          <CardChip name="Mew ex" set="151" price="$35" />
+        </div>
+      </div>
+      <div className="flex items-center gap-2 rounded-lg bg-success/10 px-3 py-2">
+        <span className="text-sm">&#128176;</span>
+        <p className="text-xs font-medium text-success">+ $50 cash</p>
+      </div>
+      <div className="w-full rounded-xl bg-primary py-3 text-center text-sm font-semibold text-primary-foreground">
+        Make Your Counter-Offer
+      </div>
+    </div>
+  </div>
+);
 
 const StaticChatPreview = () => (
   <div className="flex flex-1 flex-col">
@@ -37,7 +85,7 @@ const StaticChatPreview = () => (
         </div>
       </div>
       <div className="max-w-[90%]">
-        <DemoOfferCard onCounterOffer={() => {}} />
+        <StaticOfferCard />
       </div>
       <div className="h-6" />
     </div>

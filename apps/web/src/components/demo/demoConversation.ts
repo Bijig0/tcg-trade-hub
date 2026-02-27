@@ -1,4 +1,4 @@
-export type DemoMessageType = 'system' | 'text' | 'card_offer' | 'meetup_proposal';
+export type DemoMessageType = 'system' | 'text' | 'reservation_card';
 export type DemoSender = 'system' | 'other';
 
 export type DemoMessage = {
@@ -13,40 +13,29 @@ export const demoConversation: DemoMessage[] = [
     id: '1',
     type: 'system',
     sender: 'system',
-    text: 'You matched with TraderMike on a Charizard listing',
+    text: 'Welcome to TCG Trade Hub',
   },
   {
     id: '2',
     type: 'text',
     sender: 'other',
-    text: "Hey! I saw your listing. I have a Charizard ex from 151 - would you trade?",
+    text: "Hey! We're building the easiest way to trade cards locally \u2014 no shipping, no scams.",
   },
   {
     id: '3',
     type: 'text',
     sender: 'other',
-    text: "Here's what I'm thinking:",
+    text: "What cards are you hunting for? Tell us and we'll match you with local traders when we launch.",
   },
   {
     id: '4',
-    type: 'card_offer',
+    type: 'reservation_card',
     sender: 'other',
   },
   {
     id: '5',
-    type: 'text',
-    sender: 'other',
-    text: 'Let me know what you think!',
-  },
-  {
-    id: '6',
-    type: 'meetup_proposal',
-    sender: 'other',
-  },
-  {
-    id: '7',
     type: 'system',
     sender: 'system',
-    text: 'Tap the trade offer above to respond with your cards',
+    text: 'Tap above to build your list',
   },
 ];
