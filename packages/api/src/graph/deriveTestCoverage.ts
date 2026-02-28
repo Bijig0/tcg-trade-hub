@@ -343,11 +343,11 @@ const resolveTestIdToGraphPath = (
   if (!segment) return null;
 
   const mapping = ROUTE_PATH_MAP[segment];
-  if (!mapping) return null;
+  if (!mapping || mapping.flows.length === 0) return null;
 
   return {
-    pathId: mapping.pathId,
-    stepIndex: mapping.stepIndex,
+    pathId: mapping.flows[0].pathId,
+    stepIndex: mapping.flows[0].stepIndex,
     label: mapping.label,
   };
 };

@@ -4,17 +4,15 @@ import { resolveSegments } from './routePathMap';
 describe('resolveSegments', () => {
   it('resolves tab-only to step 0', () => {
     expect(resolveSegments(['(tabs)', '(discover)'])).toEqual({
-      pathId: 'flow:p2p-trade',
       label: 'Discover Feed',
-      stepIndex: 0,
+      flows: [{ pathId: 'flow:p2p-trade', stepIndex: 0 }],
     });
   });
 
   it('resolves discover/browse to step 0', () => {
     expect(resolveSegments(['(tabs)', '(discover)', 'browse'])).toEqual({
-      pathId: 'flow:p2p-trade',
       label: 'Browse Listings',
-      stepIndex: 0,
+      flows: [{ pathId: 'flow:p2p-trade', stepIndex: 0 }],
     });
   });
 
@@ -22,9 +20,8 @@ describe('resolveSegments', () => {
     expect(
       resolveSegments(['(tabs)', '(listings)', 'listing', 'a1b2c3d4-e5f6-7890-abcd-ef1234567890']),
     ).toEqual({
-      pathId: 'state:listing',
       label: 'Listing Detail',
-      stepIndex: 1,
+      flows: [{ pathId: 'state:listing', stepIndex: 1 }],
     });
   });
 
@@ -32,19 +29,20 @@ describe('resolveSegments', () => {
     expect(
       resolveSegments(['(tabs)', '(listings)', 'edit', '12345678-abcd-efab-cdef-123456789012']),
     ).toEqual({
-      pathId: 'state:listing',
       label: 'Edit Listing',
-      stepIndex: 2,
+      flows: [{ pathId: 'state:listing', stepIndex: 2 }],
     });
   });
 
-  it('resolves chat with conversationId', () => {
+  it('resolves chat with conversationId to multiple flows', () => {
     expect(
       resolveSegments(['(tabs)', '(messages)', 'chat', 'f47ac10b-58cc-4372-a567-0e02b2c3d479']),
     ).toEqual({
-      pathId: 'state:offer',
       label: 'Chat Thread',
-      stepIndex: 1,
+      flows: [
+        { pathId: 'state:offer', stepIndex: 1 },
+        { pathId: 'flow:p2p-trade', stepIndex: 2 },
+      ],
     });
   });
 
@@ -52,33 +50,35 @@ describe('resolveSegments', () => {
     expect(
       resolveSegments(['(tabs)', '(meetups)', '12345678-1234-1234-1234-123456789012']),
     ).toEqual({
-      pathId: 'state:meetup',
       label: 'Meetup Detail',
-      stepIndex: 1,
+      flows: [{ pathId: 'state:meetup', stepIndex: 1 }],
     });
   });
 
-  it('resolves trade-builder to p2p-trade step 1', () => {
+  it('resolves trade-builder to multiple flows', () => {
     expect(resolveSegments(['(tabs)', '(listings)', 'trade-builder'])).toEqual({
-      pathId: 'flow:p2p-trade',
       label: 'Trade Builder',
-      stepIndex: 1,
+      flows: [
+        { pathId: 'flow:p2p-trade', stepIndex: 1 },
+        { pathId: 'state:listing', stepIndex: 1 },
+      ],
     });
   });
 
   it('resolves messages tab to offer step 0', () => {
     expect(resolveSegments(['(tabs)', '(messages)'])).toEqual({
-      pathId: 'state:offer',
       label: 'Messages',
-      stepIndex: 0,
+      flows: [{ pathId: 'state:offer', stepIndex: 0 }],
     });
   });
 
-  it('resolves meetup-location to meetup step 1', () => {
+  it('resolves meetup-location to multiple flows', () => {
     expect(resolveSegments(['(tabs)', '(messages)', 'meetup-location'])).toEqual({
-      pathId: 'state:meetup',
       label: 'Meetup Location',
-      stepIndex: 1,
+      flows: [
+        { pathId: 'state:meetup', stepIndex: 1 },
+        { pathId: 'state:offer', stepIndex: 2 },
+      ],
     });
   });
 
@@ -96,17 +96,15 @@ describe('resolveSegments', () => {
 
   it('falls back to tab when deep route not mapped', () => {
     expect(resolveSegments(['(tabs)', '(discover)', 'unknown-page'])).toEqual({
-      pathId: 'flow:p2p-trade',
       label: 'Discover Feed',
-      stepIndex: 0,
+      flows: [{ pathId: 'flow:p2p-trade', stepIndex: 0 }],
     });
   });
 
   it('resolves numeric dynamic segments', () => {
     expect(resolveSegments(['(tabs)', '(meetups)', '42'])).toEqual({
-      pathId: 'state:meetup',
       label: 'Meetup Detail',
-      stepIndex: 1,
+      flows: [{ pathId: 'state:meetup', stepIndex: 1 }],
     });
   });
 });

@@ -29,10 +29,12 @@ const useDevGraphEmitter = (): void => {
       return;
     }
 
-    console.log('[useDevGraphEmitter] resolved:', mapping.pathId, `step=${mapping.stepIndex}`, mapping.label);
     const traceId = createTraceId();
-    const scoped = devEmitter.forPath(mapping.pathId, traceId, 'mobile:nav');
-    scoped(mapping.stepIndex, 'started', { message: mapping.label });
+    for (const flow of mapping.flows) {
+      console.log('[useDevGraphEmitter] resolved:', flow.pathId, `step=${flow.stepIndex}`, mapping.label);
+      const scoped = devEmitter.forPath(flow.pathId, traceId, 'mobile:nav');
+      scoped(flow.stepIndex, 'started', { message: mapping.label });
+    }
   }, [segments]);
 };
 

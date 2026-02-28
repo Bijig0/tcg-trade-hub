@@ -130,12 +130,17 @@ function AdminDashboard() {
     return <ErrorState error={health.error!} onRetry={retry} />;
   }
 
-  const controlledPath =
-    mobileLink.linkedSimulator && mobileLink.activePath ? mobileLink.activePath : undefined;
-  const controlledStep =
-    mobileLink.linkedSimulator && mobileLink.activeStep != null
-      ? mobileLink.activeStep
-      : undefined;
+  // Use the first active path for controlled graph navigation (graph focuses on one path)
+  const firstActive = mobileLink.linkedSimulator && mobileLink.activePaths.length > 0
+    ? mobileLink.activePaths[0]
+    : null;
+  const controlledPath = firstActive?.pathId;
+  const controlledStep = firstActive?.stepIndex;
+
+  // All active path IDs for pill indicators
+  const mobileActivePaths = mobileLink.linkedSimulator && mobileLink.activePaths.length > 0
+    ? mobileLink.activePaths.map((p) => p.pathId)
+    : undefined;
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -153,6 +158,7 @@ function AdminDashboard() {
             height="calc(100dvh - 41px)"
             activePath={controlledPath}
             activeStep={controlledStep}
+            mobileActivePaths={mobileActivePaths}
           />
         </div>
         <ChatPanel isOpen={isChatOpen} onToggle={toggleChat} />
@@ -354,18 +360,26 @@ const SimulatorDropdown = ({ mobileLink }: SimulatorDropdownProps) => {
     setIsOpen(false);
   };
 
-  // ---- Linked state: show device name + unlink button ----
+  // ---- Linked state: show device name + active paths + unlink button ----
   if (mobileLink.linkedSimulator) {
+    const pathCount = mobileLink.activePaths.length;
+
     return (
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
+        <PhoneIcon />
         <span
           className={`inline-block h-1.5 w-1.5 rounded-full ${
             mobileLink.connected ? 'bg-green-500' : 'bg-muted-foreground'
           }`}
         />
-        <span className="text-xs font-medium text-primary" title={`UDID: ${mobileLink.linkedSimulator.udid.slice(0, 8)}...`}>
+        <span className="text-xs font-semibold text-primary" title={`UDID: ${mobileLink.linkedSimulator.udid.slice(0, 8)}...`}>
           {mobileLink.linkedSimulator.name}
         </span>
+        {pathCount > 0 && (
+          <span className="rounded-full bg-green-500/15 px-1.5 py-0.5 text-[10px] font-medium text-green-600 dark:text-green-400">
+            {pathCount} {pathCount === 1 ? 'path' : 'paths'} active
+          </span>
+        )}
         {mobileLink.lastEvent && (
           <span className="text-xs text-muted-foreground">
             — {mobileLink.lastEvent.message}
