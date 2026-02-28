@@ -280,7 +280,7 @@ export const TradeEditor = ({
   onBack,
 }: TradeEditorProps) => {
   const isSubmitDisabled =
-    (listingType === 'wtt' && (myOfferItems.length === 0 || theirOfferItems.length === 0)) ||
+    (listingType === 'wtt' && myOfferItems.length === 0 && theirOfferItems.length === 0) ||
     (listingType === 'wts' && myOfferItems.length === 0) ||
     (listingType === 'wtb' && theirOfferItems.length === 0);
 

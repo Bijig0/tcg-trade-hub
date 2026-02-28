@@ -123,7 +123,7 @@ const Route$4 = createFileRoute("/privacy")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$3, "component")
 });
-const $$splitComponentImporter$2 = () => import("./get-started-Dv_KgOqh.mjs");
+const $$splitComponentImporter$2 = () => import("./get-started-CZo1IH8f.mjs");
 const Route$3 = createFileRoute("/get-started")({
   head: () => ({
     meta: [{
@@ -153,7 +153,7 @@ const Route$2 = createFileRoute("/demo")({
   },
   component: lazyRouteComponent($$splitComponentImporter$1, "component")
 });
-const $$splitComponentImporter = () => import("./index-zdS1uQh9.mjs");
+const $$splitComponentImporter = () => import("./index-BtgCxk6W.mjs");
 const Route$1 = createFileRoute("/")({
   head: () => ({
     meta: [{

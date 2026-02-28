@@ -455,7 +455,7 @@ const TradeEditor = ({
   onSubmit,
   onBack
 }) => {
-  const isSubmitDisabled = listingType === "wtt" && (myOfferItems.length === 0 || theirOfferItems.length === 0) || listingType === "wts" && myOfferItems.length === 0 || listingType === "wtb" && theirOfferItems.length === 0;
+  const isSubmitDisabled = listingType === "wtt" && myOfferItems.length === 0 && theirOfferItems.length === 0 || listingType === "wts" && myOfferItems.length === 0 || listingType === "wtb" && theirOfferItems.length === 0;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-1 flex-col overflow-hidden min-h-0", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 border-b border-border bg-card px-4 py-3", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(
