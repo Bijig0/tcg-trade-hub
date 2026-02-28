@@ -25,7 +25,7 @@ import "../_libs/srvx.mjs";
 import "node:http";
 import "node:https";
 import "node:http2";
-const globalsCss = "/assets/globals-BEjhYhmJ.css";
+const globalsCss = "/assets/globals-hmiLi_ET.css";
 const JsonLd = ({ data }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
   "script",
   {
@@ -123,7 +123,7 @@ const Route$4 = createFileRoute("/privacy")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$3, "component")
 });
-const $$splitComponentImporter$2 = () => import("./get-started-CqJw8gcZ.mjs");
+const $$splitComponentImporter$2 = () => import("./get-started-CsYo6ffu.mjs");
 const Route$3 = createFileRoute("/get-started")({
   head: () => ({
     meta: [{
@@ -153,7 +153,7 @@ const Route$2 = createFileRoute("/demo")({
   },
   component: lazyRouteComponent($$splitComponentImporter$1, "component")
 });
-const $$splitComponentImporter = () => import("./index-sCPa1x1_.mjs");
+const $$splitComponentImporter = () => import("./index-CP6LmQUD.mjs");
 const Route$1 = createFileRoute("/")({
   head: () => ({
     meta: [{
@@ -184,7 +184,7 @@ const createSsrRpc = (functionId, importer) => {
     [TSS_SERVER_FUNCTION]: true
   });
 };
-createServerFn().handler(createSsrRpc("7cd112cb9c129b39d307d5bc6528cb82d36a292dffc76c0b1ff6b2cffc0480b9", () => import("./_-pTqXjA2s.mjs").then((m) => m["rpcHandler_createServerFn_handler"])));
+createServerFn().handler(createSsrRpc("7cd112cb9c129b39d307d5bc6528cb82d36a292dffc76c0b1ff6b2cffc0480b9", () => import("./_-BFkG9lTf.mjs").then((m) => m["rpcHandler_createServerFn_handler"])));
 const Route = createFileRoute("/api/rpc/$")({
   server: {
     handlers: {
@@ -193,7 +193,7 @@ const Route = createFileRoute("/api/rpc/$")({
       }) => {
         const {
           handleRPC
-        } = await import("./rpcHandler.server-DxDRD0Hh.mjs");
+        } = await import("./rpcHandler.server-PIjVcgvr.mjs");
         return handleRPC(request);
       }
     }

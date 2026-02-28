@@ -127,7 +127,8 @@ const CardAutocomplete = ({
   tcg,
   onSelect,
   selectedCard,
-  onClear
+  onClear,
+  onAddCustomText
 }) => {
   const [query, setQuery] = reactExports.useState("");
   const [debouncedQuery, setDebouncedQuery] = reactExports.useState("");
@@ -229,90 +230,251 @@ const CardAutocomplete = ({
         ]
       }
     ) }, card.externalId)) }),
-    isOpen && debouncedQuery.length >= 2 && !isFetching && cards.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute z-10 mt-1 w-full rounded-lg border border-border bg-card p-4 text-center text-sm text-muted-foreground shadow-lg", children: "No cards found" })
+    isOpen && debouncedQuery.length >= 2 && !isFetching && cards.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute z-10 mt-1 w-full rounded-lg border border-border bg-card shadow-lg", children: onAddCustomText ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          onAddCustomText(query);
+          setQuery("");
+          setIsOpen(false);
+        },
+        className: "flex w-full items-center gap-2 px-4 py-3 text-left text-sm hover:bg-accent transition-colors",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { className: "h-4 w-4 shrink-0 text-primary", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 5v14M5 12h14" }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-foreground", children: [
+            "Add ‘",
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-medium", children: query }),
+            "’ as custom item"
+          ] })
+        ]
+      }
+    ) : /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "p-4 text-center text-sm text-muted-foreground", children: "No cards found" }) })
   ] });
 };
 const CardPill = ({ card, onRemove }) => {
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-2", children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 px-3 py-2.5", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       "img",
       {
         src: card.imageUrl,
         alt: card.name,
-        className: "h-10 w-7 rounded object-cover"
+        className: "h-12 w-9 shrink-0 rounded object-cover shadow-sm"
       }
     ),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs font-medium text-foreground truncate", children: card.name }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-[10px] text-muted-foreground truncate", children: [
-        card.setName,
-        card.marketPrice != null && ` · $${card.marketPrice.toFixed(2)}`
-      ] })
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs font-semibold text-foreground truncate leading-tight", children: card.name }),
+      card.rarity && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mt-1 inline-block rounded bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground leading-tight", children: card.rarity })
     ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "shrink-0 text-xs font-semibold text-foreground tabular-nums", children: card.marketPrice != null ? `$${card.marketPrice.toFixed(2)}` : "--" }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       "button",
       {
         type: "button",
         onClick: () => onRemove(card.externalId),
-        className: "shrink-0 text-muted-foreground hover:text-foreground transition-colors",
+        className: "shrink-0 rounded-full p-0.5 text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-colors",
         "aria-label": `Remove ${card.name}`,
-        children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { className: "h-4 w-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M18 6L6 18M6 6l12 12" }) })
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { className: "h-4 w-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M18 6L6 18M6 6l12 12" }) })
       }
     )
   ] });
 };
-const TCG_OPTIONS = [
-  { value: "pokemon", label: "Pokemon" },
-  { value: "mtg", label: "MTG" },
-  { value: "yugioh", label: "Yu-Gi-Oh!" }
-];
+const offerItemId = (item) => item.type === "card" ? item.card.externalId : item.id;
+const flattenToCards = (items) => items.flatMap((i) => i.type === "card" ? [i.card] : []);
 const LISTING_TYPE_OPTIONS = [
   { value: "wtt", label: "Trade" },
   { value: "wtb", label: "Buy" },
   { value: "wts", label: "Sell" }
 ];
+const OfferSection = ({
+  label,
+  items,
+  onItemsChange,
+  enableCash = false,
+  borderColor,
+  dotColor
+}) => {
+  const [showCash, setShowCash] = reactExports.useState(false);
+  const [cashAmount, setCashAmount] = reactExports.useState("");
+  const handleAddCard = (card) => {
+    if (items.some((i) => i.type === "card" && i.card.externalId === card.externalId)) return;
+    onItemsChange([...items, { type: "card", card }]);
+  };
+  const handleAddCustom = (text) => {
+    onItemsChange([...items, { type: "custom", id: crypto.randomUUID(), text }]);
+  };
+  const handleRemove = (id) => {
+    onItemsChange(items.filter((i) => offerItemId(i) !== id));
+  };
+  const handleClear = () => {
+    onItemsChange([]);
+    setShowCash(false);
+    setCashAmount("");
+  };
+  const cardTotal = items.reduce(
+    (sum, i) => sum + (i.type === "card" ? i.card.marketPrice ?? 0 : 0),
+    0
+  );
+  const cashValue = showCash ? parseFloat(cashAmount) || 0 : 0;
+  const cardCount = items.filter((i) => i.type === "card").length;
+  const customCount = items.filter((i) => i.type === "custom").length;
+  const itemCountLabel = [
+    cardCount > 0 ? `${cardCount} ${cardCount === 1 ? "card" : "cards"}` : null,
+    customCount > 0 ? `${customCount} custom` : null
+  ].filter(Boolean).join(" + ");
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `rounded-xl border-2 ${borderColor} bg-card overflow-hidden`, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between px-4 py-3", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `h-2.5 w-2.5 rounded-full ${dotColor}` }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-bold uppercase tracking-wider text-foreground", children: label })
+      ] }),
+      items.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          onClick: handleClear,
+          className: "text-[11px] font-medium text-destructive hover:text-destructive/80 transition-colors",
+          children: "Clear"
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-border/50" }),
+    items.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+      items.map((item, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        item.type === "card" ? /* @__PURE__ */ jsxRuntimeExports.jsx(CardPill, { card: item.card, onRemove: (id) => handleRemove(id) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 px-3 py-2.5", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex h-12 w-9 shrink-0 items-center justify-center rounded bg-secondary", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { className: "h-5 w-5 text-muted-foreground", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M14 2v6h6M16 13H8M16 17H8M10 9H8" })
+          ] }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs font-semibold text-foreground truncate leading-tight", children: item.text }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mt-1 inline-block rounded bg-violet-500/15 px-1.5 py-0.5 text-[10px] font-medium text-violet-400 leading-tight", children: "Custom item" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "shrink-0 text-xs font-semibold text-muted-foreground tabular-nums", children: "--" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              type: "button",
+              onClick: () => handleRemove(item.id),
+              className: "shrink-0 rounded-full p-0.5 text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-colors",
+              "aria-label": `Remove ${item.text}`,
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { className: "h-4 w-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M18 6L6 18M6 6l12 12" }) })
+            }
+          )
+        ] }),
+        i < items.length - 1 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mx-3 border-t border-border/40" })
+      ] }, offerItemId(item))),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mx-3 border-t border-border/40" })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      CardAutocomplete,
+      {
+        tcg: "pokemon",
+        onSelect: handleAddCard,
+        selectedCard: null,
+        onClear: () => {
+        },
+        onAddCustomText: handleAddCustom
+      }
+    ) }),
+    enableCash && !showCash && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 pb-3 pt-1", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "button",
+      {
+        type: "button",
+        onClick: () => setShowCash(true),
+        className: "flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-2.5 text-xs font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { className: "h-4 w-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" }) }),
+          "Add Cash"
+        ]
+      }
+    ) }),
+    enableCash && showCash && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 pb-3 pt-1", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative flex-1", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm", children: "$" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "input",
+          {
+            type: "number",
+            step: "0.01",
+            min: "0",
+            value: cashAmount,
+            onChange: (e) => setCashAmount(e.target.value),
+            placeholder: "0.00",
+            className: "w-full rounded-lg border border-input bg-background pl-7 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          onClick: () => {
+            setShowCash(false);
+            setCashAmount("");
+          },
+          className: "shrink-0 rounded-lg p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors",
+          "aria-label": "Remove cash",
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { className: "h-4 w-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M18 6L6 18M6 6l12 12" }) })
+        }
+      )
+    ] }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-border/50 bg-secondary/30 px-4 py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-baseline justify-between", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[11px] font-bold uppercase tracking-wider text-muted-foreground", children: "Total Value" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-[10px] text-muted-foreground/70", children: [
+          itemCountLabel || "0 items",
+          showCash && cashAmount ? " + cash" : ""
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-base font-bold text-primary tabular-nums", children: [
+        "$",
+        (cardTotal + cashValue).toFixed(2)
+      ] })
+    ] }) })
+  ] });
+};
+const CashOnlySection = ({ label, borderColor, dotColor }) => {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `rounded-xl border-2 ${borderColor} bg-card overflow-hidden`, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between px-4 py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `h-2.5 w-2.5 rounded-full ${dotColor}` }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-bold uppercase tracking-wider text-foreground", children: label })
+    ] }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-border/50" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center gap-2 px-4 py-6", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { className: "h-10 w-10 text-muted-foreground/40", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground", children: "Cash" })
+    ] })
+  ] });
+};
 const TradeEditor = ({
-  selectedCards,
-  tcg,
   listingType,
-  onTcgChange,
+  myOfferItems,
+  theirOfferItems,
+  onMyOfferItemsChange,
+  onTheirOfferItemsChange,
   onListingTypeChange,
-  onAddCard,
-  onRemoveCard,
   onSubmit,
   onBack
 }) => {
-  const [cashAmount, setCashAmount] = reactExports.useState("");
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-1 flex-col overflow-hidden", children: [
+  const isSubmitDisabled = listingType === "wtt" && (myOfferItems.length === 0 || theirOfferItems.length === 0) || listingType === "wts" && myOfferItems.length === 0 || listingType === "wtb" && theirOfferItems.length === 0;
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-1 flex-col overflow-hidden min-h-0", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 border-b border-border bg-card px-4 py-3", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         "button",
         {
           type: "button",
           onClick: onBack,
-          className: "text-muted-foreground hover:text-foreground transition-colors",
+          className: "text-primary hover:text-primary/80 transition-colors",
           "aria-label": "Go back",
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { className: "h-5 w-5", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M19 12H5M12 19l-7-7 7-7" }) })
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { className: "h-5 w-5", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M15 19l-7-7 7-7" }) })
         }
       ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-sm font-semibold text-foreground", children: "Build Your Offer" })
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-sm font-semibold text-foreground", children: "Trade Details" })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 overflow-y-auto p-4 space-y-5", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 overflow-y-auto p-4 space-y-4", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-xs font-medium text-muted-foreground mb-2", children: "TCG" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-2", children: TCG_OPTIONS.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "button",
-          {
-            type: "button",
-            onClick: () => onTcgChange(option.value),
-            className: `flex-1 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${tcg === option.value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-foreground hover:bg-accent"}`,
-            children: option.label
-          },
-          option.value
-        )) })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-xs font-medium text-muted-foreground mb-2", children: "I want to..." }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2", children: "I want to..." }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-2", children: LISTING_TYPE_OPTIONS.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(
           "button",
           {
@@ -324,63 +486,34 @@ const TradeEditor = ({
           option.value
         )) })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-xs font-medium text-muted-foreground mb-2", children: "Search cards to add" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          CardAutocomplete,
-          {
-            tcg,
-            onSelect: onAddCard,
-            selectedCard: null,
-            onClear: () => {
-            }
-          }
-        )
-      ] }),
-      selectedCards.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "block text-xs font-medium text-muted-foreground mb-2", children: [
-          "Your cards (",
-          selectedCards.length,
-          ")"
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: selectedCards.map((card) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-          CardPill,
-          {
-            card,
-            onRemove: onRemoveCard
-          },
-          card.externalId
-        )) })
-      ] }),
-      (listingType === "wts" || listingType === "wtb") && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "block text-xs font-medium text-muted-foreground mb-2", children: [
-          listingType === "wts" ? "Asking Price" : "Budget",
-          " ",
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-muted-foreground/60", children: "(optional)" })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm", children: "$" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "input",
-            {
-              type: "number",
-              step: "0.01",
-              min: "0",
-              value: cashAmount,
-              onChange: (e) => setCashAmount(e.target.value),
-              placeholder: "0.00",
-              className: "w-full rounded-lg border border-input bg-background pl-7 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            }
-          )
-        ] })
-      ] })
+      listingType === "wtb" ? /* @__PURE__ */ jsxRuntimeExports.jsx(CashOnlySection, { label: "My Offer", borderColor: "border-primary", dotColor: "bg-primary" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+        OfferSection,
+        {
+          label: "My Offer",
+          items: myOfferItems,
+          onItemsChange: onMyOfferItemsChange,
+          enableCash: true,
+          borderColor: "border-primary",
+          dotColor: "bg-primary"
+        }
+      ),
+      listingType === "wts" ? /* @__PURE__ */ jsxRuntimeExports.jsx(CashOnlySection, { label: "Their Offer", borderColor: "border-violet-400", dotColor: "bg-violet-400" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+        OfferSection,
+        {
+          label: "Their Offer",
+          items: theirOfferItems,
+          onItemsChange: onTheirOfferItemsChange,
+          borderColor: "border-violet-400",
+          dotColor: "bg-violet-400"
+        }
+      )
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-border bg-card p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
       "button",
       {
         type: "button",
         onClick: onSubmit,
-        disabled: selectedCards.length === 0,
+        disabled: isSubmitDisabled,
         className: "w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
         children: "Send Offer"
       }
@@ -395,28 +528,29 @@ const EmailCaptureStep = ({
 }) => {
   const [email, setEmail] = reactExports.useState("");
   const [displayName, setDisplayName] = reactExports.useState("");
-  const [city, setCity] = reactExports.useState("");
-  const [zipCode, setZipCode] = reactExports.useState("");
+  const [location, setLocation] = reactExports.useState("");
+  const [touched, setTouched] = reactExports.useState({});
+  const markTouched = (field) => setTouched((prev) => ({ ...prev, [field]: true }));
+  const emailError = !email.trim() ? "Email is required" : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "Please enter a valid email" : null;
   const firstCard = selectedCards[0];
   const mutation = useMutation(
     orpc.preRegistration.create.mutationOptions()
   );
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!firstCard) return;
+    setTouched({ email: true });
+    if (emailError || !firstCard) return;
     mutation.mutate(
       {
         email,
         display_name: displayName || null,
-        tcg: firstCard.tcg,
+        tcg: firstCard.tcg ?? "pokemon",
         card_name: firstCard.name,
         card_set: firstCard.setName ?? null,
         card_external_id: firstCard.externalId ?? null,
         card_image_url: firstCard.imageUrl ?? null,
         listing_type: listingType,
-        asking_price: null,
-        city: city || null,
-        zip_code: zipCode || null
+        city: location || null
       },
       {
         onSuccess: (data) => {
@@ -439,7 +573,7 @@ const EmailCaptureStep = ({
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-sm font-semibold text-foreground", children: "Complete Registration" })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleSubmit, className: "flex-1 overflow-y-auto p-4 space-y-4", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { noValidate: true, onSubmit: handleSubmit, className: "flex-1 overflow-y-auto p-4 space-y-4", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground", children: "Enter your email to save your offer and get notified when TCG Trade Hub launches." }),
       firstCard && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 rounded-lg border border-border bg-secondary/50 p-3", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -473,10 +607,14 @@ const EmailCaptureStep = ({
             required: true,
             value: email,
             onChange: (e) => setEmail(e.target.value),
+            onBlur: () => markTouched("email"),
             placeholder: "you@example.com",
-            className: "w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            "aria-invalid": touched.email && !!emailError,
+            "aria-describedby": touched.email && emailError ? "demo-email-error" : void 0,
+            className: `w-full rounded-lg border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${touched.email && emailError ? "border-destructive ring-2 ring-destructive/30 focus:ring-destructive" : "border-input focus:ring-ring"}`
           }
-        )
+        ),
+        touched.email && emailError && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { id: "demo-email-error", role: "alert", className: "mt-1 text-xs text-destructive", children: emailError })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { htmlFor: "demo-name", className: "block text-xs font-medium text-foreground mb-1.5", children: [
@@ -495,42 +633,26 @@ const EmailCaptureStep = ({
           }
         )
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "demo-city", className: "block text-xs font-medium text-foreground mb-1.5", children: "City" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "input",
-            {
-              id: "demo-city",
-              type: "text",
-              value: city,
-              onChange: (e) => setCity(e.target.value),
-              placeholder: "San Francisco",
-              className: "w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "demo-zip", className: "block text-xs font-medium text-foreground mb-1.5", children: "Zip Code" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "input",
-            {
-              id: "demo-zip",
-              type: "text",
-              value: zipCode,
-              onChange: (e) => setZipCode(e.target.value),
-              placeholder: "94102",
-              className: "w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            }
-          )
-        ] })
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "demo-city", className: "block text-xs font-medium text-foreground mb-1.5", children: "City" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "input",
+          {
+            id: "demo-city",
+            type: "text",
+            value: location,
+            onChange: (e) => setLocation(e.target.value),
+            placeholder: "San Francisco",
+            className: "w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          }
+        )
       ] }),
       mutation.isError && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-lg bg-destructive/10 p-3 text-xs text-destructive", children: mutation.error.message || "Something went wrong. Please try again." }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         "button",
         {
           type: "submit",
-          disabled: mutation.isPending || !email,
+          disabled: mutation.isPending,
           className: "w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
           children: mutation.isPending ? "Registering..." : "Get Early Access"
         }
@@ -550,7 +672,7 @@ const demoConversation = [
     id: "2",
     type: "text",
     sender: "other",
-    text: "Hey! We're building the easiest way to trade cards locally — no shipping, no scams."
+    text: "Hey! We're building the easiest way to trade cards locally."
   },
   {
     id: "3",
@@ -573,133 +695,90 @@ const demoConversation = [
 const PHASE_ORDER = ["chat", "trade-editor", "email", "success"];
 const DemoChat = () => {
   const [phase, setPhase] = reactExports.useState("chat");
-  const [selectedCards, setSelectedCards] = reactExports.useState([]);
-  const [tcg, setTcg] = reactExports.useState("pokemon");
+  const [myOfferItems, setMyOfferItems] = reactExports.useState([]);
+  const [theirOfferItems, setTheirOfferItems] = reactExports.useState([]);
   const [listingType, setListingType] = reactExports.useState("wtt");
   const [successData, setSuccessData] = reactExports.useState(null);
   const phaseIndex = PHASE_ORDER.indexOf(phase);
-  const handleAddCard = (card) => {
-    setSelectedCards((prev) => {
-      if (prev.some((c) => c.externalId === card.externalId)) return prev;
-      return [...prev, card];
-    });
-  };
-  const handleRemoveCard = (externalId) => {
-    setSelectedCards((prev) => prev.filter((c) => c.externalId !== externalId));
-  };
-  const handleTcgChange = (newTcg) => {
-    setTcg(newTcg);
-    setSelectedCards([]);
-  };
   const handleReset = reactExports.useCallback(() => {
     setPhase("chat");
-    setSelectedCards([]);
-    setTcg("pokemon");
+    setMyOfferItems([]);
+    setTheirOfferItems([]);
     setListingType("wtt");
     setTimeout(() => {
       setSuccessData(null);
     }, 500);
   }, []);
+  const emailCards = flattenToCards(
+    listingType === "wtb" ? theirOfferItems : myOfferItems
+  );
   return /* @__PURE__ */ jsxRuntimeExports.jsx(PhoneFrame, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "div",
     {
-      className: "flex flex-1 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+      className: "flex flex-1 min-h-0 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
       style: { transform: `translateX(-${phaseIndex * 100}%)` },
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          "div",
-          {
-            className: "min-w-full flex flex-col overflow-hidden",
-            "aria-hidden": phase !== "chat",
-            inert: phase !== "chat" || void 0,
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(DemoChatHeader, { name: "TCG Trade Hub" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-y-auto p-4 space-y-3", children: demoConversation.map((msg) => {
-                if (msg.type === "system") {
-                  return /* @__PURE__ */ jsxRuntimeExports.jsx(DemoSystemMessage, { text: msg.text }, msg.id);
-                }
-                if (msg.type === "text") {
-                  return /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    DemoMessageBubble,
-                    {
-                      text: msg.text,
-                      sender: "other"
-                    },
-                    msg.id
-                  );
-                }
-                if (msg.type === "reservation_card") {
-                  return /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    ReservationCard,
-                    {
-                      onBuildList: () => setPhase("trade-editor")
-                    },
-                    msg.id
-                  );
-                }
-                return null;
-              }) })
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "div",
-          {
-            className: "min-w-full flex flex-col overflow-hidden",
-            "aria-hidden": phase !== "trade-editor",
-            inert: phase !== "trade-editor" || void 0,
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              TradeEditor,
-              {
-                selectedCards,
-                tcg,
-                listingType,
-                onTcgChange: handleTcgChange,
-                onListingTypeChange: setListingType,
-                onAddCard: handleAddCard,
-                onRemoveCard: handleRemoveCard,
-                onSubmit: () => setPhase("email"),
-                onBack: () => setPhase("chat")
-              }
-            )
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "div",
-          {
-            className: "min-w-full flex flex-col overflow-hidden",
-            "aria-hidden": phase !== "email",
-            inert: phase !== "email" || void 0,
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              EmailCaptureStep,
-              {
-                selectedCards,
-                listingType,
-                onSuccess: (position, email) => {
-                  setSuccessData({ position, email });
-                  setPhase("success");
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-full shrink-0 flex flex-col overflow-hidden", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(DemoChatHeader, { name: "TCG Trade Hub" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-y-auto p-4 space-y-3", children: demoConversation.map((msg) => {
+            if (msg.type === "system") {
+              return /* @__PURE__ */ jsxRuntimeExports.jsx(DemoSystemMessage, { text: msg.text }, msg.id);
+            }
+            if (msg.type === "text") {
+              return /* @__PURE__ */ jsxRuntimeExports.jsx(
+                DemoMessageBubble,
+                {
+                  text: msg.text,
+                  sender: "other"
                 },
-                onBack: () => setPhase("trade-editor")
-              }
-            )
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "div",
+                msg.id
+              );
+            }
+            if (msg.type === "reservation_card") {
+              return /* @__PURE__ */ jsxRuntimeExports.jsx(
+                ReservationCard,
+                {
+                  onBuildList: () => setPhase("trade-editor")
+                },
+                msg.id
+              );
+            }
+            return null;
+          }) })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full shrink-0 flex flex-col overflow-hidden min-h-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          TradeEditor,
           {
-            className: "min-w-full flex flex-col overflow-hidden",
-            "aria-hidden": phase !== "success",
-            inert: phase !== "success" || void 0,
-            children: successData ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-1 items-center overflow-y-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              SuccessScreen,
-              {
-                position: successData.position,
-                email: successData.email,
-                onReset: handleReset
-              }
-            ) }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", {})
+            listingType,
+            myOfferItems,
+            theirOfferItems,
+            onMyOfferItemsChange: setMyOfferItems,
+            onTheirOfferItemsChange: setTheirOfferItems,
+            onListingTypeChange: setListingType,
+            onSubmit: () => setPhase("email"),
+            onBack: () => setPhase("chat")
           }
-        )
+        ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full shrink-0 flex flex-col overflow-hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          EmailCaptureStep,
+          {
+            selectedCards: emailCards,
+            listingType,
+            onSuccess: (position, email) => {
+              setSuccessData({ position, email });
+              setPhase("success");
+            },
+            onBack: () => setPhase("trade-editor")
+          }
+        ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full shrink-0 flex flex-col overflow-hidden", children: successData ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-1 items-center overflow-y-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          SuccessScreen,
+          {
+            position: successData.position,
+            email: successData.email,
+            onReset: handleReset
+          }
+        ) }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", {}) })
       ]
     }
   ) });

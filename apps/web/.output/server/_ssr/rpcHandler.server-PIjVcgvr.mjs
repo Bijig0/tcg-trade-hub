@@ -17,9 +17,10 @@ const os = os$1.$context();
 const USER_ROLES = ["user", "shop_owner", "admin"];
 const UserRoleSchema = enumType(USER_ROLES);
 arrayType(UserRoleSchema);
-const TcgTypeSchema = enumType(["pokemon", "mtg", "yugioh"]);
+const TcgTypeSchema = enumType(["pokemon", "mtg", "onepiece"]);
 const ListingTypeSchema = enumType(["wts", "wtb", "wtt"]);
 const CardConditionSchema = enumType(["nm", "lp", "mp", "hp", "dmg"]);
+const ListingCategorySchema = enumType(["singles", "sealed", "graded", "bulk"]);
 const ListingStatusSchema = enumType(["active", "matched", "completed", "expired"]);
 const SwipeDirectionSchema = enumType(["like", "pass"]);
 const MatchStatusSchema = enumType(["active", "completed", "cancelled"]);
@@ -36,7 +37,7 @@ const NormalizedCardSchema = objectType({
   setName: stringType(),
   setCode: stringType(),
   number: stringType(),
-  imageUrl: stringType().url(),
+  imageUrl: stringType(),
   marketPrice: numberType().nullable(),
   rarity: stringType()
 });
@@ -170,12 +171,15 @@ const ListingRowSchema = objectType({
   user_id: stringType().uuid(),
   type: ListingTypeSchema,
   tcg: TcgTypeSchema,
+  category: ListingCategorySchema,
   title: stringType(),
   cash_amount: numberType(),
   total_value: numberType(),
   description: stringType().nullable(),
   photos: arrayType(stringType()),
   trade_wants: arrayType(TradeWantSchema),
+  accepts_cash: booleanType(),
+  accepts_trades: booleanType(),
   status: ListingStatusSchema,
   created_at: stringType(),
   updated_at: stringType()
@@ -186,11 +190,14 @@ ListingRowSchema.omit({
   created_at: true,
   updated_at: true
 }).extend({
+  category: ListingCategorySchema.default("singles"),
   cash_amount: numberType().default(0),
   total_value: numberType().default(0),
   description: stringType().nullable().optional(),
   photos: arrayType(stringType()).default([]),
-  trade_wants: arrayType(TradeWantSchema).default([])
+  trade_wants: arrayType(TradeWantSchema).default([]),
+  accepts_cash: booleanType().default(false),
+  accepts_trades: booleanType().default(false)
 });
 const ListingItemRowSchema = objectType({
   id: stringType().uuid(),
@@ -621,255 +628,104 @@ const create$1 = os.input(PreRegistrationInsertSchema).output(objectType({ succe
   const { count } = await query;
   return { success: true, position: count ?? 1 };
 });
-const MOCK_POKEMON_CARDS = [
-  {
-    externalId: "sv3pt5-7",
-    tcg: "pokemon",
-    name: "Charizard ex",
-    setName: "151",
-    setCode: "sv3pt5",
-    number: "6",
-    imageUrl: "https://images.pokemontcg.io/sv3pt5/6.png",
-    marketPrice: 42.5,
-    rarity: "Double Rare"
-  },
-  {
-    externalId: "sv3pt5-199",
-    tcg: "pokemon",
-    name: "Charizard ex",
-    setName: "151",
-    setCode: "sv3pt5",
-    number: "199",
-    imageUrl: "https://images.pokemontcg.io/sv3pt5/199.png",
-    marketPrice: 185,
-    rarity: "Special Art Rare"
-  },
-  {
-    externalId: "sv4-18",
-    tcg: "pokemon",
-    name: "Arcanine ex",
-    setName: "Paradox Rift",
-    setCode: "sv4",
-    number: "18",
-    imageUrl: "https://images.pokemontcg.io/sv4/18.png",
-    marketPrice: 3.25,
-    rarity: "Double Rare"
-  },
-  {
-    externalId: "sv3-99",
-    tcg: "pokemon",
-    name: "Umbreon ex",
-    setName: "Obsidian Flames",
-    setCode: "sv3",
-    number: "99",
-    imageUrl: "https://images.pokemontcg.io/sv3/99.png",
-    marketPrice: 12.75,
-    rarity: "Double Rare"
-  },
-  {
-    externalId: "sv3-228",
-    tcg: "pokemon",
-    name: "Umbreon ex",
-    setName: "Obsidian Flames",
-    setCode: "sv3",
-    number: "228",
-    imageUrl: "https://images.pokemontcg.io/sv3/228.png",
-    marketPrice: 95,
-    rarity: "Special Art Rare"
-  },
-  {
-    externalId: "sv2-91",
-    tcg: "pokemon",
-    name: "Pikachu ex",
-    setName: "Paldea Evolved",
-    setCode: "sv2",
-    number: "91",
-    imageUrl: "https://images.pokemontcg.io/sv2/91.png",
-    marketPrice: 5.5,
-    rarity: "Double Rare"
-  },
-  {
-    externalId: "sv1-254",
-    tcg: "pokemon",
-    name: "Miraidon ex",
-    setName: "Scarlet & Violet",
-    setCode: "sv1",
-    number: "254",
-    imageUrl: "https://images.pokemontcg.io/sv1/254.png",
-    marketPrice: 22,
-    rarity: "Special Art Rare"
-  },
-  {
-    externalId: "sv3pt5-172",
-    tcg: "pokemon",
-    name: "Mew ex",
-    setName: "151",
-    setCode: "sv3pt5",
-    number: "172",
-    imageUrl: "https://images.pokemontcg.io/sv3pt5/172.png",
-    marketPrice: 35,
-    rarity: "Ultra Rare"
-  },
-  {
-    externalId: "sv4-228",
-    tcg: "pokemon",
-    name: "Roaring Moon ex",
-    setName: "Paradox Rift",
-    setCode: "sv4",
-    number: "228",
-    imageUrl: "https://images.pokemontcg.io/sv4/228.png",
-    marketPrice: 55,
-    rarity: "Special Art Rare"
-  },
-  {
-    externalId: "sv3-197",
-    tcg: "pokemon",
-    name: "Charizard ex",
-    setName: "Obsidian Flames",
-    setCode: "sv3",
-    number: "197",
-    imageUrl: "https://images.pokemontcg.io/sv3/197.png",
-    marketPrice: 120,
-    rarity: "Special Art Rare"
-  },
-  {
-    externalId: "sv2-230",
-    tcg: "pokemon",
-    name: "Iono",
-    setName: "Paldea Evolved",
-    setCode: "sv2",
-    number: "230",
-    imageUrl: "https://images.pokemontcg.io/sv2/230.png",
-    marketPrice: 65,
-    rarity: "Special Art Rare"
-  },
-  {
-    externalId: "sv1-198",
-    tcg: "pokemon",
-    name: "Gardevoir ex",
-    setName: "Scarlet & Violet",
-    setCode: "sv1",
-    number: "198",
-    imageUrl: "https://images.pokemontcg.io/sv1/198.png",
-    marketPrice: 15.5,
-    rarity: "Ultra Rare"
-  },
-  {
-    externalId: "sv4-139",
-    tcg: "pokemon",
-    name: "Iron Valiant ex",
-    setName: "Paradox Rift",
-    setCode: "sv4",
-    number: "139",
-    imageUrl: "https://images.pokemontcg.io/sv4/139.png",
-    marketPrice: 4,
-    rarity: "Double Rare"
-  },
-  {
-    externalId: "sv3pt5-25",
-    tcg: "pokemon",
-    name: "Pikachu",
-    setName: "151",
-    setCode: "sv3pt5",
-    number: "25",
-    imageUrl: "https://images.pokemontcg.io/sv3pt5/25.png",
-    marketPrice: 1.25,
-    rarity: "Common"
-  },
-  {
-    externalId: "sv2-120",
-    tcg: "pokemon",
-    name: "Mewtwo ex",
-    setName: "Paldea Evolved",
-    setCode: "sv2",
-    number: "120",
-    imageUrl: "https://images.pokemontcg.io/sv2/120.png",
-    marketPrice: 6,
-    rarity: "Double Rare"
+const MAX_RESULTS = 20;
+const FETCH_TIMEOUT_MS = 8e3;
+const fetchWithTimeout = async (url, init) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
   }
-];
-const MOCK_MTG_CARDS = [
-  {
-    externalId: "lci-269",
-    tcg: "mtg",
-    name: "The One Ring",
-    setName: "The Lost Caverns of Ixalan",
-    setCode: "lci",
-    number: "269",
-    imageUrl: "https://cards.scryfall.io/normal/front/d/5/d5806e68-1054-458e-866d-1f2470f682b2.jpg",
-    marketPrice: 62,
-    rarity: "Mythic"
-  },
-  {
-    externalId: "mkm-243",
-    tcg: "mtg",
-    name: "Leyline of Resonance",
-    setName: "Murders at Karlov Manor",
-    setCode: "mkm",
-    number: "243",
-    imageUrl: "https://cards.scryfall.io/normal/front/9/c/9c1e67a7-5853-43e5-a953-99023b046afa.jpg",
-    marketPrice: 18.5,
-    rarity: "Rare"
-  },
-  {
-    externalId: "otj-182",
-    tcg: "mtg",
-    name: "Jace, the Mind Sculptor",
-    setName: "Outlaws of Thunder Junction",
-    setCode: "otj",
-    number: "182",
-    imageUrl: "https://cards.scryfall.io/normal/front/c/8/c8817585-0d32-4d56-9142-0d29512e86a9.jpg",
-    marketPrice: 28,
-    rarity: "Mythic"
-  }
-];
-const MOCK_YUGIOH_CARDS = [
-  {
-    externalId: "lede-060",
-    tcg: "yugioh",
-    name: "Snake-Eye Ash",
-    setName: "Legacy of Destruction",
-    setCode: "lede",
-    number: "060",
-    imageUrl: "https://images.ygoprodeck.com/images/cards_small/100421063.jpg",
-    marketPrice: 22,
-    rarity: "Ultra Rare"
-  },
-  {
-    externalId: "phni-003",
-    tcg: "yugioh",
-    name: "Fiendsmith Engraver",
-    setName: "Phantom Nightmare",
-    setCode: "phni",
-    number: "003",
-    imageUrl: "https://images.ygoprodeck.com/images/cards_small/100421060.jpg",
-    marketPrice: 15,
-    rarity: "Secret Rare"
-  },
-  {
-    externalId: "dune-050",
-    tcg: "yugioh",
-    name: "Blue-Eyes White Dragon",
-    setName: "Duelist Nexus",
-    setCode: "dune",
-    number: "050",
-    imageUrl: "https://images.ygoprodeck.com/images/cards_small/89631139.jpg",
-    marketPrice: 8.5,
-    rarity: "Ultra Rare"
-  }
-];
-const ALL_MOCK_CARDS = {
-  pokemon: MOCK_POKEMON_CARDS,
-  mtg: MOCK_MTG_CARDS,
-  yugioh: MOCK_YUGIOH_CARDS
 };
-const getMockCards = (query, tcg) => {
-  const cards = ALL_MOCK_CARDS[tcg] ?? [];
-  const lowerQuery = query.toLowerCase();
-  return cards.filter((card) => card.name.toLowerCase().includes(lowerQuery));
+const SCRYDEX_TCG_PATHS = {
+  pokemon: "pokemon",
+  onepiece: "onepiece"
+};
+const normalizeScrydexCard = (card, tcg) => {
+  const image = card.images?.[0];
+  const price = card.prices?.find((p) => p.variant === "normal" || p.variant === "nm") ?? card.prices?.[0];
+  return {
+    externalId: card.id,
+    tcg,
+    name: card.name,
+    setName: card.expansion?.name ?? "Unknown Set",
+    setCode: card.expansion?.code ?? "N/A",
+    number: card.number ?? card.id,
+    imageUrl: image?.medium ?? image?.small ?? image?.large ?? "",
+    marketPrice: price?.market ?? null,
+    rarity: card.rarity ?? "Unknown"
+  };
+};
+const searchScrydex = async (query, tcg) => {
+  const apiKey = process.env.SCRYDEX_API_KEY;
+  const teamId = process.env.SCRYDEX_TEAM_ID;
+  if (!apiKey || !teamId) {
+    console.warn(`[cardSearch] SCRYDEX_API_KEY or SCRYDEX_TEAM_ID not set — ${tcg} search unavailable`);
+    return [];
+  }
+  const tcgPath = SCRYDEX_TCG_PATHS[tcg];
+  if (!tcgPath) return [];
+  const url = `https://api.scrydex.com/${tcgPath}/v1/cards?q=name:${encodeURIComponent(query)}*&page_size=${MAX_RESULTS}&select=id,name,number,rarity,images,expansion&include=prices`;
+  const res = await fetchWithTimeout(url, {
+    headers: {
+      "Content-Type": "application/json",
+      "X-Api-Key": apiKey,
+      "X-Team-ID": teamId
+    }
+  });
+  if (res.status === 404) return [];
+  if (!res.ok) {
+    throw new Error(`Scrydex ${tcg} API error (${res.status})`);
+  }
+  const data = await res.json();
+  return (data.data ?? []).map((card) => normalizeScrydexCard(card, tcg));
+};
+const extractScryfallImage = (card) => {
+  if (card.image_uris) {
+    return card.image_uris.normal || card.image_uris.small || card.image_uris.large || "";
+  }
+  if (card.card_faces && card.card_faces.length > 0) {
+    const face = card.card_faces[0];
+    if (face?.image_uris) {
+      return face.image_uris.normal || face.image_uris.small || face.image_uris.large || "";
+    }
+  }
+  return "";
+};
+const normalizeMtgCard = (card) => {
+  const priceStr = card.prices.usd ?? card.prices.usd_foil ?? card.prices.eur ?? null;
+  return {
+    externalId: card.id,
+    tcg: "mtg",
+    name: card.name,
+    setName: card.set_name,
+    setCode: card.set.toUpperCase(),
+    number: card.collector_number,
+    imageUrl: extractScryfallImage(card),
+    marketPrice: priceStr ? parseFloat(priceStr) : null,
+    rarity: card.rarity ?? "Unknown"
+  };
+};
+const searchMtg = async (query) => {
+  const url = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(query)}&unique=prints&order=released&dir=desc`;
+  const res = await fetchWithTimeout(url);
+  if (res.status === 404) return [];
+  if (!res.ok) {
+    throw new Error(`Scryfall API error (${res.status})`);
+  }
+  const data = await res.json();
+  return (data.data ?? []).slice(0, MAX_RESULTS).map(normalizeMtgCard);
+};
+const searchByTcg = {
+  pokemon: (query) => searchScrydex(query, "pokemon"),
+  mtg: searchMtg,
+  onepiece: (query) => searchScrydex(query, "onepiece")
 };
 const search = os.input(objectType({ query: stringType().min(1), tcg: TcgTypeSchema })).output(arrayType(NormalizedCardSchema)).handler(async ({ input }) => {
-  return getMockCards(input.query, input.tcg);
+  const searchFn = searchByTcg[input.tcg];
+  return searchFn(input.query.trim());
 });
 const requireAuth = (context) => {
   if (!context.userId) {
@@ -1015,6 +871,31 @@ const definePipeline = (config) => {
   };
   return { ...config, execute };
 };
+const sendPushNotification = async (supabase, payload) => {
+  try {
+    await supabase.functions.invoke("send-push-notification", {
+      body: { type: "direct", ...payload }
+    });
+  } catch (err) {
+    console.error("[sendPushNotification]", err);
+  }
+};
+const notifyOfferAccepted = {
+  name: "notifyOfferAccepted",
+  run: async (input, result, context) => {
+    const sb = context.adminSupabase ?? context.supabase;
+    const { data: offer } = await sb.from("offers").select("offerer_id").eq("id", input.offerId).single();
+    if (!offer) return;
+    const { data: sender } = await sb.from("profiles").select("display_name").eq("id", context.userId).single();
+    const senderName = sender?.display_name ?? "Someone";
+    await sendPushNotification(sb, {
+      recipientUserId: offer.offerer_id,
+      title: `${senderName} - Trade Offer`,
+      body: "Accepted your trade offer",
+      data: { matchId: result.match_id, conversationId: result.conversation_id }
+    });
+  }
+};
 const AcceptOfferInputSchema = objectType({
   offerId: stringType().uuid(),
   listingId: stringType().uuid()
@@ -1056,7 +937,7 @@ const acceptOffer = definePipeline({
     }),
     resultSchema: AcceptOfferResultSchema
   },
-  postEffects: []
+  postEffects: [notifyOfferAccepted]
 });
 const acceptOfferProcedure = os.input(AcceptOfferInputSchema).output(AcceptOfferResultSchema).handler(async ({ input, context }) => {
   const authed = requireAuth(context);
@@ -1065,6 +946,22 @@ const acceptOfferProcedure = os.input(AcceptOfferInputSchema).output(AcceptOffer
     userId: authed.userId
   });
 });
+const notifyOfferDeclined = {
+  name: "notifyOfferDeclined",
+  run: async (input, _result, context) => {
+    const sb = context.adminSupabase ?? context.supabase;
+    const { data: offer } = await sb.from("offers").select("offerer_id").eq("id", input.offerId).single();
+    if (!offer) return;
+    const { data: sender } = await sb.from("profiles").select("display_name").eq("id", context.userId).single();
+    const senderName = sender?.display_name ?? "Someone";
+    await sendPushNotification(sb, {
+      recipientUserId: offer.offerer_id,
+      title: `${senderName} - Trade Offer`,
+      body: "Declined your trade offer",
+      data: { offerId: input.offerId }
+    });
+  }
+};
 const DeclineOfferInputSchema = objectType({
   offerId: stringType().uuid(),
   listingId: stringType().uuid()
@@ -1102,7 +999,7 @@ const declineOffer = definePipeline({
     }),
     resultSchema: DeclineOfferResultSchema
   },
-  postEffects: []
+  postEffects: [notifyOfferDeclined]
 });
 const declineOfferProcedure = os.input(DeclineOfferInputSchema).output(DeclineOfferResultSchema).handler(async ({ input, context }) => {
   const authed = requireAuth(context);
@@ -1111,6 +1008,26 @@ const declineOfferProcedure = os.input(DeclineOfferInputSchema).output(DeclineOf
     userId: authed.userId
   });
 });
+const notifyMeetupCompleted = {
+  name: "notifyMeetupCompleted",
+  run: async (input, result, context) => {
+    if (result.both_completed) return;
+    const sb = context.adminSupabase ?? context.supabase;
+    const { data: meetup } = await sb.from("meetups").select("match_id").eq("id", result.meetup_id).single();
+    if (!meetup) return;
+    const { data: match } = await sb.from("matches").select("user_a_id, user_b_id").eq("id", meetup.match_id).single();
+    if (!match) return;
+    const otherUserId = match.user_a_id === context.userId ? match.user_b_id : match.user_a_id;
+    const { data: sender } = await sb.from("profiles").select("display_name").eq("id", context.userId).single();
+    const senderName = sender?.display_name ?? "Someone";
+    await sendPushNotification(sb, {
+      recipientUserId: otherUserId,
+      title: `${senderName} - Meetup`,
+      body: "Marked the meetup as complete",
+      data: { meetupId: result.meetup_id }
+    });
+  }
+};
 const CompleteMeetupInputSchema = objectType({
   meetupId: stringType().uuid()
 });
@@ -1144,7 +1061,7 @@ const completeMeetup = definePipeline({
     }),
     resultSchema: CompleteMeetupResultSchema
   },
-  postEffects: []
+  postEffects: [notifyMeetupCompleted]
 });
 const completeMeetupProcedure = os.input(CompleteMeetupInputSchema).output(CompleteMeetupResultSchema).handler(async ({ input, context }) => {
   const authed = requireAuth(context);
@@ -1191,6 +1108,22 @@ const expireListingProcedure = os.input(ExpireListingInputSchema).output(ExpireL
     userId: authed.userId
   });
 });
+const notifyOfferCreated = {
+  name: "notifyOfferCreated",
+  run: async (input, result, context) => {
+    const sb = context.adminSupabase ?? context.supabase;
+    const { data: listing } = await sb.from("listings").select("user_id").eq("id", input.listingId).single();
+    if (!listing || listing.user_id === context.userId) return;
+    const { data: sender } = await sb.from("profiles").select("display_name").eq("id", context.userId).single();
+    const senderName = sender?.display_name ?? "Someone";
+    await sendPushNotification(sb, {
+      recipientUserId: listing.user_id,
+      title: `${senderName} - Trade Offer`,
+      body: "Sent you a trade offer",
+      data: { offerId: result.offer_id }
+    });
+  }
+};
 const OfferItemSchema = objectType({
   card_name: stringType(),
   card_image_url: stringType(),
@@ -1236,11 +1169,84 @@ const createOffer = definePipeline({
     }),
     resultSchema: CreateOfferResultSchema
   },
-  postEffects: []
+  postEffects: [notifyOfferCreated]
 });
 const createOfferProcedure = os.input(CreateOfferInputSchema).output(CreateOfferResultSchema).handler(async ({ input, context }) => {
   const authed = requireAuth(context);
   return createOffer.execute(input, {
+    supabase: authed.supabase,
+    userId: authed.userId
+  });
+});
+const formatNotificationBody = (senderName, messageType, body) => {
+  switch (messageType) {
+    case "text":
+      return { title: senderName, body: body ?? "Sent a message" };
+    case "image":
+      return { title: senderName, body: "Sent an image" };
+    case "card_offer":
+      return { title: `${senderName} - Trade Offer`, body: "Sent you a card trade offer" };
+    case "card_offer_response":
+      return { title: `${senderName} - Trade Response`, body: "Responded to your trade offer" };
+    case "meetup_proposal":
+      return { title: `${senderName} - Meetup Proposal`, body: "Proposed a meetup location and time" };
+    case "meetup_response":
+      return { title: `${senderName} - Meetup Response`, body: "Responded to your meetup proposal" };
+    case "system":
+      return { title: "TCG Trade Hub", body: body ?? "New system notification" };
+    default:
+      return { title: senderName, body: body ?? "New message" };
+  }
+};
+const notifyNewMessage = {
+  name: "notifyNewMessage",
+  run: async (input, result, context) => {
+    if (input.type === "system") return;
+    const sb = context.adminSupabase ?? context.supabase;
+    const { data: sender } = await sb.from("profiles").select("display_name").eq("id", context.userId).single();
+    const senderName = sender?.display_name ?? "Someone";
+    const content = formatNotificationBody(senderName, input.type, input.body ?? null);
+    await sendPushNotification(sb, {
+      recipientUserId: result.recipient_id,
+      title: content.title,
+      body: content.body,
+      data: { type: input.type }
+    });
+  }
+};
+const SendMessageInputSchema = objectType({
+  conversationId: stringType().uuid(),
+  type: stringType(),
+  body: stringType().nullable().optional(),
+  payload: stringType().nullable().optional()
+});
+const SendMessageResultSchema = objectType({
+  message_id: stringType().uuid(),
+  conversation_id: stringType().uuid(),
+  sender_id: stringType().uuid(),
+  recipient_id: stringType().uuid()
+});
+const sendMessage = definePipeline({
+  name: "sendMessage",
+  description: "Sends a message in an existing conversation. Inserts the message row atomically and fires a push notification to the recipient.",
+  inputSchema: SendMessageInputSchema,
+  preChecks: [],
+  rpc: {
+    functionName: "send_message_v1",
+    mapParams: (input, ctx) => ({
+      p_conversation_id: input.conversationId,
+      p_sender_id: ctx.userId,
+      p_type: input.type,
+      p_body: input.body ?? null,
+      p_payload: input.payload ?? null
+    }),
+    resultSchema: SendMessageResultSchema
+  },
+  postEffects: [notifyNewMessage]
+});
+const sendMessageProcedure = os.input(SendMessageInputSchema).output(SendMessageResultSchema).handler(async ({ input, context }) => {
+  const authed = requireAuth(context);
+  return sendMessage.execute(input, {
     supabase: authed.supabase,
     userId: authed.userId
   });
@@ -1268,7 +1274,8 @@ const router = {
     declineOffer: declineOfferProcedure,
     completeMeetup: completeMeetupProcedure,
     expireListing: expireListingProcedure,
-    createOffer: createOfferProcedure
+    createOffer: createOfferProcedure,
+    sendMessage: sendMessageProcedure
   }
 };
 const serverEnvSchema = objectType({
@@ -1286,6 +1293,7 @@ const createSupabaseServiceClient = () => {
   return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
 };
 const handler = new RPCHandler(router, {
+  strictGetMethodPluginEnabled: false,
   interceptors: [
     onError((error) => {
       console.error("[oRPC Error]", error);

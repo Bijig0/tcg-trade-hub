@@ -41,7 +41,7 @@ const rpcHandler = createServerFn().handler(rpcHandler_createServerFn_handler, a
 }) => {
   const {
     handleRPC
-  } = await import("./rpcHandler.server-DxDRD0Hh.mjs");
+  } = await import("./rpcHandler.server-PIjVcgvr.mjs");
   return handleRPC(request);
 });
 export {
