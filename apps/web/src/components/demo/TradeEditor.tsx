@@ -285,7 +285,7 @@ export const TradeEditor = ({
     (listingType === 'wtb' && theirOfferItems.length === 0);
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex flex-1 flex-col overflow-hidden min-h-0">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-border bg-card px-4 py-3">
         <button
