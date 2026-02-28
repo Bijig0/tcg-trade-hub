@@ -27,6 +27,7 @@ import {
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { triggerRecording } from "./recordingRunner";
+import { getScenarios } from "./scenarios";
 import { WebSocketServer, type WebSocket } from "ws";
 import { z } from "zod";
 import { buildMaestroManifest } from "./maestroManifest";
@@ -349,6 +350,13 @@ const server = createServer(async (req, res) => {
       const covered = allPathIds.filter((id: string) => coveredIds.has(id));
       const uncovered = allPathIds.filter((id: string) => !coveredIds.has(id));
       respond(json({ covered, uncovered, total: allPathIds.length }));
+      return;
+    }
+
+    // ---- Scenarios API ----
+    if (url.pathname === "/api/scenarios" && method === "GET") {
+      const parentPathId = url.searchParams.get("parentPathId") ?? undefined;
+      respond(json(getScenarios(parentPathId)));
       return;
     }
 

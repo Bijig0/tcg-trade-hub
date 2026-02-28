@@ -14,12 +14,12 @@ import type Database from "better-sqlite3";
 
 const execFileAsync = promisify(execFile);
 
-/** Maps scenario path IDs to their Maestro test files (relative to e2e/flows/). */
+/** Maps scenario IDs to their Maestro test files (relative to e2e/flows/). */
 const SCENARIO_TEST_MAP: Record<string, string> = {
-  "scenario:meetup-confirmed": "meetups/meetup-confirmed.yaml",
-  "scenario:meetup-completed": "meetups/meetup-completed.yaml",
-  "scenario:meetup-cancelled-from-proposed": "meetups/meetup-cancelled-from-proposed.yaml",
-  "scenario:meetup-cancelled-from-confirmed": "meetups/meetup-cancelled-from-confirmed.yaml",
+  "meetup-confirmed": "meetups/meetup-confirmed.yaml",
+  "meetup-completed": "meetups/meetup-completed.yaml",
+  "meetup-cancelled-from-proposed": "meetups/meetup-cancelled-from-proposed.yaml",
+  "meetup-cancelled-from-confirmed": "meetups/meetup-cancelled-from-confirmed.yaml",
 };
 
 const E2E_BASE = resolve(

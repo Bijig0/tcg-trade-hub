@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { GraphViewer } from 'flow-graph/react';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { ChatPanel } from '@/features/chat';
 import TestCoverage from '@/features/maestro/components/TestCoverage/TestCoverage';
 import RecordingModal from '@/features/maestro/components/RecordingModal/RecordingModal';
@@ -103,6 +104,15 @@ export const Route = createFileRoute('/_authed/dashboard')({
   component: AdminDashboard,
 });
 
+type ScenarioConfig = {
+  id: string;
+  label: string;
+  description: string;
+  parentPathId: string;
+  stepIndices: number[];
+  testFile: string | null;
+};
+
 function AdminDashboard() {
   const { health, retry } = useGraphHealth();
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -110,9 +120,26 @@ function AdminDashboard() {
   const [recordingPathId, setRecordingPathId] = useState<string | null>(null);
   const mobileLink = useMobileLink();
 
+  // Scenarios
+  const { data: scenariosList } = useQuery({
+    queryKey: ['scenarios'],
+    queryFn: () =>
+      fetch(`${GRAPH_SERVER_URL}/api/scenarios`)
+        .then((r) => r.json()) as Promise<ScenarioConfig[]>,
+    enabled: health.status === 'healthy',
+  });
+
+  const scenariosByPath = useMemo(() => {
+    const map: Record<string, ScenarioConfig[]> = {};
+    for (const s of scenariosList ?? []) {
+      (map[s.parentPathId] ??= []).push(s);
+    }
+    return map;
+  }, [scenariosList]);
+
   // Recordings
   const { data: recordingsList } = useRecordingList();
-  const recordingPathIds = useMemo(
+  const recordingScenarioIds = useMemo(
     () => new Set(recordingsList?.map((r) => r.pathId) ?? []),
     [recordingsList],
   );
@@ -140,8 +167,8 @@ function AdminDashboard() {
     });
   }, []);
 
-  const handlePlayRecording = useCallback((pathId: string) => {
-    setRecordingPathId(pathId);
+  const handlePlayRecording = useCallback((scenarioId: string) => {
+    setRecordingPathId(scenarioId);
   }, []);
 
   const handleCloseRecording = useCallback(() => {
@@ -186,8 +213,9 @@ function AdminDashboard() {
             activeStep={controlledStep}
             mobileActivePaths={mobileActivePaths}
             deviceName={mobileLink.linkedSimulator?.name ?? null}
-            recordingPathIds={recordingPathIds}
-            onPlayRecording={handlePlayRecording}
+            scenarios={scenariosByPath}
+            recordingScenarioIds={recordingScenarioIds}
+            onPlayScenarioRecording={handlePlayRecording}
           />
         </div>
         <ChatPanel isOpen={isChatOpen} onToggle={toggleChat} />
