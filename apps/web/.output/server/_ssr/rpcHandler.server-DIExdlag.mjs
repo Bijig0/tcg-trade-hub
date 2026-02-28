@@ -639,9 +639,29 @@ const fetchWithTimeout = async (url, init) => {
     clearTimeout(timer);
   }
 };
-const SCRYDEX_TCG_PATHS = {
-  pokemon: "pokemon",
-  onepiece: "onepiece"
+const normalizeTcgdexCard = (card) => {
+  const setCode = card.id.replace(/-[^-]+$/, "");
+  return {
+    externalId: card.id,
+    tcg: "pokemon",
+    name: card.name,
+    setName: setCode,
+    setCode,
+    number: card.localId,
+    imageUrl: card.image ? `${card.image}/high.webp` : "",
+    marketPrice: null,
+    rarity: "Unknown"
+  };
+};
+const searchPokemon = async (query) => {
+  const url = `https://api.tcgdex.net/v2/en/cards?name=${encodeURIComponent(query)}&pagination:itemsPerPage=${MAX_RESULTS}`;
+  const res = await fetchWithTimeout(url);
+  if (res.status === 404) return [];
+  if (!res.ok) {
+    throw new Error(`TCGdex API error (${res.status})`);
+  }
+  const data = await res.json();
+  return data.map(normalizeTcgdexCard);
 };
 const normalizeScrydexCard = (card, tcg) => {
   const image = card.images?.[0];
@@ -665,9 +685,7 @@ const searchScrydex = async (query, tcg) => {
     console.warn(`[cardSearch] SCRYDEX_API_KEY or SCRYDEX_TEAM_ID not set — ${tcg} search unavailable`);
     return [];
   }
-  const tcgPath = SCRYDEX_TCG_PATHS[tcg];
-  if (!tcgPath) return [];
-  const url = `https://api.scrydex.com/${tcgPath}/v1/cards?q=name:${encodeURIComponent(query)}*&page_size=${MAX_RESULTS}&select=id,name,number,rarity,images,expansion&include=prices`;
+  const url = `https://api.scrydex.com/onepiece/v1/cards?q=name:${encodeURIComponent(query)}*&page_size=${MAX_RESULTS}&select=id,name,number,rarity,images,expansion&include=prices`;
   const res = await fetchWithTimeout(url, {
     headers: {
       "Content-Type": "application/json",
@@ -719,7 +737,7 @@ const searchMtg = async (query) => {
   return (data.data ?? []).slice(0, MAX_RESULTS).map(normalizeMtgCard);
 };
 const searchByTcg = {
-  pokemon: (query) => searchScrydex(query, "pokemon"),
+  pokemon: searchPokemon,
   mtg: searchMtg,
   onepiece: (query) => searchScrydex(query, "onepiece")
 };

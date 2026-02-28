@@ -153,7 +153,7 @@ const Route$2 = createFileRoute("/demo")({
   },
   component: lazyRouteComponent($$splitComponentImporter$1, "component")
 });
-const $$splitComponentImporter = () => import("./index-CP6LmQUD.mjs");
+const $$splitComponentImporter = () => import("./index-C1sJmHXL.mjs");
 const Route$1 = createFileRoute("/")({
   head: () => ({
     meta: [{
@@ -184,7 +184,7 @@ const createSsrRpc = (functionId, importer) => {
     [TSS_SERVER_FUNCTION]: true
   });
 };
-createServerFn().handler(createSsrRpc("7cd112cb9c129b39d307d5bc6528cb82d36a292dffc76c0b1ff6b2cffc0480b9", () => import("./_-BFkG9lTf.mjs").then((m) => m["rpcHandler_createServerFn_handler"])));
+createServerFn().handler(createSsrRpc("7cd112cb9c129b39d307d5bc6528cb82d36a292dffc76c0b1ff6b2cffc0480b9", () => import("./_-BW8BqEkS.mjs").then((m) => m["rpcHandler_createServerFn_handler"])));
 const Route = createFileRoute("/api/rpc/$")({
   server: {
     handlers: {
@@ -193,7 +193,7 @@ const Route = createFileRoute("/api/rpc/$")({
       }) => {
         const {
           handleRPC
-        } = await import("./rpcHandler.server-PIjVcgvr.mjs");
+        } = await import("./rpcHandler.server-DIExdlag.mjs");
         return handleRPC(request);
       }
     }
