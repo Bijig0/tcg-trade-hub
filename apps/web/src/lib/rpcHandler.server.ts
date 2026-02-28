@@ -4,6 +4,7 @@ import { router } from '@tcg-trade-hub/api';
 import { createSupabaseServiceClient } from './supabase.server';
 
 const handler = new RPCHandler(router, {
+  strictGetMethodPluginEnabled: false,
   interceptors: [
     onError((error) => {
       console.error('[oRPC Error]', error);
