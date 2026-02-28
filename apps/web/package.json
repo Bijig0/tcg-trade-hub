@@ -10,7 +10,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@emailjs/browser": "^4.4.1",
     "@orpc/client": "^1.13.0",
     "@orpc/server": "^1.13.0",
     "@orpc/tanstack-query": "^1.13.0",
