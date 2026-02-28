@@ -19,7 +19,7 @@ export const demoConversation: DemoMessage[] = [
     id: '2',
     type: 'text',
     sender: 'other',
-    text: "Hey! We're building the easiest way to trade cards locally \u2014 no shipping, no scams.",
+    text: "Hey! We're building the easiest way to trade cards locally.",
   },
   {
     id: '3',
