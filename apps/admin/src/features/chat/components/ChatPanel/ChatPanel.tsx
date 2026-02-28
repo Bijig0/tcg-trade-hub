@@ -34,7 +34,7 @@ const ChatPanel = ({ isOpen, onToggle }: ChatPanelProps) => {
     return (
       <button
         onClick={onToggle}
-        className="fixed bottom-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95"
+        className="fixed bottom-4 right-20 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95"
         aria-label="Open graph assistant"
         title="Open Graph Assistant"
       >
