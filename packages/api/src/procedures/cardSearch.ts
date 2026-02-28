@@ -22,14 +22,49 @@ const fetchWithTimeout = async (
 };
 
 // ---------------------------------------------------------------------------
-// Scrydex API (Pokemon + One Piece) — requires SCRYDEX_API_KEY + SCRYDEX_TEAM_ID
-// https://api.scrydex.com/{tcg}/v1
+// TCGdex API (Pokemon) — free, no key required
+// https://api.tcgdex.net/v2/en
 // ---------------------------------------------------------------------------
 
-const SCRYDEX_TCG_PATHS: Record<string, string> = {
-  pokemon: 'pokemon',
-  onepiece: 'onepiece',
+type TcgdexCard = {
+  id: string;
+  localId: string;
+  name: string;
+  image: string;
 };
+
+const normalizeTcgdexCard = (card: TcgdexCard): NormalizedCard => {
+  const setCode = card.id.replace(/-[^-]+$/, '');
+  return {
+    externalId: card.id,
+    tcg: 'pokemon',
+    name: card.name,
+    setName: setCode,
+    setCode,
+    number: card.localId,
+    imageUrl: card.image ? `${card.image}/high.webp` : '',
+    marketPrice: null,
+    rarity: 'Unknown',
+  };
+};
+
+const searchPokemon = async (query: string): Promise<NormalizedCard[]> => {
+  const url = `https://api.tcgdex.net/v2/en/cards?name=${encodeURIComponent(query)}&pagination:itemsPerPage=${MAX_RESULTS}`;
+  const res = await fetchWithTimeout(url);
+
+  if (res.status === 404) return [];
+  if (!res.ok) {
+    throw new Error(`TCGdex API error (${res.status})`);
+  }
+
+  const data = (await res.json()) as TcgdexCard[];
+  return data.map(normalizeTcgdexCard);
+};
+
+// ---------------------------------------------------------------------------
+// Scrydex API (One Piece) — requires SCRYDEX_API_KEY + SCRYDEX_TEAM_ID
+// https://api.scrydex.com/{tcg}/v1
+// ---------------------------------------------------------------------------
 
 type ScrydexImage = {
   type?: string;
@@ -89,10 +124,7 @@ const searchScrydex = async (
     return [];
   }
 
-  const tcgPath = SCRYDEX_TCG_PATHS[tcg];
-  if (!tcgPath) return [];
-
-  const url = `https://api.scrydex.com/${tcgPath}/v1/cards?q=name:${encodeURIComponent(query)}*&page_size=${MAX_RESULTS}&select=id,name,number,rarity,images,expansion&include=prices`;
+  const url = `https://api.scrydex.com/onepiece/v1/cards?q=name:${encodeURIComponent(query)}*&page_size=${MAX_RESULTS}&select=id,name,number,rarity,images,expansion&include=prices`;
   const res = await fetchWithTimeout(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -183,7 +215,7 @@ const searchMtg = async (query: string): Promise<NormalizedCard[]> => {
 // ---------------------------------------------------------------------------
 
 const searchByTcg: Record<TcgType, (query: string) => Promise<NormalizedCard[]>> = {
-  pokemon: (query) => searchScrydex(query, 'pokemon'),
+  pokemon: searchPokemon,
   mtg: searchMtg,
   onepiece: (query) => searchScrydex(query, 'onepiece'),
 };
