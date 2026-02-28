@@ -81,6 +81,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.0.0
         version: 19.2.3(@types/react@19.1.17)
+      agentation:
+        specifier: ^2.2.1
+        version: 2.2.1(react-dom@19.1.0)(react@19.1.0)
       jsdom:
         specifier: ^28.1.0
         version: 28.1.0
@@ -5356,6 +5359,21 @@ packages:
   /agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
+
+  /agentation@2.2.1(react-dom@19.1.0)(react@19.1.0):
+    resolution: {integrity: sha512-yV9P1DggI7M3SRaRwLwt+xqE5lXqg5l8xtqCr8KzEkbnH8Wa6eRATU97uKnD7cC8FrsJP62Mmw0Xf5Xi5KV50Q==}
+    peerDependencies:
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
+    dependencies:
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+    dev: true
 
   /ai@6.0.103(zod@3.25.76):
     resolution: {integrity: sha512-4eY6Ut4u41zKH+P2S/oLlZrwxeWQh4kIV1FjE34Jhoiwg+v1AyfSYM8FslXk9rTAtIIaOBimrCUqXacC5RBqJw==}
