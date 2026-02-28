@@ -16,7 +16,7 @@ VALUES
     '{"monday": "10:00-21:00", "tuesday": "10:00-21:00", "wednesday": "10:00-21:00", "thursday": "10:00-21:00", "friday": "10:00-21:00", "saturday": "10:00-18:00", "sunday": "11:00-17:00"}'::jsonb,
     'https://www.goodgames.com.au',
     '+61 3 9670 8637',
-    ARRAY['pokemon', 'mtg', 'yugioh']::public.tcg_type[],
+    ARRAY['pokemon', 'mtg', 'onepiece']::public.tcg_type[],
     true
   ),
   (
@@ -26,7 +26,7 @@ VALUES
     '{"monday": "10:00-18:00", "tuesday": "10:00-18:00", "wednesday": "10:00-18:00", "thursday": "10:00-21:00", "friday": "10:00-21:00", "saturday": "10:00-18:00", "sunday": "11:00-17:00"}'::jsonb,
     'https://www.dungeonofmagic.com.au',
     '+61 3 9602 1407',
-    ARRAY['mtg', 'yugioh']::public.tcg_type[],
+    ARRAY['mtg', 'onepiece']::public.tcg_type[],
     true
   ),
   (
@@ -36,7 +36,7 @@ VALUES
     '{"monday": "10:00-20:00", "tuesday": "10:00-20:00", "wednesday": "10:00-20:00", "thursday": "10:00-21:00", "friday": "10:00-21:00", "saturday": "10:00-18:00", "sunday": "11:00-17:00"}'::jsonb,
     'https://www.gameslaboratory.com.au',
     '+61 3 9328 1219',
-    ARRAY['pokemon', 'mtg', 'yugioh']::public.tcg_type[],
+    ARRAY['pokemon', 'mtg', 'onepiece']::public.tcg_type[],
     true
   ),
   (
@@ -56,7 +56,7 @@ VALUES
     '{"monday": "09:00-17:30", "tuesday": "09:00-17:30", "wednesday": "09:00-17:30", "thursday": "09:00-21:00", "friday": "09:00-21:00", "saturday": "09:00-17:00", "sunday": "10:00-17:00"}'::jsonb,
     'https://www.hobbymaster.com.au',
     '+61 3 9840 4312',
-    ARRAY['pokemon', 'mtg', 'yugioh']::public.tcg_type[],
+    ARRAY['pokemon', 'mtg', 'onepiece']::public.tcg_type[],
     true
   ),
   (
@@ -66,7 +66,7 @@ VALUES
     '{"monday": "10:00-18:00", "tuesday": "10:00-18:00", "wednesday": "10:00-18:00", "thursday": "10:00-21:00", "friday": "10:00-21:00", "saturday": "09:00-17:00", "sunday": "10:00-16:00"}'::jsonb,
     'https://www.nextlevelgames.com.au',
     '+61 3 9879 4044',
-    ARRAY['pokemon', 'mtg', 'yugioh']::public.tcg_type[],
+    ARRAY['pokemon', 'mtg', 'onepiece']::public.tcg_type[],
     true
   ),
   (
@@ -86,7 +86,7 @@ VALUES
     '{"monday": "11:00-19:00", "tuesday": "11:00-19:00", "wednesday": "11:00-19:00", "thursday": "11:00-21:00", "friday": "11:00-21:00", "saturday": "10:00-18:00", "sunday": "11:00-17:00"}'::jsonb,
     'https://www.cardtastictcg.com.au',
     '+61 3 9510 7722',
-    ARRAY['pokemon', 'yugioh']::public.tcg_type[],
+    ARRAY['pokemon', 'onepiece']::public.tcg_type[],
     true
   ),
   (
@@ -96,7 +96,7 @@ VALUES
     '{"monday": "10:00-18:00", "tuesday": "10:00-18:00", "wednesday": "10:00-18:00", "thursday": "10:00-21:00", "friday": "10:00-21:00", "saturday": "09:30-17:00", "sunday": "10:30-16:30"}'::jsonb,
     'https://www.generalgames.com.au',
     '+61 3 9500 8226',
-    ARRAY['pokemon', 'mtg', 'yugioh']::public.tcg_type[],
+    ARRAY['pokemon', 'mtg', 'onepiece']::public.tcg_type[],
     true
   ),
   (
@@ -341,17 +341,17 @@ BEGIN
   VALUES
     (u1,  'alex.chen@example.com',       'Alex Chen',        NULL, ST_SetSRID(ST_MakePoint(144.9631, -37.8136), 4326), 25, ARRAY['pokemon']::public.tcg_type[],                   4.80, 12),
     (u2,  'sarah.mitchell@example.com',   'Sarah Mitchell',   NULL, ST_SetSRID(ST_MakePoint(144.9590, -37.8180), 4326), 30, ARRAY['mtg', 'pokemon']::public.tcg_type[],            4.50,  8),
-    (u3,  'james.wilson@example.com',     'James Wilson',     NULL, ST_SetSRID(ST_MakePoint(145.0340, -37.8625), 4326), 20, ARRAY['yugioh']::public.tcg_type[],                    4.20,  5),
-    (u4,  'emma.rodriguez@example.com',   'Emma Rodriguez',   NULL, ST_SetSRID(ST_MakePoint(144.9930, -37.8560), 4326), 35, ARRAY['pokemon', 'mtg', 'yugioh']::public.tcg_type[],  4.90, 20),
+    (u3,  'james.wilson@example.com',     'James Wilson',     NULL, ST_SetSRID(ST_MakePoint(145.0340, -37.8625), 4326), 20, ARRAY['onepiece']::public.tcg_type[],                    4.20,  5),
+    (u4,  'emma.rodriguez@example.com',   'Emma Rodriguez',   NULL, ST_SetSRID(ST_MakePoint(144.9930, -37.8560), 4326), 35, ARRAY['pokemon', 'mtg', 'onepiece']::public.tcg_type[],  4.90, 20),
     (u5,  'liam.obrien@example.com',      'Liam O''Brien',    NULL, ST_SetSRID(ST_MakePoint(145.1260, -37.7840), 4326), 15, ARRAY['pokemon']::public.tcg_type[],                   3.80,  3),
     (u6,  'mia.zhang@example.com',        'Mia Zhang',        NULL, ST_SetSRID(ST_MakePoint(144.9700, -37.8200), 4326), 20, ARRAY['pokemon', 'mtg']::public.tcg_type[],            4.60, 15),
     (u7,  'noah.patel@example.com',       'Noah Patel',       NULL, ST_SetSRID(ST_MakePoint(144.9550, -37.8050), 4326), 25, ARRAY['mtg']::public.tcg_type[],                       4.30,  7),
-    (u8,  'olivia.kim@example.com',       'Olivia Kim',       NULL, ST_SetSRID(ST_MakePoint(145.0100, -37.8300), 4326), 30, ARRAY['yugioh', 'pokemon']::public.tcg_type[],         4.75, 18),
-    (u9,  'ethan.brooks@example.com',     'Ethan Brooks',     NULL, ST_SetSRID(ST_MakePoint(144.9800, -37.8400), 4326), 20, ARRAY['pokemon', 'mtg', 'yugioh']::public.tcg_type[],  4.10,  6),
+    (u8,  'olivia.kim@example.com',       'Olivia Kim',       NULL, ST_SetSRID(ST_MakePoint(145.0100, -37.8300), 4326), 30, ARRAY['onepiece', 'pokemon']::public.tcg_type[],         4.75, 18),
+    (u9,  'ethan.brooks@example.com',     'Ethan Brooks',     NULL, ST_SetSRID(ST_MakePoint(144.9800, -37.8400), 4326), 20, ARRAY['pokemon', 'mtg', 'onepiece']::public.tcg_type[],  4.10,  6),
     (u10, 'sophie.turner@example.com',    'Sophie Turner',    NULL, ST_SetSRID(ST_MakePoint(144.9450, -37.8150), 4326), 35, ARRAY['pokemon']::public.tcg_type[],                   4.85, 22),
-    (u11, 'ryan.nakamura@example.com',    'Ryan Nakamura',    NULL, ST_SetSRID(ST_MakePoint(145.0500, -37.8700), 4326), 15, ARRAY['mtg', 'yugioh']::public.tcg_type[],             3.90,  4),
+    (u11, 'ryan.nakamura@example.com',    'Ryan Nakamura',    NULL, ST_SetSRID(ST_MakePoint(145.0500, -37.8700), 4326), 15, ARRAY['mtg', 'onepiece']::public.tcg_type[],             3.90,  4),
     (u12, 'chloe.anderson@example.com',   'Chloe Anderson',   NULL, ST_SetSRID(ST_MakePoint(144.9300, -37.7900), 4326), 25, ARRAY['pokemon']::public.tcg_type[],                   4.40,  9),
-    (u13, 'daniel.lee@example.com',       'Daniel Lee',       NULL, ST_SetSRID(ST_MakePoint(145.0800, -37.8500), 4326), 20, ARRAY['yugioh']::public.tcg_type[],                    4.65, 14)
+    (u13, 'daniel.lee@example.com',       'Daniel Lee',       NULL, ST_SetSRID(ST_MakePoint(145.0800, -37.8500), 4326), 20, ARRAY['onepiece']::public.tcg_type[],                    4.65, 14)
   ON CONFLICT (id) DO NOTHING;
 
   -- Ensure the dev user exists in public.users, then update with location + preferences
@@ -363,7 +363,7 @@ BEGIN
   SET
     location = ST_SetSRID(ST_MakePoint(144.9632, -37.8142), 4326),
     radius_km = 30,
-    preferred_tcgs = ARRAY['pokemon', 'mtg', 'yugioh']::public.tcg_type[],
+    preferred_tcgs = ARRAY['pokemon', 'mtg', 'onepiece']::public.tcg_type[],
     rating_score = 4.70,
     total_trades = 7
   WHERE id = me;
@@ -381,7 +381,7 @@ BEGIN
   INSERT INTO public.listings (id, user_id, type, tcg, title, cash_amount, total_value, description, status, created_at)
   VALUES
     (my_l1, me, 'wts', 'pokemon', 'Charizard VMAX',                  42.00,  87.00, 'Perfect condition, sleeved immediately after pulling.',                     'active',    now() - interval '6 days'),
-    (my_l2, me, 'wtb', 'yugioh',  'Dark Magician',                   20.00,  45.00, 'Looking for the original LOB art. LP or better.',                          'active',    now() - interval '5 days'),
+    (my_l2, me, 'wtb', 'onepiece',  'Dark Magician',                   20.00,  45.00, 'Looking for the original LOB art. LP or better.',                          'active',    now() - interval '5 days'),
     (my_l3, me, 'wtt', 'mtg',     'Force of Will',                    0.00,  85.00, 'Trading for dual lands or other Legacy staples.',                          'active',    now() - interval '4 days'),
     (my_l4, me, 'wts', 'pokemon', 'Pikachu VMAX',                    16.00,  34.50, 'Rainbow chonky boy. Mint condition.',                                      'matched',   now() - interval '12 days'),
     (my_l5, me, 'wts', 'pokemon', 'Evolving Skies Bundle',           85.00, 195.00, '3 chase cards from Evolving Skies. All NM, selling as a lot.',            'active',    now() - interval '2 days'),
@@ -402,9 +402,9 @@ BEGIN
     (u2_l3, u2, 'wts', 'mtg',     'Atraxa, Grand Unifier',            28.00,  58.00, 'Standard all-star. Pack fresh from ONE.',                                  'active', now() - interval '6 hours'),
 
     -- James Wilson - Yu-Gi-Oh fan
-    (u3_l1, u3, 'wts', 'yugioh',  'Blue-Eyes White Dragon',            35.00,  75.00, 'Classic BEWD from LOB. Light play, no creases.',                           'active', now() - interval '8 days'),
-    (u3_l2, u3, 'wtt', 'yugioh',  'Ash Blossom & Joyous Spring',       0.00,  22.00, 'Trading for other hand traps or meta staples.',                            'active', now() - interval '6 days'),
-    (u3_l3, u3, 'wts', 'yugioh',  'Starlight Rare Bundle',            200.00, 420.00, 'Two starlight rares in NM condition. Selling together only.',              'active', now() - interval '1 day'),
+    (u3_l1, u3, 'wts', 'onepiece',  'Blue-Eyes White Dragon',            35.00,  75.00, 'Classic BEWD from LOB. Light play, no creases.',                           'active', now() - interval '8 days'),
+    (u3_l2, u3, 'wtt', 'onepiece',  'Ash Blossom & Joyous Spring',       0.00,  22.00, 'Trading for other hand traps or meta staples.',                            'active', now() - interval '6 days'),
+    (u3_l3, u3, 'wts', 'onepiece',  'Starlight Rare Bundle',            200.00, 420.00, 'Two starlight rares in NM condition. Selling together only.',              'active', now() - interval '1 day'),
 
     -- Emma Rodriguez - Multi-TCG
     (u4_l1, u4, 'wts', 'pokemon', 'Mew VMAX Alt Art',                  50.00, 105.00, 'Beautiful alt art, freshly pulled. Sleeved and top-loaded.',               'active', now() - interval '2 days'),
@@ -430,9 +430,9 @@ BEGIN
     (u7_l3, u7, 'wtt', 'mtg',     'Doubling Season',                    0.00,  45.00, 'Trading for EDH staples. Foil Ravnica printing.',                          'active', now() - interval '8 hours'),
 
     -- Olivia Kim - Yu-Gi-Oh/Pokemon
-    (u8_l1, u8, 'wts', 'yugioh',  'Accesscode Talker',                 18.00,  38.00, 'META staple. ETCO 1st ed. Clean corners.',                                 'active', now() - interval '1 day'),
+    (u8_l1, u8, 'wts', 'onepiece',  'Accesscode Talker',                 18.00,  38.00, 'META staple. ETCO 1st ed. Clean corners.',                                 'active', now() - interval '1 day'),
     (u8_l2, u8, 'wts', 'pokemon', 'Lugia VSTAR Alt Art',               55.00, 115.00, 'Silver Tempest chase card. Gorgeous artwork.',                            'active', now() - interval '3 days'),
-    (u8_l3, u8, 'wtt', 'yugioh',  'Ghost Rare Collection',              0.00, 280.00, '5 ghost rares from various sets. Trading as a lot for other ghosts.',     'active', now() - interval '6 days'),
+    (u8_l3, u8, 'wtt', 'onepiece',  'Ghost Rare Collection',              0.00, 280.00, '5 ghost rares from various sets. Trading as a lot for other ghosts.',     'active', now() - interval '6 days'),
 
     -- Ethan Brooks - All TCGs
     (u9_l1, u9, 'wts', 'pokemon', 'Scarlet & Violet Promos',           35.00,  72.00, 'Bundle of 6 SV promo cards including Pikachu ex.',                        'active', now() - interval '2 days'),
@@ -445,7 +445,7 @@ BEGIN
 
     -- Ryan Nakamura - MTG/YuGiOh
     (u11_l1, u11, 'wts', 'mtg',     'Teferi, Time Raveler',             12.00,  25.00, 'WAR printing. Great condition, played in standard only.',                  'active', now() - interval '1 day'),
-    (u11_l2, u11, 'wts', 'yugioh',  'Nibiru, the Primal Being',          8.00,  18.00, 'MAGO gold rare. Hand trap essential.',                                    'active', now() - interval '5 days'),
+    (u11_l2, u11, 'wts', 'onepiece',  'Nibiru, the Primal Being',          8.00,  18.00, 'MAGO gold rare. Hand trap essential.',                                    'active', now() - interval '5 days'),
 
     -- Chloe Anderson - Pokemon sealed/singles
     (u12_l1, u12, 'wts', 'pokemon', 'Eeveelution Alt Art Bundle',      280.00, 580.00, 'All 3 Eeveelution VMAX alt arts from Evolving Skies!',                    'active', now() - interval '2 days'),
@@ -453,9 +453,9 @@ BEGIN
     (u12_l3, u12, 'wtb', 'pokemon', 'Crown Zenith Hits',                60.00, 125.00, 'Looking for Galarian Gallery cards from Crown Zenith.',                   'active', now() - interval '1 day'),
 
     -- Daniel Lee - Yu-Gi-Oh competitive
-    (u13_l1, u13, 'wts', 'yugioh', 'Snake-Eyes Core',                   45.00,  95.00, 'Complete Snake-Eyes engine. All 1st ed, NM.',                              'active', now() - interval '1 day'),
-    (u13_l2, u13, 'wtt', 'yugioh', 'Tearlaments Core',                   0.00,  85.00, 'Full Tearlaments deck core. Trading for Rescue-ACE.',                     'active', now() - interval '3 days'),
-    (u13_l3, u13, 'wts', 'yugioh', 'Ash Blossom Starlight',             95.00, 195.00, 'Starlight rare Ash Blossom. Near mint, never played.',                    'active', now() - interval '7 hours')
+    (u13_l1, u13, 'wts', 'onepiece', 'Snake-Eyes Core',                   45.00,  95.00, 'Complete Snake-Eyes engine. All 1st ed, NM.',                              'active', now() - interval '1 day'),
+    (u13_l2, u13, 'wtt', 'onepiece', 'Tearlaments Core',                   0.00,  85.00, 'Full Tearlaments deck core. Trading for Rescue-ACE.',                     'active', now() - interval '3 days'),
+    (u13_l3, u13, 'wts', 'onepiece', 'Ash Blossom Starlight',             95.00, 195.00, 'Starlight rare Ash Blossom. Near mint, never played.',                    'active', now() - interval '7 hours')
   ON CONFLICT (id) DO NOTHING;
 
   -- =========================================================================
@@ -466,7 +466,7 @@ BEGIN
   VALUES
     -- Current user
     (my_l1, 'Charizard VMAX',              'https://images.pokemontcg.io/swsh3/20.png',      'swsh3-20',  'pokemon', 'Darkness Ablaze',     '020/189', 'VMAX',             'nm', 45.00,  42.00, 1),
-    (my_l2, 'Dark Magician',               'https://images.ygoprodeck.com/images/cards_small/46986414.jpg', 'LOB-005', 'yugioh', 'Legend of Blue Eyes', 'LOB-005', 'Ultra Rare', 'lp', 25.00, 20.00, 1),
+    (my_l2, 'Dark Magician',               'https://images.ygoprodeck.com/images/cards_small/46986414.jpg', 'LOB-005', 'onepiece', 'Legend of Blue Eyes', 'LOB-005', 'Ultra Rare', 'lp', 25.00, 20.00, 1),
     (my_l3, 'Force of Will',               'http://127.0.0.1:54321/storage/v1/object/public/card-images/force-of-will.jpg', 'ALL-42', 'mtg', 'Alliances', '42', 'Uncommon', 'lp', 85.00, NULL, 1),
     (my_l4, 'Pikachu VMAX',                'https://images.pokemontcg.io/swsh4/44.png',      'swsh4-44',  'pokemon', 'Vivid Voltage',       '044/185', 'VMAX',             'nm', 18.50,  16.00, 1),
 
@@ -490,11 +490,11 @@ BEGIN
     (u2_l3, 'Atraxa, Grand Unifier',       'https://cards.scryfall.io/normal/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.jpg', 'ONE-196', 'mtg', 'Phyrexia: All Will Be One', '196', 'Mythic Rare', 'nm', 30.00, 28.00, 1),
 
     -- James Wilson
-    (u3_l1, 'Blue-Eyes White Dragon',       'https://images.ygoprodeck.com/images/cards_small/89631139.jpg', 'LOB-001', 'yugioh', 'Legend of Blue Eyes', 'LOB-001', 'Ultra Rare', 'lp', 40.00, 35.00, 1),
-    (u3_l2, 'Ash Blossom & Joyous Spring',  'https://images.ygoprodeck.com/images/cards_small/14558127.jpg', 'MACR-036', 'yugioh', 'Maximum Crisis', 'MACR-036', 'Secret Rare', 'nm', 22.00, NULL, 1),
+    (u3_l1, 'Blue-Eyes White Dragon',       'https://images.ygoprodeck.com/images/cards_small/89631139.jpg', 'LOB-001', 'onepiece', 'Legend of Blue Eyes', 'LOB-001', 'Ultra Rare', 'lp', 40.00, 35.00, 1),
+    (u3_l2, 'Ash Blossom & Joyous Spring',  'https://images.ygoprodeck.com/images/cards_small/14558127.jpg', 'MACR-036', 'onepiece', 'Maximum Crisis', 'MACR-036', 'Secret Rare', 'nm', 22.00, NULL, 1),
     -- u3_l3: Starlight Rare Bundle (2 items)
-    (u3_l3, 'Accesscode Talker (Starlight)', 'https://images.ygoprodeck.com/images/cards_small/86066372.jpg', 'ETCO-099', 'yugioh', 'Eternity Code', 'ETCO-099', 'Starlight Rare', 'nm', 220.00, 200.00, 1),
-    (u3_l3, 'Apollousa (Starlight)',         'https://images.ygoprodeck.com/images/cards_small/4280258.jpg',  'RIRA-097', 'yugioh', 'Rising Rampage', 'RIRA-097', 'Starlight Rare', 'nm', 200.00, 180.00, 1),
+    (u3_l3, 'Accesscode Talker (Starlight)', 'https://images.ygoprodeck.com/images/cards_small/86066372.jpg', 'ETCO-099', 'onepiece', 'Eternity Code', 'ETCO-099', 'Starlight Rare', 'nm', 220.00, 200.00, 1),
+    (u3_l3, 'Apollousa (Starlight)',         'https://images.ygoprodeck.com/images/cards_small/4280258.jpg',  'RIRA-097', 'onepiece', 'Rising Rampage', 'RIRA-097', 'Starlight Rare', 'nm', 200.00, 180.00, 1),
 
     -- Emma Rodriguez
     (u4_l1, 'Mew VMAX Alt Art',             'https://images.pokemontcg.io/swsh8/268.png',    'swsh8-268', 'pokemon', 'Fusion Strike',        '268/264', 'Secret Rare',      'nm', 55.00,  50.00, 1),
@@ -521,12 +521,12 @@ BEGIN
     (u7_l3, 'Doubling Season',              'https://cards.scryfall.io/normal/front/8/6/8676d164-c76e-402b-a649-6ded3f549b6e.jpg', 'RAV-158', 'mtg', 'Ravnica', '158', 'Rare', 'nm', 45.00, NULL, 1),
 
     -- Olivia Kim
-    (u8_l1, 'Accesscode Talker',            'https://images.ygoprodeck.com/images/cards_small/86066372.jpg', 'ETCO-086', 'yugioh', 'Eternity Code', 'ETCO-086', 'Ultra Rare', 'nm', 20.00, 18.00, 1),
+    (u8_l1, 'Accesscode Talker',            'https://images.ygoprodeck.com/images/cards_small/86066372.jpg', 'ETCO-086', 'onepiece', 'Eternity Code', 'ETCO-086', 'Ultra Rare', 'nm', 20.00, 18.00, 1),
     (u8_l2, 'Lugia VSTAR Alt Art',          'https://images.pokemontcg.io/swsh12pt5/139.png', 'swsh12pt5-186', 'pokemon', 'Silver Tempest', '186/195', 'Secret Rare', 'nm', 60.00, 55.00, 1),
     -- u8_l3: Ghost Rare Collection (3 items)
-    (u8_l3, 'Stardust Dragon (Ghost)',       'https://images.ygoprodeck.com/images/cards_small/44508094.jpg', 'TDGS-040', 'yugioh', 'The Duelist Genesis', 'TDGS-040', 'Ghost Rare', 'lp', 85.00, NULL, 1),
-    (u8_l3, 'Rainbow Dragon (Ghost)',        'https://images.ygoprodeck.com/images/cards_small/95744531.jpg', 'TAEV-098', 'yugioh', 'Tactical Evolution', 'TAEV-098', 'Ghost Rare', 'lp', 95.00, NULL, 1),
-    (u8_l3, 'Galaxy-Eyes Photon Dragon (Ghost)', 'https://images.ygoprodeck.com/images/cards_small/56713552.jpg', 'GAOV-098', 'yugioh', 'Galactic Overlord', 'GAOV-098', 'Ghost Rare', 'nm', 100.00, NULL, 1),
+    (u8_l3, 'Stardust Dragon (Ghost)',       'https://images.ygoprodeck.com/images/cards_small/44508094.jpg', 'TDGS-040', 'onepiece', 'The Duelist Genesis', 'TDGS-040', 'Ghost Rare', 'lp', 85.00, NULL, 1),
+    (u8_l3, 'Rainbow Dragon (Ghost)',        'https://images.ygoprodeck.com/images/cards_small/95744531.jpg', 'TAEV-098', 'onepiece', 'Tactical Evolution', 'TAEV-098', 'Ghost Rare', 'lp', 95.00, NULL, 1),
+    (u8_l3, 'Galaxy-Eyes Photon Dragon (Ghost)', 'https://images.ygoprodeck.com/images/cards_small/56713552.jpg', 'GAOV-098', 'onepiece', 'Galactic Overlord', 'GAOV-098', 'Ghost Rare', 'nm', 100.00, NULL, 1),
 
     -- Ethan Brooks
     -- u9_l1: SV Promos Bundle (3 items)
@@ -542,7 +542,7 @@ BEGIN
 
     -- Ryan Nakamura
     (u11_l1, 'Teferi, Time Raveler',         'https://cards.scryfall.io/normal/front/5/c/5cb76266-ae50-4bbc-8f96-d98f309b02d3.jpg', 'WAR-221', 'mtg', 'War of the Spark', '221', 'Rare', 'nm', 14.00, 12.00, 1),
-    (u11_l2, 'Nibiru, the Primal Being',     'https://images.ygoprodeck.com/images/cards_small/27204311.jpg', 'MAGO-026', 'yugioh', 'Maximum Gold', 'MAGO-026', 'Premium Gold Rare', 'nm', 10.00, 8.00, 1),
+    (u11_l2, 'Nibiru, the Primal Being',     'https://images.ygoprodeck.com/images/cards_small/27204311.jpg', 'MAGO-026', 'onepiece', 'Maximum Gold', 'MAGO-026', 'Premium Gold Rare', 'nm', 10.00, 8.00, 1),
 
     -- Chloe Anderson
     -- u12_l1: Eeveelution Bundle (3 items)
@@ -557,12 +557,12 @@ BEGIN
 
     -- Daniel Lee
     -- u13_l1: Snake-Eyes Core (2 items)
-    (u13_l1, 'Snake-Eye Ash',                'https://images.ygoprodeck.com/images/cards_small/9674034.jpg', 'AGOV-088', 'yugioh', 'Age of Overlord', 'AGOV-088', 'Super Rare', 'nm', 25.00, 22.00, 3),
-    (u13_l1, 'Snake-Eyes Flamberge Dragon',  'https://images.ygoprodeck.com/images/cards_small/48452496.jpg', 'PHNI-099', 'yugioh', 'Phantom Nightmare', 'PHNI-099', 'Ultra Rare', 'nm', 20.00, 18.00, 1),
+    (u13_l1, 'Snake-Eye Ash',                'https://images.ygoprodeck.com/images/cards_small/9674034.jpg', 'AGOV-088', 'onepiece', 'Age of Overlord', 'AGOV-088', 'Super Rare', 'nm', 25.00, 22.00, 3),
+    (u13_l1, 'Snake-Eyes Flamberge Dragon',  'https://images.ygoprodeck.com/images/cards_small/48452496.jpg', 'PHNI-099', 'onepiece', 'Phantom Nightmare', 'PHNI-099', 'Ultra Rare', 'nm', 20.00, 18.00, 1),
     -- u13_l2: Tearlaments Core (2 items)
-    (u13_l2, 'Tearlaments Kitkallos',        'https://images.ygoprodeck.com/images/cards_small/92731385.jpg', 'POTE-048', 'yugioh', 'Power of the Elements', 'POTE-048', 'Ultra Rare', 'nm', 30.00, NULL, 1),
-    (u13_l2, 'Tearlaments Rulkallos',        'https://images.ygoprodeck.com/images/cards_small/84330567.jpg', 'POTE-047', 'yugioh', 'Power of the Elements', 'POTE-047', 'Ultra Rare', 'nm', 18.00, NULL, 1),
-    (u13_l3, 'Ash Blossom (Starlight)',      'https://images.ygoprodeck.com/images/cards_small/14558127.jpg', 'DUNE-100', 'yugioh', 'Duelist Nexus', 'DUNE-100', 'Starlight Rare', 'nm', 100.00, 95.00, 1)
+    (u13_l2, 'Tearlaments Kitkallos',        'https://images.ygoprodeck.com/images/cards_small/92731385.jpg', 'POTE-048', 'onepiece', 'Power of the Elements', 'POTE-048', 'Ultra Rare', 'nm', 30.00, NULL, 1),
+    (u13_l2, 'Tearlaments Rulkallos',        'https://images.ygoprodeck.com/images/cards_small/84330567.jpg', 'POTE-047', 'onepiece', 'Power of the Elements', 'POTE-047', 'Ultra Rare', 'nm', 18.00, NULL, 1),
+    (u13_l3, 'Ash Blossom (Starlight)',      'https://images.ygoprodeck.com/images/cards_small/14558127.jpg', 'DUNE-100', 'onepiece', 'Duelist Nexus', 'DUNE-100', 'Starlight Rare', 'nm', 100.00, 95.00, 1)
   ON CONFLICT DO NOTHING;
 
   -- =========================================================================
@@ -787,9 +787,9 @@ BEGIN
     (me, 'mtg', 'DMU-107', 'Sheoldred, the Apocalypse', 'Dominaria United',     'DMU', '107', 'https://cards.scryfall.io/normal/front/d/6/d67be074-cdd4-41d9-ac89-0a0456c4e4b2.jpg', 'Mythic Rare', 'nm', 1, false, 75.00,  NULL,  NULL,  false, NULL, 60.00),
 
     -- Yu-Gi-Oh
-    (me, 'yugioh', 'LOB-005',   'Dark Magician',                'Legend of Blue Eyes', 'LOB',  '005',  'https://images.ygoprodeck.com/images/cards_small/46986414.jpg', 'Ultra Rare',    'mp', 1, false, 25.00, NULL, NULL, false, NULL, NULL),
-    (me, 'yugioh', 'LOB-001',   'Blue-Eyes White Dragon',       'Legend of Blue Eyes', 'LOB',  '001',  'https://images.ygoprodeck.com/images/cards_small/89631139.jpg', 'Ultra Rare',    'hp', 1, false, 20.00, NULL, NULL, false, NULL, 15.00),
-    (me, 'yugioh', 'MACR-036',  'Ash Blossom & Joyous Spring',  'Maximum Crisis',     'MACR', '036',  'https://images.ygoprodeck.com/images/cards_small/14558127.jpg', 'Secret Rare',   'nm', 1, false, 22.00, NULL, NULL, false, NULL, 18.00)
+    (me, 'onepiece', 'LOB-005',   'Dark Magician',                'Legend of Blue Eyes', 'LOB',  '005',  'https://images.ygoprodeck.com/images/cards_small/46986414.jpg', 'Ultra Rare',    'mp', 1, false, 25.00, NULL, NULL, false, NULL, NULL),
+    (me, 'onepiece', 'LOB-001',   'Blue-Eyes White Dragon',       'Legend of Blue Eyes', 'LOB',  '001',  'https://images.ygoprodeck.com/images/cards_small/89631139.jpg', 'Ultra Rare',    'hp', 1, false, 20.00, NULL, NULL, false, NULL, 15.00),
+    (me, 'onepiece', 'MACR-036',  'Ash Blossom & Joyous Spring',  'Maximum Crisis',     'MACR', '036',  'https://images.ygoprodeck.com/images/cards_small/14558127.jpg', 'Secret Rare',   'nm', 1, false, 22.00, NULL, NULL, false, NULL, 18.00)
   ON CONFLICT DO NOTHING;
 
   -- Wishlist items
@@ -798,7 +798,7 @@ BEGIN
     (me, 'pokemon', 'swsh4-188',       'Pikachu VMAX Rainbow',    'Vivid Voltage',           'swsh4',       '188/185', 'https://images.pokemontcg.io/swsh4/188.png',  'Secret Rare', 'nm', 1, true, 200.00, false, NULL, NULL),
     (me, 'mtg',     'LTR-246',         'The One Ring',            'Tales of Middle-earth',   'LTR',         '246',     'https://cards.scryfall.io/normal/front/d/5/d5806e68-1054-458e-866d-1f2470f682b2.jpg', 'Mythic Rare', 'nm', 1, true, 65.00, false, NULL, NULL),
     (me, 'pokemon', 'swsh7-209',       'Glaceon VMAX Alt Art',    'Evolving Skies',          'swsh7',       '209/203', 'https://images.pokemontcg.io/swsh7/209.png',  'Secret Rare', 'nm', 1, true, 80.00,  false, NULL, NULL),
-    (me, 'yugioh',  'DUNE-100',        'Ash Blossom (Starlight)', 'Duelist Nexus',           'DUNE',        '100',     'https://images.ygoprodeck.com/images/cards_small/14558127.jpg', 'Starlight Rare', 'nm', 1, true, 100.00, false, NULL, NULL)
+    (me, 'onepiece',  'DUNE-100',        'Ash Blossom (Starlight)', 'Duelist Nexus',           'DUNE',        '100',     'https://images.ygoprodeck.com/images/cards_small/14558127.jpg', 'Starlight Rare', 'nm', 1, true, 100.00, false, NULL, NULL)
   ON CONFLICT DO NOTHING;
 
   -- Sealed products
@@ -972,7 +972,7 @@ BEGIN
   SET
     location = ST_SetSRID(ST_MakePoint(144.9700, -37.8200), 4326),
     radius_km = 25,
-    preferred_tcgs = ARRAY['pokemon', 'mtg', 'yugioh']::public.tcg_type[],
+    preferred_tcgs = ARRAY['pokemon', 'mtg', 'onepiece']::public.tcg_type[],
     rating_score = 4.55,
     total_trades = 5
   WHERE id = t;
@@ -985,7 +985,7 @@ BEGIN
     (t_l1, t, 'wts', 'pokemon', 'Charizard VSTAR',              60.00,  125.00, 'Brilliant Stars chase card. Pack fresh, sleeved immediately.',                'active',    now() - interval '5 days'),
     (t_l2, t, 'wtb', 'mtg',     'Sheoldred, the Apocalypse',    65.00,  135.00, 'Need for my Standard deck. NM only please.',                                 'active',    now() - interval '4 days'),
     (t_l3, t, 'wtt', 'pokemon', 'Astral Radiance Bundle',        0.00,  120.00, 'Three alt art/secret rares from Astral Radiance. Trading as a set.',         'active',    now() - interval '3 days'),
-    (t_l4, t, 'wts', 'yugioh',  'Branded Despia Core',          50.00,  105.00, 'Complete Branded engine. All 1st edition, NM.',                              'matched',   now() - interval '15 days'),
+    (t_l4, t, 'wts', 'onepiece',  'Branded Despia Core',          50.00,  105.00, 'Complete Branded engine. All 1st edition, NM.',                              'matched',   now() - interval '15 days'),
     (t_l5, t, 'wts', 'pokemon', 'Pikachu VMAX Rainbow',        175.00,  370.00, 'The rainbow chonkachu! Perfect centering.',                                  'active',    now() - interval '2 days'),
     (t_l6, t, 'wtt', 'mtg',     'Scalding Tarn Bundle',          0.00,   95.00, 'Trading fetchlands for Pioneer or Legacy staples.',                          'completed', now() - interval '25 days')
   ON CONFLICT (id) DO NOTHING;
@@ -1007,8 +1007,8 @@ BEGIN
     (t_l3, 'Radiant Greninja',             'https://images.pokemontcg.io/swsh10/46.png',   'swsh10-46',  'pokemon', 'Astral Radiance',  '046/189', 'Radiant Rare', 'nm', 5.00,   NULL, 1),
 
     -- t_l4: Branded Despia Core (2 cards)
-    (t_l4, 'Branded Fusion',               'https://images.ygoprodeck.com/images/cards_small/44362883.jpg', 'DAMA-052', 'yugioh', 'Dawn of Majesty', 'DAMA-052', 'Ultra Rare',  'nm', 28.00, 25.00, 3),
-    (t_l4, 'Masquerade the Blazing Dragon','https://images.ygoprodeck.com/images/cards_small/28816714.jpg', 'DABL-038', 'yugioh', 'Darkwing Blast',  'DABL-038', 'Secret Rare', 'nm', 22.00, 20.00, 1),
+    (t_l4, 'Branded Fusion',               'https://images.ygoprodeck.com/images/cards_small/44362883.jpg', 'DAMA-052', 'onepiece', 'Dawn of Majesty', 'DAMA-052', 'Ultra Rare',  'nm', 28.00, 25.00, 3),
+    (t_l4, 'Masquerade the Blazing Dragon','https://images.ygoprodeck.com/images/cards_small/28816714.jpg', 'DABL-038', 'onepiece', 'Darkwing Blast',  'DABL-038', 'Secret Rare', 'nm', 22.00, 20.00, 1),
 
     -- t_l5: Pikachu VMAX Rainbow
     (t_l5, 'Pikachu VMAX Rainbow',         'https://images.pokemontcg.io/swsh4/188.png',   'swsh4-188',  'pokemon', 'Vivid Voltage',    '188/185', 'Secret Rare',  'nm', 200.00, 175.00, 1),
@@ -1212,9 +1212,9 @@ BEGIN
     (t, 'mtg', 'ONE-196', 'Atraxa, Grand Unifier',    'Phyrexia: All Will Be One','ONE', '196', 'https://cards.scryfall.io/normal/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.jpg', 'Mythic Rare', 'nm', 1, false, 30.00,  NULL,  NULL,  false, NULL, 25.00),
 
     -- Yu-Gi-Oh
-    (t, 'yugioh', 'DAMA-052',  'Branded Fusion',              'Dawn of Majesty',     'DAMA', '052', 'https://images.ygoprodeck.com/images/cards_small/44362883.jpg', 'Ultra Rare',  'nm', 3, false, 28.00, NULL, NULL, false, NULL, 20.00),
-    (t, 'yugioh', 'MACR-036',  'Ash Blossom & Joyous Spring', 'Maximum Crisis',      'MACR', '036', 'https://images.ygoprodeck.com/images/cards_small/14558127.jpg', 'Secret Rare', 'nm', 2, false, 22.00, NULL, NULL, false, NULL, 18.00),
-    (t, 'yugioh', 'LOB-001',   'Blue-Eyes White Dragon',      'Legend of Blue Eyes',  'LOB',  '001', 'https://images.ygoprodeck.com/images/cards_small/89631139.jpg', 'Ultra Rare',  'lp', 1, false, 40.00, NULL, NULL, false, NULL, 30.00)
+    (t, 'onepiece', 'DAMA-052',  'Branded Fusion',              'Dawn of Majesty',     'DAMA', '052', 'https://images.ygoprodeck.com/images/cards_small/44362883.jpg', 'Ultra Rare',  'nm', 3, false, 28.00, NULL, NULL, false, NULL, 20.00),
+    (t, 'onepiece', 'MACR-036',  'Ash Blossom & Joyous Spring', 'Maximum Crisis',      'MACR', '036', 'https://images.ygoprodeck.com/images/cards_small/14558127.jpg', 'Secret Rare', 'nm', 2, false, 22.00, NULL, NULL, false, NULL, 18.00),
+    (t, 'onepiece', 'LOB-001',   'Blue-Eyes White Dragon',      'Legend of Blue Eyes',  'LOB',  '001', 'https://images.ygoprodeck.com/images/cards_small/89631139.jpg', 'Ultra Rare',  'lp', 1, false, 40.00, NULL, NULL, false, NULL, 30.00)
   ON CONFLICT DO NOTHING;
 
   -- Wishlist items
@@ -1223,7 +1223,7 @@ BEGIN
     (t, 'pokemon', 'swsh7-215', 'Umbreon VMAX Alt Art',     'Evolving Skies',       'swsh7', '215/203', 'https://images.pokemontcg.io/swsh7/215.png',  'Secret Rare',    'nm', 1, true, 180.00, false, NULL, NULL),
     (t, 'mtg',     'DMU-107',   'Sheoldred, the Apocalypse','Dominaria United',      'DMU',   '107',     'https://cards.scryfall.io/normal/front/d/6/d67be074-cdd4-41d9-ac89-0a0456c4e4b2.jpg', 'Mythic Rare', 'nm', 1, true, 75.00, false, NULL, NULL),
     (t, 'pokemon', 'swsh11-131','Giratina VSTAR Alt Art',   'Lost Origin',           'swsh11','131/196', 'https://images.pokemontcg.io/swsh11/131.png', 'Secret Rare',    'nm', 1, true, 70.00, false, NULL, NULL),
-    (t, 'yugioh',  'ETCO-099',  'Accesscode Talker (Starlight)','Eternity Code',     'ETCO',  '099',     'https://images.ygoprodeck.com/images/cards_small/86066372.jpg', 'Starlight Rare', 'nm', 1, true, 220.00, false, NULL, NULL)
+    (t, 'onepiece',  'ETCO-099',  'Accesscode Talker (Starlight)','Eternity Code',     'ETCO',  '099',     'https://images.ygoprodeck.com/images/cards_small/86066372.jpg', 'Starlight Rare', 'nm', 1, true, 220.00, false, NULL, NULL)
   ON CONFLICT DO NOTHING;
 
   -- Sealed products

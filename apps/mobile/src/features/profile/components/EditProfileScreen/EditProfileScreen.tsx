@@ -21,7 +21,7 @@ import { TCG_LABELS } from '@/config/constants';
 import useUpdateProfile from '../../hooks/useUpdateProfile/useUpdateProfile';
 import type { TcgType } from '@tcg-trade-hub/database';
 
-const ALL_TCGS: TcgType[] = ['pokemon', 'mtg', 'yugioh'];
+const ALL_TCGS: TcgType[] = ['pokemon', 'mtg', 'onepiece'];
 
 /**
  * Form screen for editing the current user's profile.

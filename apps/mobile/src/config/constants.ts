@@ -17,7 +17,7 @@ export const MAX_RATING_COMMENT_LENGTH = 200;
 export const TCG_LABELS = {
   pokemon: 'Pokemon',
   mtg: 'Magic: The Gathering',
-  yugioh: 'Yu-Gi-Oh!',
+  onepiece: 'One Piece',
 } as const;
 
 export const CONDITION_LABELS = {

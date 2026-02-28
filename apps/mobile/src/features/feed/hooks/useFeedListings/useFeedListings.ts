@@ -84,6 +84,10 @@ const useFeedListings = () => {
         query = query.eq('tcg', filters.tcg);
       }
 
+      if (filters.category) {
+        query = query.eq('category', filters.category);
+      }
+
       // Have/Want intent-based filters
       if (filters.wantToBuy && !filters.wantToTrade) {
         query = query.eq('accepts_cash', true);

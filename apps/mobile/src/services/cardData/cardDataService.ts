@@ -1,18 +1,13 @@
 import type { NormalizedCard } from '@tcg-trade-hub/database';
 import type { CardDataAdapter, CardDetail, SetInfo } from './types';
 import { createMockAdapter } from './mockAdapter';
+import { createScrydexAdapter } from './scrydexAdapter';
 
 /**
  * Card data service that delegates to a pluggable adapter.
  *
  * Uses functional polymorphism: pass any adapter that satisfies
  * CardDataAdapter and the service functions remain identical.
- *
- * To swap data sources later:
- * ```ts
- * import { createScrydexAdapter } from './scrydexAdapter';
- * const service = createCardDataService(createScrydexAdapter());
- * ```
  */
 export const createCardDataService = (adapter: CardDataAdapter) => {
   const searchCards = (
@@ -34,7 +29,21 @@ export const createCardDataService = (adapter: CardDataAdapter) => {
 };
 
 /**
- * Default singleton using mock adapter.
- * Swap createMockAdapter() for a real adapter when API is available.
+ * Creates the appropriate adapter based on environment configuration.
+ * Uses Scrydex when API key + team ID are available, otherwise falls back to mock.
  */
-export const cardDataService = createCardDataService(createMockAdapter());
+const resolveAdapter = (): CardDataAdapter => {
+  const apiKey = process.env.EXPO_PUBLIC_SCRYDEX_API_KEY;
+  const teamId = process.env.EXPO_PUBLIC_SCRYDEX_TEAM_ID;
+
+  if (apiKey && teamId) {
+    return createScrydexAdapter(apiKey, teamId);
+  }
+
+  return createMockAdapter();
+};
+
+/**
+ * Default singleton — uses Scrydex if configured, otherwise mock.
+ */
+export const cardDataService = createCardDataService(resolveAdapter());

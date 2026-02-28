@@ -20,7 +20,7 @@ import formatDistance from '../../utils/formatDistance/formatDistance';
 const TCG_LABELS: Record<string, string> = {
   pokemon: 'Pokemon',
   mtg: 'Magic: The Gathering',
-  yugioh: 'Yu-Gi-Oh!',
+  onepiece: 'One Piece',
 };
 
 const CONDITION_LABELS: Record<string, string> = {

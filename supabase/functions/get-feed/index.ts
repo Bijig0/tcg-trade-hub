@@ -5,7 +5,7 @@
  *   cursor?: string,          // ISO timestamp for keyset pagination
  *   limit?: number,           // 1-50, default 20
  *   filters?: {
- *     tcg?: 'pokemon' | 'mtg' | 'yugioh',
+ *     tcg?: 'pokemon' | 'mtg' | 'onepiece',
  *     listing_type?: 'wts' | 'wtb' | 'wtt',  // backward compat
  *     accepts_cash?: boolean,                   // Have/Want filter
  *     accepts_trades?: boolean,                 // Have/Want filter
@@ -22,7 +22,7 @@
 import { handleCors, jsonResponse, errorResponse } from '../_shared/cors.ts';
 import { supabaseAdmin, getUser } from '../_shared/supabaseAdmin.ts';
 
-const VALID_TCGS = ['pokemon', 'mtg', 'yugioh'];
+const VALID_TCGS = ['pokemon', 'mtg', 'onepiece'];
 const VALID_LISTING_TYPES = ['wts', 'wtb', 'wtt'];
 const VALID_CONDITIONS = ['nm', 'lp', 'mp', 'hp', 'dmg'];
 const VALID_SORTS = ['relevance', 'price_asc', 'price_desc', 'newest'];

@@ -12,9 +12,12 @@ export const UserRolesArraySchema = z.array(UserRoleSchema);
 export type UserRolesArray = z.infer<typeof UserRolesArraySchema>;
 
 // --- Enum schemas ---
-export const TcgTypeSchema = z.enum(['pokemon', 'mtg', 'yugioh']);
+export const TcgTypeSchema = z.enum(['pokemon', 'mtg', 'onepiece']);
 export const ListingTypeSchema = z.enum(['wts', 'wtb', 'wtt']);
 export const CardConditionSchema = z.enum(['nm', 'lp', 'mp', 'hp', 'dmg']);
+export const ListingCategorySchema = z.enum(['singles', 'sealed', 'graded', 'bulk']);
+export type ListingCategory = z.infer<typeof ListingCategorySchema>;
+
 export const ListingStatusSchema = z.enum(['active', 'matched', 'completed', 'expired']);
 export const SwipeDirectionSchema = z.enum(['like', 'pass']);
 export const MatchStatusSchema = z.enum(['active', 'completed', 'cancelled']);
@@ -192,6 +195,7 @@ export const ListingRowSchema = z.object({
   user_id: z.string().uuid(),
   type: ListingTypeSchema,
   tcg: TcgTypeSchema,
+  category: ListingCategorySchema,
   title: z.string(),
   cash_amount: z.number(),
   total_value: z.number(),
@@ -211,6 +215,7 @@ export const ListingInsertSchema = ListingRowSchema.omit({
   created_at: true,
   updated_at: true,
 }).extend({
+  category: ListingCategorySchema.default('singles'),
   cash_amount: z.number().default(0),
   total_value: z.number().default(0),
   description: z.string().nullable().optional(),

@@ -6,7 +6,7 @@ import type { TcgType } from '@tcg-trade-hub/database';
 const TCG_OPTIONS: { value: TcgType; label: string }[] = [
   { value: 'pokemon', label: 'Pokemon' },
   { value: 'mtg', label: 'Magic: The Gathering' },
-  { value: 'yugioh', label: 'Yu-Gi-Oh!' },
+  { value: 'onepiece', label: 'One Piece' },
 ];
 
 export const ShopProfileEditor = () => {
