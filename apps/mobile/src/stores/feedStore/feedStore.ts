@@ -1,15 +1,19 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { TcgType, ListingType, CardCondition } from '@tcg-trade-hub/database';
+import type { TcgType, CardCondition } from '@tcg-trade-hub/database';
 
 type FeedSort = 'relevance' | 'distance' | 'price' | 'newest';
 type ViewMode = 'list' | 'swipe';
 
 type FeedFilters = {
   tcg: TcgType | null;
-  listingTypes: ListingType[];
+  /** Show listings that accept cash (searcher intent: "I want to buy") */
+  wantToBuy: boolean;
+  /** Show listings that accept trades (searcher intent: "I want to trade") */
+  wantToTrade: boolean;
   condition: CardCondition | null;
   sort: FeedSort;
+  searchQuery: string;
 };
 
 type FeedState = {
@@ -17,15 +21,19 @@ type FeedState = {
   filters: FeedFilters;
   setViewMode: (mode: ViewMode) => void;
   setFilter: <K extends keyof FeedFilters>(key: K, value: FeedFilters[K]) => void;
-  toggleListingType: (type: ListingType) => void;
+  toggleWantToBuy: () => void;
+  toggleWantToTrade: () => void;
+  setSearchQuery: (query: string) => void;
   resetFilters: () => void;
 };
 
 const DEFAULT_FILTERS: FeedFilters = {
   tcg: null,
-  listingTypes: [],
+  wantToBuy: false,
+  wantToTrade: false,
   condition: null,
   sort: 'relevance',
+  searchQuery: '',
 };
 
 export const useFeedStore = create<FeedState>()(
@@ -40,14 +48,17 @@ export const useFeedStore = create<FeedState>()(
       set((state) => {
         state.filters[key] = value;
       }),
-    toggleListingType: (type) =>
+    toggleWantToBuy: () =>
       set((state) => {
-        const idx = state.filters.listingTypes.indexOf(type);
-        if (idx >= 0) {
-          state.filters.listingTypes.splice(idx, 1);
-        } else {
-          state.filters.listingTypes.push(type);
-        }
+        state.filters.wantToBuy = !state.filters.wantToBuy;
+      }),
+    toggleWantToTrade: () =>
+      set((state) => {
+        state.filters.wantToTrade = !state.filters.wantToTrade;
+      }),
+    setSearchQuery: (query) =>
+      set((state) => {
+        state.filters.searchQuery = query;
       }),
     resetFilters: () =>
       set((state) => {

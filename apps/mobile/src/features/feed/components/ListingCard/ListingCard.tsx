@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Star } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
-import { ListingTypeBadge } from '@/features/listings';
+import ListingTypeBadges from '@/features/listings/components/ListingTypeBadges/ListingTypeBadges';
 import BundlePreview from '@/features/listings/components/BundlePreview/BundlePreview';
 import type { ListingWithDistance } from '../../schemas';
 import { feedKeys } from '../../queryKeys';
@@ -42,7 +42,7 @@ const ListingCard = ({ listing, className, detailBasePath = '/(tabs)/(listings)'
       <View className="ml-3 flex-1 justify-between">
         <View>
           <View className="flex-row items-center gap-2">
-            <ListingTypeBadge type={listing.type} />
+            <ListingTypeBadges listing={listing} />
             <Text className="text-xs text-muted-foreground">
               {items.length} card{items.length !== 1 ? 's' : ''}
             </Text>

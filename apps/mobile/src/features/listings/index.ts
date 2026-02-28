@@ -6,6 +6,8 @@ export { default as TradeBuilderScreen } from './components/TradeBuilderScreen/T
 
 // Components
 export { default as ListingTypeBadge } from './components/ListingTypeBadge/ListingTypeBadge';
+export { default as ListingTypeBadges } from './components/ListingTypeBadges/ListingTypeBadges';
+export { default as WantConfigStep } from './components/WantConfigStep/WantConfigStep';
 export { default as CardSearchInput } from './components/CardSearchInput/CardSearchInput';
 export { default as CollectionCardPicker } from './components/CollectionCardPicker/CollectionCardPicker';
 export { default as TypeSelectStep } from './components/TypeSelectStep/TypeSelectStep';
@@ -64,3 +66,4 @@ export { default as formatListingDate } from './utils/formatListingDate/formatLi
 export { default as generateBundleTitle } from './utils/generateBundleTitle/generateBundleTitle';
 export { default as findTradeOpportunities } from './utils/findTradeOpportunities/findTradeOpportunities';
 export { default as findMatchingCollectionCards } from './utils/findMatchingCollectionCards/findMatchingCollectionCards';
+export { deriveListingType } from './utils/deriveListingType/deriveListingType';

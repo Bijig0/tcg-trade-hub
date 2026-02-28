@@ -1,10 +1,12 @@
-import type { TcgType, ListingType, CardCondition } from '@tcg-trade-hub/database';
+import type { TcgType, CardCondition } from '@tcg-trade-hub/database';
 
 type FeedFiltersParam = {
   tcg?: TcgType | null;
-  listingTypes?: ListingType[];
+  wantToBuy?: boolean;
+  wantToTrade?: boolean;
   condition?: CardCondition | null;
   sort?: string;
+  searchQuery?: string;
 };
 
 export const feedKeys = {

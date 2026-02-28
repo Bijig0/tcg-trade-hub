@@ -198,6 +198,8 @@ export const ListingRowSchema = z.object({
   description: z.string().nullable(),
   photos: z.array(z.string()),
   trade_wants: z.array(TradeWantSchema),
+  accepts_cash: z.boolean(),
+  accepts_trades: z.boolean(),
   status: ListingStatusSchema,
   created_at: z.string(),
   updated_at: z.string(),
@@ -214,6 +216,8 @@ export const ListingInsertSchema = ListingRowSchema.omit({
   description: z.string().nullable().optional(),
   photos: z.array(z.string()).default([]),
   trade_wants: z.array(TradeWantSchema).default([]),
+  accepts_cash: z.boolean().default(false),
+  accepts_trades: z.boolean().default(false),
 });
 
 export const ListingItemRowSchema = z.object({

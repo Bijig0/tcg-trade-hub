@@ -2,11 +2,17 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { TcgType, ListingType, CardCondition, NormalizedCard, TradeWant } from '@tcg-trade-hub/database';
 import type { SelectedCard } from '@/features/listings/schemas';
+import { deriveListingType } from '@/features/listings/utils/deriveListingType/deriveListingType';
 
 type ListingFormState = {
   // Core fields
   step: number;
   type: ListingType | null;
+
+  // Have/Want system
+  acceptsCash: boolean;
+  acceptsTrades: boolean;
+  typeOverride: ListingType | null;
 
   // Bundle fields
   selectedCards: SelectedCard[];
@@ -14,13 +20,21 @@ type ListingFormState = {
   cashAmount: string;
   description: string;
 
-  // Trade wants (WTT listings)
+  // Trade wants (available for all listing types now)
   tradeWants: TradeWant[];
+
+  // Computed
+  getEffectiveType: () => ListingType;
 
   // Shared actions
   setStep: (step: number) => void;
   setType: (type: ListingType) => void;
   reset: () => void;
+
+  // Have/Want actions
+  setAcceptsCash: (value: boolean) => void;
+  setAcceptsTrades: (value: boolean) => void;
+  setTypeOverride: (type: ListingType | null) => void;
 
   // Bundle card actions
   toggleSelectedCard: (card: NormalizedCard, condition: CardCondition, fromCollection: boolean, selectionId: string) => void;
@@ -41,6 +55,9 @@ type ListingFormState = {
 const INITIAL_STATE = {
   step: 1,
   type: null as ListingType | null,
+  acceptsCash: false,
+  acceptsTrades: false,
+  typeOverride: null as ListingType | null,
   selectedCards: [] as SelectedCard[],
   tcgFilter: null as TcgType | null,
   cashAmount: '0',
@@ -49,13 +66,29 @@ const INITIAL_STATE = {
 };
 
 export const useListingFormStore = create<ListingFormState>()(
-  immer((set) => ({
+  immer((set, get) => ({
     ...INITIAL_STATE,
+
+    // Computed: returns user override or auto-derived type
+    getEffectiveType: () => {
+      const state = get();
+      if (state.typeOverride) return state.typeOverride;
+      return deriveListingType({
+        hasCards: state.selectedCards.length > 0,
+        acceptsCash: state.acceptsCash,
+        acceptsTrades: state.acceptsTrades,
+      });
+    },
 
     // Shared actions
     setStep: (step) => set((s) => { s.step = step; }),
     setType: (type) => set((s) => { s.type = type; }),
     reset: () => set(() => ({ ...INITIAL_STATE })),
+
+    // Have/Want actions
+    setAcceptsCash: (value) => set((s) => { s.acceptsCash = value; }),
+    setAcceptsTrades: (value) => set((s) => { s.acceptsTrades = value; }),
+    setTypeOverride: (type) => set((s) => { s.typeOverride = type; }),
 
     // Bundle card actions
     toggleSelectedCard: (card, condition, fromCollection, selectionId) =>

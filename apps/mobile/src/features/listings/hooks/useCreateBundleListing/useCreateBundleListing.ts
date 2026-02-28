@@ -14,18 +14,21 @@ type BundleListingInput = {
   cashAmount: number;
   description: string | null;
   tradeWants?: TradeWant[];
+  acceptsCash: boolean;
+  acceptsTrades: boolean;
 };
 
 /**
  * Creates a single bundle listing with N listing_items rows.
  * Computes title and total_value from the selected cards.
+ * Includes accepts_cash/accepts_trades for the Have/Want system.
  * Auto-adds external search cards to collection (non-blocking).
  */
 const useCreateBundleListing = () => {
   const queryClient = useQueryClient();
 
   return useMutation<ListingRow, Error, BundleListingInput>({
-    mutationFn: async ({ type, selectedCards, cashAmount, description, tradeWants }) => {
+    mutationFn: async ({ type, selectedCards, cashAmount, description, tradeWants, acceptsCash, acceptsTrades }) => {
       const scoped = __DEV__
         ? devEmitter.forPath('flow:p2p-trade', createTraceId(), 'mobile:createListing')
         : undefined;
@@ -61,6 +64,8 @@ const useCreateBundleListing = () => {
           description,
           photos: [],
           trade_wants: JSON.stringify(tradeWants ?? []),
+          accepts_cash: acceptsCash,
+          accepts_trades: acceptsTrades,
         })
         .select()
         .single();

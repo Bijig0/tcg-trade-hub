@@ -2,19 +2,13 @@ import React from 'react';
 import { ScrollView, Pressable, Text, View } from 'react-native';
 import { cn } from '@/lib/cn';
 import { useFeedStore } from '@/stores/feedStore/feedStore';
-import type { TcgType, ListingType, CardCondition } from '@tcg-trade-hub/database';
+import type { TcgType, CardCondition } from '@tcg-trade-hub/database';
 
 const TCG_OPTIONS: { label: string; value: TcgType | null }[] = [
   { label: 'All TCGs', value: null },
   { label: 'Pokemon', value: 'pokemon' },
   { label: 'MTG', value: 'mtg' },
   { label: 'Yu-Gi-Oh', value: 'yugioh' },
-];
-
-const TYPE_OPTIONS: { label: string; value: ListingType }[] = [
-  { label: 'WTS', value: 'wts' },
-  { label: 'WTB', value: 'wtb' },
-  { label: 'WTT', value: 'wtt' },
 ];
 
 const CONDITION_OPTIONS: { label: string; value: CardCondition | null }[] = [
@@ -65,15 +59,16 @@ export type FilterBarProps = {
 };
 
 /**
- * Horizontal scrollable row of filter chips for TCG, listing type, condition,
- * and sort order. Reads and updates filters via useFeedStore.
+ * Horizontal scrollable filter chips with searcher-intent pills.
  *
- * Listing type uses multi-select toggle: empty = show all, any selected = show only those.
+ * Row 1: [Buying] [Trading] | [Pokemon] [MTG] [Yu-Gi-Oh]
+ * Row 2: [NM] [LP] [MP] [HP] [DMG] | [Relevance] [Distance] [Price] [Newest]
  */
 const FilterBar = ({ className }: FilterBarProps) => {
   const filters = useFeedStore((s) => s.filters);
   const setFilter = useFeedStore((s) => s.setFilter);
-  const toggleListingType = useFeedStore((s) => s.toggleListingType);
+  const toggleWantToBuy = useFeedStore((s) => s.toggleWantToBuy);
+  const toggleWantToTrade = useFeedStore((s) => s.toggleWantToTrade);
 
   return (
     <View className={cn('gap-2', className)}>
@@ -82,23 +77,27 @@ const FilterBar = ({ className }: FilterBarProps) => {
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="px-4 py-2"
       >
+        {/* Searcher-intent pills */}
+        <FilterChip
+          label="Buying"
+          active={filters.wantToBuy}
+          onPress={toggleWantToBuy}
+        />
+        <FilterChip
+          label="Trading"
+          active={filters.wantToTrade}
+          onPress={toggleWantToTrade}
+        />
+
+        <View className="mx-1 w-px bg-border" />
+
+        {/* TCG filters */}
         {TCG_OPTIONS.map((opt) => (
           <FilterChip
             key={`tcg-${opt.value}`}
             label={opt.label}
             active={filters.tcg === opt.value}
             onPress={() => setFilter('tcg', opt.value)}
-          />
-        ))}
-
-        <View className="mx-1 w-px bg-border" />
-
-        {TYPE_OPTIONS.map((opt) => (
-          <FilterChip
-            key={`type-${opt.value}`}
-            label={opt.label}
-            active={filters.listingTypes.includes(opt.value)}
-            onPress={() => toggleListingType(opt.value)}
           />
         ))}
       </ScrollView>

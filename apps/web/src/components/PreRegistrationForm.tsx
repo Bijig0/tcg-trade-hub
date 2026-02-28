@@ -11,10 +11,15 @@ const TCG_OPTIONS: { value: TcgType; label: string }[] = [
   { value: 'yugioh', label: 'Yu-Gi-Oh!' },
 ];
 
-const LISTING_TYPE_OPTIONS: { value: ListingType; label: string; description: string }[] = [
-  { value: 'wtt', label: 'Trade', description: 'Looking to trade' },
-  { value: 'wtb', label: 'Buy', description: 'Looking to buy' },
-  { value: 'wts', label: 'Sell', description: 'Looking to sell' },
+const INTEREST_OPTIONS: {
+  id: string;
+  label: string;
+  description: string;
+  getListingType: () => ListingType;
+}[] = [
+  { id: 'sell', label: 'I want to sell cards', description: 'List cards for cash', getListingType: () => 'wts' },
+  { id: 'trade', label: 'I want to trade cards', description: 'Swap cards with others', getListingType: () => 'wtt' },
+  { id: 'buy', label: "I'm looking to buy specific cards", description: 'Find cards to purchase', getListingType: () => 'wtb' },
 ];
 
 export const PreRegistrationForm = () => {
@@ -23,7 +28,7 @@ export const PreRegistrationForm = () => {
   const [tcg, setTcg] = useState<TcgType>('pokemon');
   const [selectedCard, setSelectedCard] = useState<NormalizedCard | null>(null);
   const [cardName, setCardName] = useState('');
-  const [listingType, setListingType] = useState<ListingType>('wtt');
+  const [interests, setInterests] = useState<Set<string>>(new Set());
   const [askingPrice, setAskingPrice] = useState('');
   const [city, setCity] = useState('');
   const [zipCode, setZipCode] = useState('');
@@ -31,6 +36,25 @@ export const PreRegistrationForm = () => {
   const mutation = useMutation(
     orpc.preRegistration.create.mutationOptions(),
   );
+
+  const toggleInterest = (id: string) => {
+    setInterests((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // Derive listing_type from interests for backward compat with pre_registrations table
+  const derivedListingType = (): ListingType => {
+    if (interests.has('sell')) return 'wts';
+    if (interests.has('trade')) return 'wtt';
+    if (interests.has('buy')) return 'wtb';
+    return 'wtt'; // default
+  };
+
+  const showPrice = interests.has('sell') || interests.has('buy');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +67,7 @@ export const PreRegistrationForm = () => {
       card_set: selectedCard?.setName ?? null,
       card_external_id: selectedCard?.externalId ?? null,
       card_image_url: selectedCard?.imageUrl ?? null,
-      listing_type: listingType,
+      listing_type: derivedListingType(),
       asking_price: askingPrice ? parseFloat(askingPrice) : null,
       city: city || null,
       zip_code: zipCode || null,
@@ -57,7 +81,7 @@ export const PreRegistrationForm = () => {
     setTcg('pokemon');
     setSelectedCard(null);
     setCardName('');
-    setListingType('wtt');
+    setInterests(new Set());
     setAskingPrice('');
     setCity('');
     setZipCode('');
@@ -163,39 +187,41 @@ export const PreRegistrationForm = () => {
         )}
       </div>
 
-      {/* Listing Type */}
+      {/* Interest Checkboxes (replacing WTS/WTB/WTT radio) */}
       <div>
         <label className="block text-sm font-medium text-foreground mb-1.5">
-          What do you want to do? <span className="text-destructive">*</span>
+          What are you interested in? <span className="text-destructive">*</span>
         </label>
-        <div className="flex gap-2">
-          {LISTING_TYPE_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setListingType(option.value)}
-              className={`flex-1 rounded-lg border px-3 py-2.5 text-center transition-colors ${
-                listingType === option.value
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-background text-foreground hover:bg-accent'
+        <div className="space-y-2">
+          {INTEREST_OPTIONS.map((option) => (
+            <label
+              key={option.id}
+              className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
+                interests.has(option.id)
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border bg-background hover:bg-accent'
               }`}
             >
-              <span className="block text-sm font-medium">{option.label}</span>
-              <span className={`block text-xs ${
-                listingType === option.value ? 'text-primary-foreground/70' : 'text-muted-foreground'
-              }`}>
-                {option.description}
-              </span>
-            </button>
+              <input
+                type="checkbox"
+                checked={interests.has(option.id)}
+                onChange={() => toggleInterest(option.id)}
+                className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+              />
+              <div>
+                <span className="block text-sm font-medium text-foreground">{option.label}</span>
+                <span className="block text-xs text-muted-foreground">{option.description}</span>
+              </div>
+            </label>
           ))}
         </div>
       </div>
 
-      {/* Asking Price — shown for WTS and optionally for WTB */}
-      {(listingType === 'wts' || listingType === 'wtb') && (
+      {/* Asking Price — shown for sell or buy interests */}
+      {showPrice && (
         <div>
           <label htmlFor="askingPrice" className="block text-sm font-medium text-foreground mb-1.5">
-            {listingType === 'wts' ? 'Asking Price' : 'Budget'}
+            {interests.has('sell') ? 'Asking Price' : 'Budget'}
             {' '}
             <span className="text-muted-foreground text-xs">(optional)</span>
           </label>
@@ -255,7 +281,7 @@ export const PreRegistrationForm = () => {
       {/* Submit */}
       <button
         type="submit"
-        disabled={mutation.isPending || !email || !resolvedCardName}
+        disabled={mutation.isPending || !email || !resolvedCardName || interests.size === 0}
         className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {mutation.isPending ? 'Registering...' : 'Get Early Access'}

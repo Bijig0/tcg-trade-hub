@@ -31,6 +31,8 @@ const mockConversation = {
       type: 'wts',
       tcg: 'pokemon',
       total_value: 100,
+      accepts_cash: true,
+      accepts_trades: false,
     },
     offers: {
       id: 'offer-1',
