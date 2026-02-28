@@ -1,0 +1,33 @@
+appId: com.tcgtradehub.app
+name: "Scenario: Meetup Cancelled from Proposed"
+tags:
+  - scenario
+  - meetup
+---
+# Scenario: proposed → cancelled
+# Graph path: scenario:meetup-cancelled-from-proposed
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: "../_subflows/login.yaml"
+- runFlow: "../_subflows/navigate-to-meetups.yaml"
+
+# Open a proposed meetup
+- assertVisible:
+    id: "meetups-screen"
+- tapOn:
+    id: "meetup-status-proposed"
+    index: 0
+- waitForAnimationToEnd
+
+# Cancel from proposed state
+- assertVisible:
+    id: "meetup-detail-screen"
+- tapOn:
+    id: "meetup-cancel-button"
+- waitForAnimationToEnd
+
+# Verify cancelled state
+- assertVisible:
+    id: "meetup-status-badge-cancelled"

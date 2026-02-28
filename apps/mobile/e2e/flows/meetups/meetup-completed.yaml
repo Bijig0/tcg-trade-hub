@@ -1,0 +1,38 @@
+appId: com.tcgtradehub.app
+name: "Scenario: Meetup Completed (proposed → confirmed → completed)"
+tags:
+  - scenario
+  - meetup
+---
+# Scenario: proposed → confirmed → completed
+# Graph path: scenario:meetup-completed
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: "../_subflows/login.yaml"
+- runFlow: "../_subflows/navigate-to-meetups.yaml"
+
+# Open a proposed meetup
+- assertVisible:
+    id: "meetups-screen"
+- tapOn:
+    id: "meetup-status-proposed"
+    index: 0
+- waitForAnimationToEnd
+
+# Step 0: Confirm the meetup
+- assertVisible:
+    id: "meetup-detail-screen"
+- tapOn:
+    id: "meetup-confirm-button"
+- waitForAnimationToEnd
+- assertVisible:
+    id: "meetup-status-badge-confirmed"
+
+# Step 1: Complete the meetup
+- tapOn:
+    id: "meetup-complete-button"
+- waitForAnimationToEnd
+- assertVisible:
+    id: "meetup-status-badge-completed"
