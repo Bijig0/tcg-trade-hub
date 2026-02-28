@@ -19,7 +19,14 @@ import {
   upsertAnnotation,
   deleteAnnotation,
   createLiveEventStore,
+  listRecordings,
+  getRecording,
+  upsertRecording,
+  deleteRecording,
 } from "flow-graph";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from "node:fs";
+import { join } from "node:path";
+import { triggerRecording } from "./recordingRunner";
 import { WebSocketServer, type WebSocket } from "ws";
 import { z } from "zod";
 import { buildMaestroManifest } from "./maestroManifest";
@@ -90,6 +97,15 @@ const CORS_HEADERS: Record<string, string> = {
 };
 
 const execFileAsync = promisify(execFile);
+
+// ---------------------------------------------------------------------------
+// Recording file storage
+// ---------------------------------------------------------------------------
+
+const RECORDINGS_DIR = join(import.meta.dirname ?? __dirname, "recordings", "files");
+if (!existsSync(RECORDINGS_DIR)) {
+  mkdirSync(RECORDINGS_DIR, { recursive: true });
+}
 
 // ---------------------------------------------------------------------------
 // Simulator helpers
@@ -336,6 +352,104 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    // ---- Recordings API ----
+    if (url.pathname === "/api/recordings" && method === "GET") {
+      respond(json(listRecordings(db)));
+      return;
+    }
+
+    const recPathMatch = url.pathname.match(/^\/api\/recordings\/(.+)\/file$/);
+    if (recPathMatch && method === "GET") {
+      const pathId = decodeURIComponent(recPathMatch[1]);
+      const rec = getRecording(db, pathId);
+      if (!rec) {
+        respond(json({ error: "Recording not found" }, 404));
+        return;
+      }
+      const filePath = join(RECORDINGS_DIR, rec.filename);
+      if (!existsSync(filePath)) {
+        respond(json({ error: "Recording file missing" }, 404));
+        return;
+      }
+      const data = readFileSync(filePath);
+      const ext = rec.filename.split(".").pop()?.toLowerCase() ?? "";
+      const contentType = ext === "mp4" ? "video/mp4"
+        : ext === "gif" ? "image/gif"
+        : ext === "webm" ? "video/webm"
+        : "application/octet-stream";
+      res.writeHead(200, {
+        "Content-Type": contentType,
+        "Content-Length": String(data.length),
+        ...CORS_HEADERS,
+      });
+      res.end(data);
+      return;
+    }
+
+    const recRecordMatch = url.pathname.match(/^\/api\/recordings\/(.+)\/record$/);
+    if (recRecordMatch && method === "POST") {
+      const pathId = decodeURIComponent(recRecordMatch[1]);
+      try {
+        const result = await triggerRecording(db, pathId, RECORDINGS_DIR);
+        respond(json(result, 201));
+      } catch (err) {
+        console.error("Recording error:", err);
+        respond(json({ error: (err as Error).message }, 500));
+      }
+      return;
+    }
+
+    const recDetailMatch = url.pathname.match(/^\/api\/recordings\/(.+)$/);
+    if (recDetailMatch && method === "GET") {
+      const pathId = decodeURIComponent(recDetailMatch[1]);
+      const rec = getRecording(db, pathId);
+      respond(rec ? json(rec) : json({ error: "Not found" }, 404));
+      return;
+    }
+
+    if (recDetailMatch && method === "POST") {
+      const pathId = decodeURIComponent(recDetailMatch[1]);
+      const body = await readBody(req);
+
+      // Support JSON body with base64-encoded file data
+      const parsed = JSON.parse(body);
+      const { filename, durationMs, stepTimestamps, fileData } = parsed;
+
+      if (!filename) {
+        respond(json({ error: "Missing filename" }, 400));
+        return;
+      }
+
+      // Write file if base64 data is provided
+      if (fileData) {
+        const buffer = Buffer.from(fileData, "base64");
+        writeFileSync(join(RECORDINGS_DIR, filename), buffer);
+      }
+
+      const rec = upsertRecording(db, {
+        pathId,
+        filename,
+        durationMs: durationMs ?? null,
+        stepTimestamps: stepTimestamps ?? [],
+      });
+      respond(json(rec, 201));
+      return;
+    }
+
+    if (recDetailMatch && method === "DELETE") {
+      const pathId = decodeURIComponent(recDetailMatch[1]);
+      const rec = getRecording(db, pathId);
+      if (rec) {
+        const filePath = join(RECORDINGS_DIR, rec.filename);
+        if (existsSync(filePath)) {
+          try { unlinkSync(filePath); } catch { /* noop */ }
+        }
+      }
+      const deleted = deleteRecording(db, pathId);
+      respond(deleted ? json({ ok: true }) : json({ error: "Not found" }, 404));
+      return;
+    }
+
     // ---- Simulator API ----
     if (url.pathname === "/api/simulators" && method === "GET") {
       try {
@@ -425,4 +539,5 @@ server.listen(PORT, () => {
   console.log(`  Events:    http://localhost:${PORT}/api/events (POST)`);
   console.log(`  Maestro:   http://localhost:${PORT}/api/maestro/manifest`);
   console.log(`  Sims:      http://localhost:${PORT}/api/simulators`);
+  console.log(`  Recordings:http://localhost:${PORT}/api/recordings`);
 });

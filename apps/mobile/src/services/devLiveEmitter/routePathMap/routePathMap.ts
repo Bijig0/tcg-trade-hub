@@ -76,7 +76,17 @@ const ROUTE_PATH_MAP: Record<string, RoutePathMapping> = {
 
   // ── Meetup State Machine (state:meetup) ──
   '(meetups)':       { label: 'Meetups',       flows: [{ pathId: 'state:meetup', stepIndex: 0 }] },
-  '(meetups)/[id]':  { label: 'Meetup Detail', flows: [{ pathId: 'state:meetup', stepIndex: 1 }] },
+  '(meetups)/[id]':  {
+    label: 'Meetup Detail',
+    flows: [
+      { pathId: 'state:meetup', stepIndex: 1 },
+      // Scenario paths — meetup detail is where confirm/cancel/complete actions happen
+      { pathId: 'scenario:meetup-confirmed', stepIndex: 0 },
+      { pathId: 'scenario:meetup-completed', stepIndex: 0 },
+      { pathId: 'scenario:meetup-cancelled-from-proposed', stepIndex: 0 },
+      { pathId: 'scenario:meetup-cancelled-from-confirmed', stepIndex: 0 },
+    ],
+  },
 
   // Profile screens intentionally omitted — no corresponding graph flow.
 };

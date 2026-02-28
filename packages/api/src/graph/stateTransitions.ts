@@ -262,13 +262,181 @@ const P2P_TRADE_FLOW_ENTRIES: ExternalEntry[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Meetup Scenario Flows — specific transition paths through the meetup SM
+// ---------------------------------------------------------------------------
+
+/**
+ * Each scenario is a linear sub-path through the meetup state machine.
+ * Entries reuse existing ext-op:meetup-* registry entries but add
+ * additional path references for the scenario flow.
+ */
+const MEETUP_SCENARIO_ENTRIES: ExternalEntry[] = [
+  // ── scenario:meetup-confirmed  (proposed → confirmed) ──
+  {
+    id: "ext-op:scenario-meetup-proposed-to-confirmed",
+    displayLabel: "Scenario: Confirm Meetup",
+    connections: [
+      { from: "ext:meetup:proposed", to: "ext:meetup:confirmed" },
+    ],
+    meta: {
+      description: "Meetup is confirmed from proposed state",
+      tables: [{ name: "meetups", operation: "update" }],
+      paths: [
+        {
+          flow: "scenario:meetup-confirmed",
+          step: 0,
+          label: "proposed → confirmed",
+          connectionFilter: [
+            { from: "ext:meetup:proposed", to: "ext:meetup:confirmed" },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ── scenario:meetup-completed  (proposed → confirmed → completed) ──
+  {
+    id: "ext-op:scenario-meetup-complete-step0",
+    displayLabel: "Scenario: Confirm (for completion)",
+    connections: [
+      { from: "ext:meetup:proposed", to: "ext:meetup:confirmed" },
+    ],
+    meta: {
+      description: "Meetup confirmed as first step of completion scenario",
+      tables: [{ name: "meetups", operation: "update" }],
+      paths: [
+        {
+          flow: "scenario:meetup-completed",
+          step: 0,
+          label: "proposed → confirmed",
+          connectionFilter: [
+            { from: "ext:meetup:proposed", to: "ext:meetup:confirmed" },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "ext-op:scenario-meetup-complete-step1",
+    displayLabel: "Scenario: Complete Meetup",
+    connections: [
+      { from: "ext:meetup:confirmed", to: "ext:meetup:completed" },
+    ],
+    meta: {
+      description: "Meetup completed after confirmation",
+      tables: [{ name: "meetups", operation: "update" }],
+      paths: [
+        {
+          flow: "scenario:meetup-completed",
+          step: 1,
+          label: "confirmed → completed",
+          connectionFilter: [
+            { from: "ext:meetup:confirmed", to: "ext:meetup:completed" },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ── scenario:meetup-cancelled-from-proposed  (proposed → cancelled) ──
+  {
+    id: "ext-op:scenario-meetup-cancel-from-proposed",
+    displayLabel: "Scenario: Cancel from Proposed",
+    connections: [
+      { from: "ext:meetup:proposed", to: "ext:meetup:cancelled" },
+    ],
+    meta: {
+      description: "Meetup cancelled directly from proposed state",
+      tables: [{ name: "meetups", operation: "update" }],
+      paths: [
+        {
+          flow: "scenario:meetup-cancelled-from-proposed",
+          step: 0,
+          label: "proposed → cancelled",
+          connectionFilter: [
+            { from: "ext:meetup:proposed", to: "ext:meetup:cancelled" },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ── scenario:meetup-cancelled-from-confirmed  (proposed → confirmed → cancelled) ──
+  {
+    id: "ext-op:scenario-meetup-cancel-confirmed-step0",
+    displayLabel: "Scenario: Confirm (before cancel)",
+    connections: [
+      { from: "ext:meetup:proposed", to: "ext:meetup:confirmed" },
+    ],
+    meta: {
+      description: "Meetup confirmed as first step before cancellation",
+      tables: [{ name: "meetups", operation: "update" }],
+      paths: [
+        {
+          flow: "scenario:meetup-cancelled-from-confirmed",
+          step: 0,
+          label: "proposed → confirmed",
+          connectionFilter: [
+            { from: "ext:meetup:proposed", to: "ext:meetup:confirmed" },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "ext-op:scenario-meetup-cancel-confirmed-step1",
+    displayLabel: "Scenario: Cancel Confirmed Meetup",
+    connections: [
+      { from: "ext:meetup:confirmed", to: "ext:meetup:cancelled" },
+    ],
+    meta: {
+      description: "Confirmed meetup is cancelled",
+      tables: [{ name: "meetups", operation: "update" }],
+      paths: [
+        {
+          flow: "scenario:meetup-cancelled-from-confirmed",
+          step: 1,
+          label: "confirmed → cancelled",
+          connectionFilter: [
+            { from: "ext:meetup:confirmed", to: "ext:meetup:cancelled" },
+          ],
+        },
+      ],
+    },
+  },
+];
+
+/** Flow definitions for meetup scenario paths. */
+export const scenarioFlowDefinitions: Record<string, FlowDefinition> = {
+  "scenario:meetup-confirmed": {
+    label: "Meetup Confirmed",
+    description: "Scenario: meetup transitions from proposed to confirmed",
+  },
+  "scenario:meetup-completed": {
+    label: "Meetup Completed",
+    description:
+      "Scenario: meetup goes through proposed → confirmed → completed",
+  },
+  "scenario:meetup-cancelled-from-proposed": {
+    label: "Meetup Cancelled (from Proposed)",
+    description: "Scenario: meetup cancelled directly from proposed state",
+  },
+  "scenario:meetup-cancelled-from-confirmed": {
+    label: "Meetup Cancelled (from Confirmed)",
+    description:
+      "Scenario: meetup confirmed then cancelled from confirmed state",
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
 
-/** All ExternalEntry[] for state transitions + P2P trade flow operations. */
+/** All ExternalEntry[] for state transitions, P2P trade flow, and scenario flows. */
 export const stateTransitionEntries: ExternalEntry[] = [
   ...ENTITIES.flatMap(buildTransitionEntries),
   ...P2P_TRADE_FLOW_ENTRIES,
+  ...MEETUP_SCENARIO_ENTRIES,
 ];
 
 /** Flow definitions for each entity state machine + the P2P trade flow. */

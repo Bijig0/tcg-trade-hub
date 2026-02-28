@@ -1,9 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { GraphViewer } from 'flow-graph/react';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { ChatPanel } from '@/features/chat';
 import TestCoverage from '@/features/maestro/components/TestCoverage/TestCoverage';
+import RecordingModal from '@/features/maestro/components/RecordingModal/RecordingModal';
 import useMobileLink from '@/hooks/useMobileLink/useMobileLink';
+import { useRecording, useRecordingList } from '@/hooks/useRecording/useRecording';
 import type { Simulator } from '@/hooks/useMobileLink/useMobileLink';
 
 const GRAPH_SERVER_URL = 'http://localhost:4243';
@@ -105,11 +107,27 @@ function AdminDashboard() {
   const { health, retry } = useGraphHealth();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isTestCoverageOpen, setIsTestCoverageOpen] = useState(false);
+  const [recordingPathId, setRecordingPathId] = useState<string | null>(null);
   const mobileLink = useMobileLink();
+
+  // Recordings
+  const { data: recordingsList } = useRecordingList();
+  const recordingPathIds = useMemo(
+    () => new Set(recordingsList?.map((r) => r.pathId) ?? []),
+    [recordingsList],
+  );
+  const {
+    recording,
+    videoUrl,
+    triggerRecord,
+    isRecording,
+    recordError,
+    deleteRecording: deleteRec,
+    isDeleting,
+  } = useRecording(recordingPathId);
 
   const toggleChat = useCallback(() => {
     setIsChatOpen((prev) => !prev);
-    // Trigger resize so Cytoscape reflows to fit the new container width
     requestAnimationFrame(() => {
       window.dispatchEvent(new Event('resize'));
     });
@@ -120,6 +138,14 @@ function AdminDashboard() {
     requestAnimationFrame(() => {
       window.dispatchEvent(new Event('resize'));
     });
+  }, []);
+
+  const handlePlayRecording = useCallback((pathId: string) => {
+    setRecordingPathId(pathId);
+  }, []);
+
+  const handleCloseRecording = useCallback(() => {
+    setRecordingPathId(null);
   }, []);
 
   if (health.status === 'connecting') {
@@ -160,10 +186,28 @@ function AdminDashboard() {
             activeStep={controlledStep}
             mobileActivePaths={mobileActivePaths}
             deviceName={mobileLink.linkedSimulator?.name ?? null}
+            recordingPathIds={recordingPathIds}
+            onPlayRecording={handlePlayRecording}
           />
         </div>
         <ChatPanel isOpen={isChatOpen} onToggle={toggleChat} />
       </div>
+
+      {/* Recording playback modal */}
+      {recordingPathId && (
+        <RecordingModal
+          isOpen={!!recordingPathId}
+          onClose={handleCloseRecording}
+          pathId={recordingPathId}
+          recording={recording}
+          videoUrl={videoUrl}
+          isRecording={isRecording}
+          onTriggerRecord={triggerRecord}
+          onDelete={deleteRec}
+          isDeleting={isDeleting}
+          recordError={recordError}
+        />
+      )}
     </div>
   );
 }
