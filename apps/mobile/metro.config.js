@@ -2,7 +2,8 @@ const { getDefaultConfig } = require('expo/metro-config');
 const { withNativeWind } = require('nativewind/metro');
 let withStorybook;
 try {
-  withStorybook = require('@storybook/react-native/metro/withStorybook');
+  const mod = require('@storybook/react-native/metro/withStorybook');
+  withStorybook = typeof mod === 'function' ? mod : mod.withStorybook;
 } catch {
   withStorybook = null;
 }
