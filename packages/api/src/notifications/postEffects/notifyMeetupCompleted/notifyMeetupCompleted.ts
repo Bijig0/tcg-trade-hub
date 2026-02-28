@@ -59,4 +59,4 @@ const notifyMeetupCompleted: PostEffect<MeetupCompletedInput, MeetupCompletedRes
   },
 };
 
-export default notifyMeetupCompleted;
+export { notifyMeetupCompleted };

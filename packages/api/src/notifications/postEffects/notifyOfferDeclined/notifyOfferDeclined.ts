@@ -43,4 +43,4 @@ const notifyOfferDeclined: PostEffect<OfferDeclinedInput, OfferDeclinedResult> =
   },
 };
 
-export default notifyOfferDeclined;
+export { notifyOfferDeclined };

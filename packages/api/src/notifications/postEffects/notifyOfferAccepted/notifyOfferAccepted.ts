@@ -45,4 +45,4 @@ const notifyOfferAccepted: PostEffect<OfferAcceptedInput, OfferAcceptedResult> =
   },
 };
 
-export default notifyOfferAccepted;
+export { notifyOfferAccepted };
