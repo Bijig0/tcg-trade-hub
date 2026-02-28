@@ -169,7 +169,7 @@ export const EmailCaptureStep = ({
         {/* Submit */}
         <button
           type="submit"
-          disabled={mutation.isPending || !email}
+          disabled={mutation.isPending}
           className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {mutation.isPending ? 'Registering...' : 'Get Early Access'}
