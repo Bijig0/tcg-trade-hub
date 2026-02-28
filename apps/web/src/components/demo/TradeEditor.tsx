@@ -235,6 +235,72 @@ const OfferSection = ({
   );
 };
 
+type CashOnlySectionProps = {
+  label: string;
+  borderColor: string;
+  dotColor: string;
+};
+
+const CashOnlySection = ({ label, borderColor, dotColor }: CashOnlySectionProps) => {
+  const [cashAmount, setCashAmount] = useState('');
+  const cashValue = parseFloat(cashAmount) || 0;
+
+  return (
+    <div className={`rounded-xl border-2 ${borderColor} bg-card overflow-hidden`}>
+      {/* Section header */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className={`h-2.5 w-2.5 rounded-full ${dotColor}`} />
+          <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+            {label}
+          </span>
+        </div>
+      </div>
+
+      <div className="border-t border-border/50" />
+
+      {/* Cash input area */}
+      <div className="flex flex-col items-center gap-3 px-4 py-6">
+        <svg className="h-10 w-10 text-muted-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+        </svg>
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Cash Amount
+        </span>
+        <div className="relative w-full max-w-[200px]">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">$</span>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            value={cashAmount}
+            onChange={(e) => setCashAmount(e.target.value)}
+            placeholder="0.00"
+            className="w-full rounded-lg border border-input bg-background pl-7 pr-4 py-2.5 text-center text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-border/50 bg-secondary/30 px-4 py-3">
+        <div className="flex items-baseline justify-between">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              Total Value
+            </p>
+            <p className="text-[10px] text-muted-foreground/70">
+              {cashValue > 0 ? 'cash' : '0 items'}
+            </p>
+          </div>
+          <span className="text-base font-bold text-primary tabular-nums">
+            ${cashValue.toFixed(2)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const TradeEditor = ({
   listingType,
   myOfferItems,
@@ -245,9 +311,6 @@ export const TradeEditor = ({
   onSubmit,
   onBack,
 }: TradeEditorProps) => {
-  const showMyOffer = listingType === 'wtt' || listingType === 'wts';
-  const showTheirOffer = listingType === 'wtt' || listingType === 'wtb';
-
   const isSubmitDisabled =
     (listingType === 'wtt' && (myOfferItems.length === 0 || theirOfferItems.length === 0)) ||
     (listingType === 'wts' && myOfferItems.length === 0) ||
@@ -296,7 +359,9 @@ export const TradeEditor = ({
         </div>
 
         {/* MY OFFER section */}
-        {showMyOffer && (
+        {listingType === 'wtb' ? (
+          <CashOnlySection label="My Offer" borderColor="border-primary" dotColor="bg-primary" />
+        ) : (
           <OfferSection
             label="My Offer"
             items={myOfferItems}
@@ -308,7 +373,9 @@ export const TradeEditor = ({
         )}
 
         {/* THEIR OFFER section */}
-        {showTheirOffer && (
+        {listingType === 'wts' ? (
+          <CashOnlySection label="Their Offer" borderColor="border-violet-400" dotColor="bg-violet-400" />
+        ) : (
           <OfferSection
             label="Their Offer"
             items={theirOfferItems}
