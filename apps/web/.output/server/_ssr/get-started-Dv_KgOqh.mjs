@@ -160,20 +160,19 @@ const CardAutocomplete = ({
   };
   if (selectedCard) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 rounded-lg border border-border bg-secondary/50 p-3", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
+      selectedCard.imageUrl ? /* @__PURE__ */ jsxRuntimeExports.jsx(
         "img",
         {
           src: selectedCard.imageUrl,
           alt: selectedCard.name,
           className: "h-16 w-12 rounded object-cover"
         }
-      ),
+      ) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-16 w-12 rounded bg-muted flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[10px] text-muted-foreground", children: "No img" }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 min-w-0", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "font-medium text-foreground truncate", children: selectedCard.name }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-sm text-muted-foreground truncate", children: [
           selectedCard.setName,
-          " · ",
-          selectedCard.rarity
+          selectedCard.rarity && selectedCard.rarity !== "Unknown" && ` · ${selectedCard.rarity}`
         ] })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -210,20 +209,19 @@ const CardAutocomplete = ({
         onClick: () => handleSelect(card),
         className: "flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-accent transition-colors",
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
+          card.imageUrl ? /* @__PURE__ */ jsxRuntimeExports.jsx(
             "img",
             {
               src: card.imageUrl,
               alt: card.name,
               className: "h-12 w-9 rounded object-cover"
             }
-          ),
+          ) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-12 w-9 rounded bg-muted flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[8px] text-muted-foreground", children: "No img" }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-medium text-foreground truncate", children: card.name }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-muted-foreground truncate", children: [
               card.setName,
-              " · ",
-              card.rarity,
+              card.rarity && card.rarity !== "Unknown" && ` · ${card.rarity}`,
               card.marketPrice != null && ` · $${card.marketPrice.toFixed(2)}`
             ] })
           ] })

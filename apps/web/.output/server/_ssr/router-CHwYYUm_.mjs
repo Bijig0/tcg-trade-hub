@@ -25,7 +25,7 @@ import "../_libs/srvx.mjs";
 import "node:http";
 import "node:https";
 import "node:http2";
-const globalsCss = "/assets/globals-hmiLi_ET.css";
+const globalsCss = "/assets/globals-DF1AmYMy.css";
 const JsonLd = ({ data }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
   "script",
   {
@@ -123,7 +123,7 @@ const Route$4 = createFileRoute("/privacy")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$3, "component")
 });
-const $$splitComponentImporter$2 = () => import("./get-started-CsYo6ffu.mjs");
+const $$splitComponentImporter$2 = () => import("./get-started-Dv_KgOqh.mjs");
 const Route$3 = createFileRoute("/get-started")({
   head: () => ({
     meta: [{
@@ -153,7 +153,7 @@ const Route$2 = createFileRoute("/demo")({
   },
   component: lazyRouteComponent($$splitComponentImporter$1, "component")
 });
-const $$splitComponentImporter = () => import("./index-C1sJmHXL.mjs");
+const $$splitComponentImporter = () => import("./index-zdS1uQh9.mjs");
 const Route$1 = createFileRoute("/")({
   head: () => ({
     meta: [{

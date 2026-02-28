@@ -1,6 +1,6 @@
 import { j as jsxRuntimeExports, r as reactExports } from "../_chunks/_libs/react.mjs";
 import { L as Link } from "../_chunks/_libs/@tanstack/react-router.mjs";
-import { J as JsonLd, S as SITE_URL } from "./router-BymaZR3j.mjs";
+import { J as JsonLd, S as SITE_URL } from "./router-CHwYYUm_.mjs";
 import "../_libs/tiny-warning.mjs";
 import "../_chunks/_libs/@tanstack/router-core.mjs";
 import "../_libs/cookie-es.mjs";
