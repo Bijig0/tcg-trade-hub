@@ -1,12 +1,13 @@
 import { useState, useCallback } from 'react';
-import type { NormalizedCard, TcgType, ListingType } from '@tcg-trade-hub/database';
+import type { ListingType } from '@tcg-trade-hub/database';
 import { SuccessScreen } from '@/components/SuccessScreen';
 import { PhoneFrame } from './PhoneFrame';
 import { DemoChatHeader } from './DemoChatHeader';
 import { DemoMessageBubble } from './DemoMessageBubble';
 import { DemoSystemMessage } from './DemoSystemMessage';
 import { ReservationCard } from './ReservationCard';
-import { TradeEditor } from './TradeEditor';
+import { TradeEditor, flattenToCards } from './TradeEditor';
+import type { OfferItem } from './TradeEditor';
 import { EmailCaptureStep } from './EmailCaptureStep';
 import { demoConversation } from './demoConversation';
 
@@ -21,38 +22,26 @@ type SuccessData = {
 
 export const DemoChat = () => {
   const [phase, setPhase] = useState<Phase>('chat');
-  const [selectedCards, setSelectedCards] = useState<NormalizedCard[]>([]);
-  const [tcg, setTcg] = useState<TcgType>('pokemon');
+  const [myOfferItems, setMyOfferItems] = useState<OfferItem[]>([]);
+  const [theirOfferItems, setTheirOfferItems] = useState<OfferItem[]>([]);
   const [listingType, setListingType] = useState<ListingType>('wtt');
   const [successData, setSuccessData] = useState<SuccessData | null>(null);
 
   const phaseIndex = PHASE_ORDER.indexOf(phase);
 
-  const handleAddCard = (card: NormalizedCard) => {
-    setSelectedCards((prev) => {
-      if (prev.some((c) => c.externalId === card.externalId)) return prev;
-      return [...prev, card];
-    });
-  };
-
-  const handleRemoveCard = (externalId: string) => {
-    setSelectedCards((prev) => prev.filter((c) => c.externalId !== externalId));
-  };
-
-  const handleTcgChange = (newTcg: TcgType) => {
-    setTcg(newTcg);
-    setSelectedCards([]);
-  };
-
   const handleReset = useCallback(() => {
     setPhase('chat');
-    setSelectedCards([]);
-    setTcg('pokemon');
+    setMyOfferItems([]);
+    setTheirOfferItems([]);
     setListingType('wtt');
     setTimeout(() => {
       setSuccessData(null);
     }, 500);
   }, []);
+
+  const emailCards = flattenToCards(
+    listingType === 'wtb' ? theirOfferItems : myOfferItems,
+  );
 
   return (
     <PhoneFrame>
@@ -93,13 +82,12 @@ export const DemoChat = () => {
         {/* Trade Editor panel */}
         <div className="w-full shrink-0 flex flex-col overflow-hidden">
           <TradeEditor
-            selectedCards={selectedCards}
-            tcg={tcg}
             listingType={listingType}
-            onTcgChange={handleTcgChange}
+            myOfferItems={myOfferItems}
+            theirOfferItems={theirOfferItems}
+            onMyOfferItemsChange={setMyOfferItems}
+            onTheirOfferItemsChange={setTheirOfferItems}
             onListingTypeChange={setListingType}
-            onAddCard={handleAddCard}
-            onRemoveCard={handleRemoveCard}
             onSubmit={() => setPhase('email')}
             onBack={() => setPhase('chat')}
           />
@@ -108,7 +96,7 @@ export const DemoChat = () => {
         {/* Email Capture panel */}
         <div className="w-full shrink-0 flex flex-col overflow-hidden">
           <EmailCaptureStep
-            selectedCards={selectedCards}
+            selectedCards={emailCards}
             listingType={listingType}
             onSuccess={(position, email) => {
               setSuccessData({ position, email });

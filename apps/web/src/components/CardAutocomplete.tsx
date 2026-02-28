@@ -8,6 +8,7 @@ type CardAutocompleteProps = {
   onSelect: (card: NormalizedCard) => void;
   selectedCard: NormalizedCard | null;
   onClear: () => void;
+  onAddCustomText?: (text: string) => void;
 };
 
 export const CardAutocomplete = ({
@@ -15,6 +16,7 @@ export const CardAutocomplete = ({
   onSelect,
   selectedCard,
   onClear,
+  onAddCustomText,
 }: CardAutocompleteProps) => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -119,8 +121,29 @@ export const CardAutocomplete = ({
         </ul>
       )}
       {isOpen && debouncedQuery.length >= 2 && !isFetching && cards.length === 0 && (
-        <div className="absolute z-10 mt-1 w-full rounded-lg border border-border bg-card p-4 text-center text-sm text-muted-foreground shadow-lg">
-          No cards found
+        <div className="absolute z-10 mt-1 w-full rounded-lg border border-border bg-card shadow-lg">
+          {onAddCustomText ? (
+            <button
+              type="button"
+              onClick={() => {
+                onAddCustomText(query);
+                setQuery('');
+                setIsOpen(false);
+              }}
+              className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm hover:bg-accent transition-colors"
+            >
+              <svg className="h-4 w-4 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span className="text-foreground">
+                Add &lsquo;<span className="font-medium">{query}</span>&rsquo; as custom item
+              </span>
+            </button>
+          ) : (
+            <p className="p-4 text-center text-sm text-muted-foreground">
+              No cards found
+            </p>
+          )}
         </div>
       )}
     </div>
