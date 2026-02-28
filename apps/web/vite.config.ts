@@ -5,6 +5,10 @@ import tailwindcss from '@tailwindcss/vite';
 import { nitro } from 'nitro/vite';
 
 export default defineConfig({
+  esbuild: {
+    jsx: 'automatic',
+    jsxImportSource: 'react',
+  },
   plugins: [
     tsConfigPaths({ projects: ['./tsconfig.json'] }),
     tailwindcss(),
