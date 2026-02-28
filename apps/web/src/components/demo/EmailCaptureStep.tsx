@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { orpc } from '@/lib/orpc';
+import emailjs from '@emailjs/browser';
 import type { NormalizedCard, ListingType } from '@tcg-trade-hub/database';
 
 type EmailCaptureStepProps = {
@@ -31,37 +30,38 @@ export const EmailCaptureStep = ({
         ? 'Please enter a valid email'
         : null;
 
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const firstCard = selectedCards[0];
 
-  const mutation = useMutation(
-    orpc.preRegistration.create.mutationOptions(),
-  );
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouched({ email: true });
     if (emailError || !firstCard) return;
 
-    mutation.mutate(
-      {
-        email,
-        display_name: displayName || null,
-        tcg: firstCard.tcg,
-        card_name: firstCard.name,
-        card_set: firstCard.setName ?? null,
-        card_external_id: firstCard.externalId ?? null,
-        card_image_url: firstCard.imageUrl ?? null,
-        listing_type: listingType,
-        asking_price: null,
-        city: location || null,
-        zip_code: null,
-      },
-      {
-        onSuccess: (data) => {
-          onSuccess(data.position, email);
+    setIsPending(true);
+    setError(null);
+
+    try {
+      await emailjs.send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        {
+          to_email: email,
+          display_name: displayName || 'Collector',
+          card_name: firstCard.name,
+          city: location || 'your area',
+          listing_type: listingType,
         },
-      },
-    );
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+      );
+      onSuccess(1, email);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (
@@ -160,19 +160,19 @@ export const EmailCaptureStep = ({
         </div>
 
         {/* Error */}
-        {mutation.isError && (
+        {error && (
           <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
-            {mutation.error.message || 'Something went wrong. Please try again.'}
+            {error}
           </div>
         )}
 
         {/* Submit */}
         <button
           type="submit"
-          disabled={mutation.isPending}
+          disabled={isPending}
           className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {mutation.isPending ? 'Registering...' : 'Get Early Access'}
+          {isPending ? 'Registering...' : 'Get Early Access'}
         </button>
 
         <p className="text-center text-[10px] text-muted-foreground">
