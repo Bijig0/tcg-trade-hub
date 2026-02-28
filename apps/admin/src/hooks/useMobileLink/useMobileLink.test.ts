@@ -78,6 +78,11 @@ const simulateMessage = (data: Record<string, unknown>) => {
   latestWs().onmessage?.({ data: JSON.stringify(data) });
 };
 
+/** Flush the 100ms traceId grouping debounce. */
+const flushTraceBuffer = () => {
+  vi.advanceTimersByTime(150);
+};
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -146,7 +151,7 @@ describe('useMobileLink', () => {
   });
 
   describe('linking', () => {
-    it('starts unlinked with no active path', async () => {
+    it('starts unlinked with empty activePaths', async () => {
       const { result } = renderHook(() => useMobileLink());
 
       await waitFor(() => {
@@ -154,7 +159,7 @@ describe('useMobileLink', () => {
       });
 
       expect(result.current.linkedSimulator).toBeNull();
-      expect(result.current.activePath).toBeNull();
+      expect(result.current.activePaths).toEqual([]);
       expect(result.current.lastEvent).toBeNull();
       expect(result.current.connected).toBe(false);
     });
@@ -277,7 +282,7 @@ describe('useMobileLink', () => {
       expect(result.current.linkedSimulator).toBeNull();
     });
 
-    it('unlink closes WebSocket and clears linked simulator', async () => {
+    it('unlink closes WebSocket and clears state', async () => {
       fetchMock
         .mockResolvedValueOnce({
           ok: true,
@@ -313,12 +318,16 @@ describe('useMobileLink', () => {
         }),
       );
 
-      expect(result.current.activePath).toBe('state:meetup');
+      act(() => flushTraceBuffer());
+
+      expect(result.current.activePaths).toEqual([
+        { pathId: 'state:meetup', stepIndex: 0 },
+      ]);
 
       act(() => result.current.unlink());
 
       expect(result.current.linkedSimulator).toBeNull();
-      expect(result.current.activePath).toBeNull();
+      expect(result.current.activePaths).toEqual([]);
       expect(result.current.lastEvent).toBeNull();
       expect(latestWs().close).toHaveBeenCalled();
     });
@@ -351,7 +360,7 @@ describe('useMobileLink', () => {
       act(() => simulateOpen());
     };
 
-    it('updates activePath on mobile:nav events', async () => {
+    it('updates activePaths on mobile:nav events after debounce', async () => {
       const { result } = renderHook(() => useMobileLink());
       await setupLinked(result);
 
@@ -364,7 +373,11 @@ describe('useMobileLink', () => {
         }),
       );
 
-      expect(result.current.activePath).toBe('state:listing');
+      act(() => flushTraceBuffer());
+
+      expect(result.current.activePaths).toEqual([
+        { pathId: 'state:listing', stepIndex: 0 },
+      ]);
       expect(result.current.lastEvent).toEqual({
         pathId: 'state:listing',
         stepIndex: 0,
@@ -373,7 +386,38 @@ describe('useMobileLink', () => {
       });
     });
 
-    it('sets activeStep from WS event stepIndex', async () => {
+    it('groups events with same traceId into activePaths', async () => {
+      const { result } = renderHook(() => useMobileLink());
+      await setupLinked(result);
+
+      act(() => {
+        simulateMessage({
+          pathId: 'flow:p2p-trade',
+          stepIndex: 1,
+          caller: 'mobile:nav',
+          message: 'Trade Builder',
+          timestamp: 1000,
+          traceId: 'trace-123',
+        });
+        simulateMessage({
+          pathId: 'state:listing',
+          stepIndex: 1,
+          caller: 'mobile:nav',
+          message: 'Trade Builder',
+          timestamp: 1000,
+          traceId: 'trace-123',
+        });
+      });
+
+      act(() => flushTraceBuffer());
+
+      expect(result.current.activePaths).toEqual([
+        { pathId: 'flow:p2p-trade', stepIndex: 1 },
+        { pathId: 'state:listing', stepIndex: 1 },
+      ]);
+    });
+
+    it('sets stepIndex from WS event', async () => {
       const { result } = renderHook(() => useMobileLink());
       await setupLinked(result);
 
@@ -387,11 +431,14 @@ describe('useMobileLink', () => {
         }),
       );
 
-      expect(result.current.activePath).toBe('state:listing');
-      expect(result.current.activeStep).toBe(1);
+      act(() => flushTraceBuffer());
+
+      expect(result.current.activePaths).toEqual([
+        { pathId: 'state:listing', stepIndex: 1 },
+      ]);
     });
 
-    it('defaults activeStep to 0 when stepIndex omitted', async () => {
+    it('defaults stepIndex to 0 when omitted', async () => {
       const { result } = renderHook(() => useMobileLink());
       await setupLinked(result);
 
@@ -404,10 +451,14 @@ describe('useMobileLink', () => {
         }),
       );
 
-      expect(result.current.activeStep).toBe(0);
+      act(() => flushTraceBuffer());
+
+      expect(result.current.activePaths).toEqual([
+        { pathId: 'state:offer', stepIndex: 0 },
+      ]);
     });
 
-    it('clears activeStep on unlink', async () => {
+    it('clears activePaths on unlink', async () => {
       const { result } = renderHook(() => useMobileLink());
       await setupLinked(result);
 
@@ -421,11 +472,13 @@ describe('useMobileLink', () => {
         }),
       );
 
-      expect(result.current.activeStep).toBe(2);
+      act(() => flushTraceBuffer());
+
+      expect(result.current.activePaths).toHaveLength(1);
 
       act(() => result.current.unlink());
 
-      expect(result.current.activeStep).toBeNull();
+      expect(result.current.activePaths).toEqual([]);
     });
 
     it('ignores events without caller: mobile:nav', async () => {
@@ -441,7 +494,9 @@ describe('useMobileLink', () => {
         }),
       );
 
-      expect(result.current.activePath).toBeNull();
+      act(() => flushTraceBuffer());
+
+      expect(result.current.activePaths).toEqual([]);
       expect(result.current.lastEvent).toBeNull();
     });
 
@@ -457,7 +512,9 @@ describe('useMobileLink', () => {
         }),
       );
 
-      expect(result.current.activePath).toBeNull();
+      act(() => flushTraceBuffer());
+
+      expect(result.current.activePaths).toEqual([]);
     });
 
     it('reconnects on WS close while linked', async () => {
@@ -498,7 +555,9 @@ describe('useMobileLink', () => {
         }),
       );
 
-      expect(result.current.activePath).toBeNull();
+      act(() => flushTraceBuffer());
+
+      expect(result.current.activePaths).toEqual([]);
       expect(result.current.lastEvent).toBeNull();
     });
   });

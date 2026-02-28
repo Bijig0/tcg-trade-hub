@@ -5,6 +5,8 @@ const GRAPH_SERVER_URL = 'http://localhost:4243';
 const WS_URL = 'ws://localhost:4243/ws/live';
 const RECONNECT_DELAY = 3_000;
 const UDID_PATTERN = /^[0-9A-F-]{36}$/i;
+/** Debounce window to group events sharing a traceId. */
+const TRACE_GROUP_DELAY = 100;
 
 // ---- Zod schemas ----
 
@@ -29,6 +31,7 @@ const MobileLinkEventSchema = z.object({
   caller: z.literal('mobile:nav'),
   message: z.string().optional(),
   timestamp: z.number().optional(),
+  traceId: z.string().optional(),
 });
 
 type MobileLinkEvent = {
@@ -36,6 +39,11 @@ type MobileLinkEvent = {
   stepIndex: number;
   message: string;
   timestamp: number;
+};
+
+type ActivePathEntry = {
+  pathId: string;
+  stepIndex: number;
 };
 
 const extractErrorMessage = (err: unknown): string => {
@@ -54,8 +62,7 @@ type UseMobileLinkReturn = {
   unlink: () => void;
   isBooting: boolean;
 
-  activePath: string | null;
-  activeStep: number | null;
+  activePaths: ActivePathEntry[];
   lastEvent: MobileLinkEvent | null;
   connected: boolean;
 };
@@ -66,6 +73,9 @@ type UseMobileLinkReturn = {
  *
  * Fetches available iOS simulators, boots them on demand, and
  * listens for `caller: "mobile:nav"` events over WebSocket.
+ *
+ * Events sharing the same traceId are grouped within a 100ms window
+ * to support multi-path navigation (one screen mapping to multiple flows).
  */
 const useMobileLink = (): UseMobileLinkReturn => {
   // Simulator list state
@@ -79,12 +89,16 @@ const useMobileLink = (): UseMobileLinkReturn => {
 
   // WebSocket state
   const [connected, setConnected] = useState(false);
-  const [activePath, setActivePath] = useState<string | null>(null);
-  const [activeStep, setActiveStep] = useState<number | null>(null);
+  const [activePaths, setActivePaths] = useState<ActivePathEntry[]>([]);
   const [lastEvent, setLastEvent] = useState<MobileLinkEvent | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // TraceId grouping buffer
+  const traceBufferRef = useRef<ActivePathEntry[]>([]);
+  const traceFlushTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const currentTraceId = useRef<string | null>(null);
 
   // ---- Fetch simulators ----
 
@@ -123,11 +137,47 @@ const useMobileLink = (): UseMobileLinkReturn => {
     fetchSimulators();
   }, [fetchSimulators]);
 
+  // ---- TraceId grouping ----
+
+  const flushTraceBuffer = useCallback(() => {
+    const entries = [...traceBufferRef.current];
+    traceBufferRef.current = [];
+    currentTraceId.current = null;
+    clearTimeout(traceFlushTimer.current);
+    traceFlushTimer.current = undefined;
+    if (entries.length > 0) {
+      setActivePaths(entries);
+    }
+  }, []);
+
+  const bufferEvent = useCallback(
+    (traceId: string | null, entry: ActivePathEntry) => {
+      if (traceId && traceId === currentTraceId.current) {
+        // Same trace — append and reset timer
+        traceBufferRef.current.push(entry);
+        clearTimeout(traceFlushTimer.current);
+        traceFlushTimer.current = setTimeout(flushTraceBuffer, TRACE_GROUP_DELAY);
+      } else {
+        // New trace — flush previous, start new buffer
+        if (traceBufferRef.current.length > 0) {
+          flushTraceBuffer();
+        }
+        currentTraceId.current = traceId;
+        traceBufferRef.current = [entry];
+        clearTimeout(traceFlushTimer.current);
+        traceFlushTimer.current = setTimeout(flushTraceBuffer, TRACE_GROUP_DELAY);
+      }
+    },
+    [flushTraceBuffer],
+  );
+
   // ---- WebSocket management ----
 
   const cleanupWs = useCallback(() => {
     clearTimeout(reconnectTimer.current);
     reconnectTimer.current = undefined;
+    clearTimeout(traceFlushTimer.current);
+    traceFlushTimer.current = undefined;
     if (wsRef.current) {
       try {
         wsRef.current.close();
@@ -173,16 +223,18 @@ const useMobileLink = (): UseMobileLinkReturn => {
           timestamp: result.data.timestamp ?? Date.now(),
         };
 
-        setActivePath(parsed.pathId);
-        setActiveStep(parsed.stepIndex);
         setLastEvent(parsed);
+        bufferEvent(result.data.traceId ?? null, {
+          pathId: parsed.pathId,
+          stepIndex: parsed.stepIndex,
+        });
       } catch {
         /* ignore parse errors */
       }
     };
 
     wsRef.current = ws;
-  }, [cleanupWs]);
+  }, [cleanupWs, bufferEvent]);
 
   // ---- Link / Unlink ----
 
@@ -221,8 +273,7 @@ const useMobileLink = (): UseMobileLinkReturn => {
   const unlink = useCallback(() => {
     cleanupWs();
     setLinkedSimulator(null);
-    setActivePath(null);
-    setActiveStep(null);
+    setActivePaths([]);
     setLastEvent(null);
   }, [cleanupWs]);
 
@@ -238,8 +289,7 @@ const useMobileLink = (): UseMobileLinkReturn => {
     linkTo,
     unlink,
     isBooting,
-    activePath,
-    activeStep,
+    activePaths,
     lastEvent,
     connected,
   };
