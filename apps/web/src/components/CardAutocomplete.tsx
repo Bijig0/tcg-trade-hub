@@ -54,15 +54,22 @@ export const CardAutocomplete = ({
   if (selectedCard) {
     return (
       <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/50 p-3">
-        <img
-          src={selectedCard.imageUrl}
-          alt={selectedCard.name}
-          className="h-16 w-12 rounded object-cover"
-        />
+        {selectedCard.imageUrl ? (
+          <img
+            src={selectedCard.imageUrl}
+            alt={selectedCard.name}
+            className="h-16 w-12 rounded object-cover"
+          />
+        ) : (
+          <div className="h-16 w-12 rounded bg-muted flex items-center justify-center">
+            <span className="text-[10px] text-muted-foreground">No img</span>
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <p className="font-medium text-foreground truncate">{selectedCard.name}</p>
           <p className="text-sm text-muted-foreground truncate">
-            {selectedCard.setName} &middot; {selectedCard.rarity}
+            {selectedCard.setName}
+            {selectedCard.rarity && selectedCard.rarity !== 'Unknown' && ` \u00b7 ${selectedCard.rarity}`}
           </p>
         </div>
         <button
@@ -103,16 +110,23 @@ export const CardAutocomplete = ({
                 onClick={() => handleSelect(card)}
                 className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-accent transition-colors"
               >
-                <img
-                  src={card.imageUrl}
-                  alt={card.name}
-                  className="h-12 w-9 rounded object-cover"
-                />
+                {card.imageUrl ? (
+                  <img
+                    src={card.imageUrl}
+                    alt={card.name}
+                    className="h-12 w-9 rounded object-cover"
+                  />
+                ) : (
+                  <div className="h-12 w-9 rounded bg-muted flex items-center justify-center">
+                    <span className="text-[8px] text-muted-foreground">No img</span>
+                  </div>
+                )}
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{card.name}</p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {card.setName} &middot; {card.rarity}
-                    {card.marketPrice != null && ` · $${card.marketPrice.toFixed(2)}`}
+                    {card.setName}
+                    {card.rarity && card.rarity !== 'Unknown' && ` \u00b7 ${card.rarity}`}
+                    {card.marketPrice != null && ` \u00b7 $${card.marketPrice.toFixed(2)}`}
                   </p>
                 </div>
               </button>
