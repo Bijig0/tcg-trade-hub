@@ -19,6 +19,17 @@ export const EmailCaptureStep = ({
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [location, setLocation] = useState('');
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const markTouched = (field: string) =>
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+  const emailError =
+    !email.trim()
+      ? 'Email is required'
+      : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+        ? 'Please enter a valid email'
+        : null;
 
   const firstCard = selectedCards[0];
 
@@ -28,7 +39,8 @@ export const EmailCaptureStep = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstCard) return;
+    setTouched({ email: true });
+    if (emailError || !firstCard) return;
 
     mutation.mutate(
       {
@@ -70,7 +82,7 @@ export const EmailCaptureStep = ({
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-4">
+      <form noValidate onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-4">
         <p className="text-sm text-muted-foreground">
           Enter your email to save your offer and get notified when TCG Trade Hub launches.
         </p>
@@ -104,9 +116,17 @@ export const EmailCaptureStep = ({
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onBlur={() => markTouched('email')}
             placeholder="you@example.com"
-            className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            aria-invalid={touched.email && !!emailError}
+            aria-describedby={touched.email && emailError ? 'demo-email-error' : undefined}
+            className={`w-full rounded-lg border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${touched.email && emailError ? 'border-destructive ring-2 ring-destructive/30 focus:ring-destructive' : 'border-input focus:ring-ring'}`}
           />
+          {touched.email && emailError && (
+            <p id="demo-email-error" role="alert" className="mt-1 text-xs text-destructive">
+              {emailError}
+            </p>
+          )}
         </div>
 
         {/* Display Name */}

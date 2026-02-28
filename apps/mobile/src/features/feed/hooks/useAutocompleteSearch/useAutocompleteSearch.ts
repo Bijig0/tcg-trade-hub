@@ -37,6 +37,9 @@ const useAutocompleteSearch = (): UseAutocompleteSearchReturn => {
   const setQuery = useCallback((text: string) => {
     setQueryRaw(text);
     if (timerRef.current) clearTimeout(timerRef.current);
+    if (text.trim().length < 2) {
+      setIsDropdownOpen(false);
+    }
     timerRef.current = setTimeout(() => {
       setDebouncedQuery(text.trim());
       if (text.trim().length >= 2) {

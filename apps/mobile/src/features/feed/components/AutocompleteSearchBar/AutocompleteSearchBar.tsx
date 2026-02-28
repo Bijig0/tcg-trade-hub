@@ -33,6 +33,7 @@ const AutocompleteSearchBar = ({ onCardSelect }: AutocompleteSearchBarProps) => 
     previewResults,
     hasMore,
     isLoading,
+    totalResults,
   } = useAutocompleteSearch();
 
   const handleSeeAll = useCallback(() => {
@@ -49,10 +50,10 @@ const AutocompleteSearchBar = ({ onCardSelect }: AutocompleteSearchBarProps) => 
   );
 
   const handleFocus = useCallback(() => {
-    if (query.trim().length >= 2 && previewResults.length > 0) {
+    if (query.trim().length >= 2) {
       setIsDropdownOpen(true);
     }
-  }, [query, previewResults.length, setIsDropdownOpen]);
+  }, [query, setIsDropdownOpen]);
 
   const handleBlur = useCallback(() => {
     // Delay close to allow press events on dropdown to register
@@ -76,6 +77,7 @@ const AutocompleteSearchBar = ({ onCardSelect }: AutocompleteSearchBarProps) => 
           onBlur={handleBlur}
           placeholder="Search cards..."
           className="ml-2 flex-1 text-sm text-foreground"
+          style={{ paddingVertical: 0 }}
           placeholderTextColor="#a1a1aa"
           returnKeyType="search"
           autoCorrect={false}
@@ -89,59 +91,69 @@ const AutocompleteSearchBar = ({ onCardSelect }: AutocompleteSearchBarProps) => 
       </View>
 
       {/* Dropdown */}
-      {isDropdownOpen && previewResults.length > 0 && (
+      {isDropdownOpen && !isLoading && query.trim().length >= 2 && (
         <View
           className="absolute left-4 right-4 top-12 z-50 rounded-xl border border-border bg-card shadow-lg"
           style={{ elevation: 10 }}
         >
-          {previewResults.map((card) => (
-            <Pressable
-              key={card.externalId}
-              onPress={() => handleCardPress(card)}
-              className="flex-row items-center border-b border-border px-3 py-2.5 active:bg-accent"
-            >
-              <Image
-                source={{ uri: card.imageUrl }}
-                className="h-14 w-10 rounded"
-                resizeMode="cover"
-              />
-              <View className="ml-3 flex-1">
-                <Text
-                  className="text-sm font-semibold text-foreground"
-                  numberOfLines={1}
-                >
-                  {card.name}
-                </Text>
-                <Text
-                  className="text-xs text-muted-foreground"
-                  numberOfLines={1}
-                >
-                  {card.setName} · #{card.number}
-                </Text>
-                <View className="mt-0.5 flex-row items-center gap-2">
-                  <Text className="text-xs text-muted-foreground">
-                    {card.rarity}
-                  </Text>
-                  {card.marketPrice !== null && (
-                    <Text className="text-xs font-medium text-foreground">
-                      {formatPrice(card.marketPrice)}
-                    </Text>
-                  )}
-                </View>
-              </View>
-            </Pressable>
-          ))}
-
-          {hasMore && (
-            <Pressable
-              onPress={handleSeeAll}
-              className="flex-row items-center justify-center px-3 py-3 active:bg-accent"
-            >
-              <Text className="text-sm font-medium text-primary">
-                See all results for "{query.trim()}"
+          {previewResults.length === 0 ? (
+            <View className="items-center px-3 py-4">
+              <Text className="text-sm text-muted-foreground">
+                No cards found for "{query.trim()}"
               </Text>
-              <ChevronRight size={14} className="ml-1 text-primary" />
-            </Pressable>
+            </View>
+          ) : (
+            <>
+              {previewResults.map((card) => (
+                <Pressable
+                  key={card.externalId}
+                  onPress={() => handleCardPress(card)}
+                  className="flex-row items-center border-b border-border px-3 py-2.5 active:bg-accent"
+                >
+                  <Image
+                    source={{ uri: card.imageUrl }}
+                    className="h-14 w-10 rounded"
+                    resizeMode="cover"
+                  />
+                  <View className="ml-3 flex-1">
+                    <Text
+                      className="text-sm font-semibold text-foreground"
+                      numberOfLines={1}
+                    >
+                      {card.name}
+                    </Text>
+                    <Text
+                      className="text-xs text-muted-foreground"
+                      numberOfLines={1}
+                    >
+                      {card.setName} · #{card.number}
+                    </Text>
+                    <View className="mt-0.5 flex-row items-center gap-2">
+                      <Text className="text-xs text-muted-foreground">
+                        {card.rarity}
+                      </Text>
+                      {card.marketPrice !== null && (
+                        <Text className="text-xs font-medium text-foreground">
+                          {formatPrice(card.marketPrice)}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                </Pressable>
+              ))}
+
+              {hasMore && (
+                <Pressable
+                  onPress={handleSeeAll}
+                  className="flex-row items-center justify-center px-3 py-3 active:bg-accent"
+                >
+                  <Text className="text-sm font-medium text-primary">
+                    See all results for "{query.trim()}"
+                  </Text>
+                  <ChevronRight size={14} className="ml-1 text-primary" />
+                </Pressable>
+              )}
+            </>
           )}
         </View>
       )}
