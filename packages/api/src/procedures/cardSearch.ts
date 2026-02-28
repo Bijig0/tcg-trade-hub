@@ -92,7 +92,7 @@ const searchScrydex = async (
   const tcgPath = SCRYDEX_TCG_PATHS[tcg];
   if (!tcgPath) return [];
 
-  const url = `https://api.scrydex.com/${tcgPath}/v1/cards?q=name:${encodeURIComponent(query)}&page_size=${MAX_RESULTS}&select=id,name,number,rarity,images,expansion&include=prices`;
+  const url = `https://api.scrydex.com/${tcgPath}/v1/cards?q=name:${encodeURIComponent(query)}*&page_size=${MAX_RESULTS}&select=id,name,number,rarity,images,expansion&include=prices`;
   const res = await fetchWithTimeout(url, {
     headers: {
       'Content-Type': 'application/json',
