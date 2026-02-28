@@ -36,7 +36,7 @@ export const NormalizedCardSchema = z.object({
   setName: z.string(),
   setCode: z.string(),
   number: z.string(),
-  imageUrl: z.string().url(),
+  imageUrl: z.string(),
   marketPrice: z.number().nullable(),
   rarity: z.string(),
 });

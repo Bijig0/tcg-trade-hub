@@ -38,11 +38,24 @@ export const CardAutocomplete = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const { data: cards = [], isFetching } = useQuery({
-    ...orpc.card.search.queryOptions({
-      input: { query: debouncedQuery, tcg },
-    }),
+  const queryOpts = orpc.card.search.queryOptions({
+    input: { query: debouncedQuery, tcg },
+  });
+
+  const { data: cards = [], isFetching, error, status, fetchStatus } = useQuery({
+    ...queryOpts,
     enabled: debouncedQuery.length >= 2,
+  });
+
+  console.log('[CardAutocomplete]', {
+    query,
+    debouncedQuery,
+    enabled: debouncedQuery.length >= 2,
+    status,
+    fetchStatus,
+    cardCount: cards.length,
+    error: error?.message ?? null,
+    queryKey: queryOpts.queryKey,
   });
 
   const handleSelect = (card: NormalizedCard) => {
