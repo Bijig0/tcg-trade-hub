@@ -13,6 +13,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider, useAuth } from '@/context/AuthProvider';
 import { ThemeProvider } from '@/context/ThemeProvider';
+import { OnlinePresenceProvider } from '@/context/OnlinePresenceProvider';
 import ErrorToast from '@/components/ui/ErrorToast/ErrorToast';
 import useAutoUpdate from '@/hooks/useAutoUpdate/useAutoUpdate';
 import useDevGraphEmitter from '@/hooks/useDevGraphEmitter/useDevGraphEmitter';
@@ -104,12 +105,14 @@ const RootLayout = () => {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <SafeAreaProvider>
-            <ThemeProvider>
-              <RootNavigator />
-              <ErrorToast />
-            </ThemeProvider>
-          </SafeAreaProvider>
+          <OnlinePresenceProvider>
+            <SafeAreaProvider>
+              <ThemeProvider>
+                <RootNavigator />
+                <ErrorToast />
+              </ThemeProvider>
+            </SafeAreaProvider>
+          </OnlinePresenceProvider>
         </AuthProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>

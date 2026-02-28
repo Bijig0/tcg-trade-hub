@@ -102,6 +102,8 @@ const ChatThread = ({
   const { data: blockState } = useChatBlockCheck(otherUser.id);
   const { handleLongPress, reportTarget, clearReportTarget } =
     useLongPressMessage(user?.id);
+  const { data: lastReadMessageId } = useOtherUserReadReceipt(conversationId, otherUser?.id ?? '');
+  useRealtimeReadReceipts(conversationId);
 
   // Subscribe to realtime messages (with read tracking callback)
   useRealtimeChat(conversationId, {
@@ -284,7 +286,7 @@ const ChatThread = ({
                 message={item}
                 isOwnMessage={isOwn}
                 isLastOwnMessage={isLastOwn}
-                isSeen={false} // TODO: wire to conversation_reads when subscribed
+                isSeen={isLastOwn && lastReadMessageId !== null}
               />
             );
 
@@ -425,7 +427,14 @@ const ChatThread = ({
           >
             <ChevronLeft size={24} color="#6b7280" />
           </Pressable>
-          <Avatar uri={otherUser.avatar} fallback={otherInitials} size="md" />
+          <View className="relative">
+            <Avatar uri={otherUser.avatar} fallback={otherInitials} size="md" />
+            <OnlineIndicator
+              isOnline={isOnline(otherUser.id)}
+              size="sm"
+              className="absolute -bottom-0.5 -right-0.5"
+            />
+          </View>
           <Text
             className="flex-shrink text-lg font-semibold text-foreground"
             numberOfLines={1}

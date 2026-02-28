@@ -101,12 +101,24 @@ describe('sendMessage pipeline', () => {
       recipient_id: '550e8400-e29b-41d4-a716-446655440077',
     };
 
-    const invokeResult = { data: null, error: null };
+    const mockInvoke = vi.fn().mockResolvedValue({ data: null, error: null });
+    const mockFrom = vi.fn().mockImplementation((_table: string) => {
+      const chain: Record<string, ReturnType<typeof vi.fn>> = {};
+      chain.select = vi.fn().mockReturnValue(chain);
+      chain.eq = vi.fn().mockReturnValue(chain);
+      chain.single = vi.fn().mockResolvedValue({
+        data: { display_name: 'TestUser' },
+        error: null,
+      });
+      return chain;
+    });
+
     const ctx: PipelineContext = {
       supabase: {
         rpc: vi.fn().mockResolvedValue({ data: rpcResult, error: null }),
+        from: mockFrom,
         functions: {
-          invoke: vi.fn().mockResolvedValue(invokeResult),
+          invoke: mockInvoke,
         },
       } as unknown as PipelineContext['supabase'],
       userId: USER_ID,
@@ -114,17 +126,15 @@ describe('sendMessage pipeline', () => {
 
     const result = await sendMessage.execute(validInput, ctx);
     expect(result).toEqual(rpcResult);
-    expect(ctx.supabase.functions.invoke).toHaveBeenCalledWith(
+    expect(mockInvoke).toHaveBeenCalledWith(
       'send-push-notification',
       {
         body: {
-          recipientId: rpcResult.recipient_id,
-          type: 'new_message',
-          data: {
-            conversationId: rpcResult.conversation_id,
-            messageId: rpcResult.message_id,
-            senderId: rpcResult.sender_id,
-          },
+          type: 'direct',
+          recipientUserId: rpcResult.recipient_id,
+          title: 'TestUser',
+          body: 'Hello!',
+          data: { type: 'text' },
         },
       },
     );
@@ -139,9 +149,14 @@ describe('sendMessage pipeline', () => {
     };
 
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const mockFrom = vi.fn().mockImplementation(() => {
+      throw new Error('db connection failed');
+    });
+
     const ctx: PipelineContext = {
       supabase: {
         rpc: vi.fn().mockResolvedValue({ data: rpcResult, error: null }),
+        from: mockFrom,
         functions: {
           invoke: vi.fn().mockRejectedValue(new Error('push failed')),
         },

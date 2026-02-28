@@ -4,7 +4,7 @@ import formatNotificationBody from '../../formatNotificationBody/formatNotificat
 
 type NewMessageInput = {
   type: string;
-  body: string | null;
+  body?: string | null;
 };
 
 type NewMessageResult = {
@@ -31,7 +31,7 @@ const notifyNewMessage: PostEffect<NewMessageInput, NewMessageResult> = {
       .single();
 
     const senderName = sender?.display_name ?? 'Someone';
-    const content = formatNotificationBody(senderName, input.type, input.body);
+    const content = formatNotificationBody(senderName, input.type, input.body ?? null);
 
     await sendPushNotification(sb, {
       recipientUserId: result.recipient_id,

@@ -22,25 +22,32 @@ const useSendMessage = () => {
     mutationFn: async (input: SendMessageInput) => {
       if (!user) throw new Error('Must be signed in to send messages');
 
+      const { data: rpcResult, error: rpcError } = await supabase.rpc(
+        'send_message_v1',
+        {
+          p_conversation_id: input.conversationId,
+          p_sender_id: user.id,
+          p_type: input.type,
+          p_body: input.body ?? null,
+          p_payload: input.payload ? JSON.stringify(input.payload) : null,
+        },
+      );
+
+      if (rpcError) throw rpcError;
+
+      // Re-fetch full message with sender join for cache
+      const row = Array.isArray(rpcResult) ? rpcResult[0] : rpcResult;
       const { data, error } = await supabase
         .from('messages')
-        .insert({
-          conversation_id: input.conversationId,
-          sender_id: user.id,
-          type: input.type,
-          body: input.body ?? null,
-          payload: input.payload ?? null,
-        })
-        .select(
-          `
+        .select(`
           *,
           sender:users!messages_sender_id_fkey (
             id,
             display_name,
             avatar_url
           )
-        `,
-        )
+        `)
+        .eq('id', (row as { message_id: string }).message_id)
         .single();
 
       if (error) throw error;

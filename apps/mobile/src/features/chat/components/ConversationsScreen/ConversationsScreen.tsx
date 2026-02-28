@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { MessageSquare } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import Avatar from '@/components/ui/Avatar/Avatar';
+import OnlineIndicator from '@/components/OnlineIndicator/OnlineIndicator';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
 import RefreshableScreen from '@/components/ui/RefreshableScreen/RefreshableScreen';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
@@ -12,6 +13,7 @@ import NegotiationStatusBadge from '../NegotiationStatusBadge/NegotiationStatusB
 import useConversations, {
   type ConversationPreview,
 } from '../../hooks/useConversations/useConversations';
+import { usePresence } from '@/context/OnlinePresenceProvider';
 import { chatKeys } from '../../queryKeys';
 import formatMessage from '../../utils/formatMessage/formatMessage';
 import generateDefaultChatName from '../../utils/generateDefaultChatName/generateDefaultChatName';
@@ -22,6 +24,7 @@ type ConversationItemProps = {
 };
 
 const ConversationItem = ({ conversation, onPress }: ConversationItemProps) => {
+  const { isOnline } = usePresence();
   const { otherUser, lastMessage, unreadCount, negotiationStatus, listingThumbnails, nickname, listingTitle } = conversation;
 
   const displayName = nickname ?? generateDefaultChatName(otherUser?.name ?? 'Unknown', listingTitle);
@@ -51,6 +54,11 @@ const ConversationItem = ({ conversation, onPress }: ConversationItemProps) => {
         {(unreadCount ?? 0) > 0 ? (
           <View className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full bg-primary" />
         ) : null}
+        <OnlineIndicator
+          isOnline={isOnline(otherUser?.id ?? '')}
+          size="sm"
+          className="absolute -bottom-0.5 -right-0.5"
+        />
       </View>
 
       {/* Card thumbnails */}
