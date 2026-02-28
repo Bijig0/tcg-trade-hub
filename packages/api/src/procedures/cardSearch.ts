@@ -22,74 +22,44 @@ const fetchWithTimeout = async (
 };
 
 // ---------------------------------------------------------------------------
-// Scrydex API (Pokemon + One Piece)
-// https://api.scrydex.com/{tcg}/v1
+// TCGdex Pokemon API (https://tcgdex.dev) — free, no key required
 // ---------------------------------------------------------------------------
 
-const SCRYDEX_TCG_PATHS: Record<string, string> = {
-  pokemon: 'pokemon',
-  onepiece: 'onepiece',
-};
-
-type ScrydexCard = {
+type TCGdexCardBrief = {
   id: string;
+  localId: string;
   name: string;
-  number: string;
-  rarity: string;
-  images?: Array<{ small?: string; medium?: string; large?: string }>;
-  expansion?: { name: string; code: string };
-  prices?: Array<{ variant: string; market?: number | null }>;
+  image: string;
 };
 
-const normalizeScrydexCard = (card: ScrydexCard, tcg: TcgType): NormalizedCard => {
-  const image = card.images?.[0];
-  const price =
-    card.prices?.find((p) => p.variant === 'normal' || p.variant === 'nm') ??
-    card.prices?.[0];
+const normalizeTCGdexCard = (card: TCGdexCardBrief): NormalizedCard => {
+  const dashIdx = card.id.lastIndexOf('-');
+  const setCode = dashIdx > 0 ? card.id.slice(0, dashIdx) : card.id;
+
   return {
     externalId: card.id,
-    tcg,
+    tcg: 'pokemon',
     name: card.name,
-    setName: card.expansion?.name ?? 'Unknown Set',
-    setCode: card.expansion?.code ?? 'N/A',
-    number: card.number ?? card.id,
-    imageUrl: image?.medium ?? image?.small ?? image?.large ?? '',
-    marketPrice: price?.market ?? null,
-    rarity: card.rarity ?? 'Unknown',
+    setName: setCode,
+    setCode,
+    number: card.localId,
+    imageUrl: `${card.image}/high.webp`,
+    marketPrice: null,
+    rarity: 'Unknown',
   };
 };
 
-const searchScrydex = async (
-  query: string,
-  tcg: TcgType,
-): Promise<NormalizedCard[]> => {
-  const apiKey = process.env.SCRYDEX_API_KEY;
-  const teamId = process.env.SCRYDEX_TEAM_ID;
-
-  if (!apiKey || !teamId) {
-    console.warn(`[cardSearch] SCRYDEX_API_KEY or SCRYDEX_TEAM_ID not set — ${tcg} search unavailable`);
-    return [];
-  }
-
-  const tcgPath = SCRYDEX_TCG_PATHS[tcg];
-  if (!tcgPath) return [];
-
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'X-Api-Key': apiKey,
-    'X-Team-ID': teamId,
-  };
-
-  const url = `https://api.scrydex.com/${tcgPath}/v1/cards?q=name:${encodeURIComponent(query)}&page_size=${MAX_RESULTS}&select=id,name,number,rarity,images,expansion&include=prices`;
-  const res = await fetchWithTimeout(url, { headers });
+const searchPokemon = async (query: string): Promise<NormalizedCard[]> => {
+  const url = `https://api.tcgdex.net/v2/en/cards?name=${encodeURIComponent(query)}&pagination:itemsPerPage=${MAX_RESULTS}`;
+  const res = await fetchWithTimeout(url);
 
   if (res.status === 404) return [];
   if (!res.ok) {
-    throw new Error(`Scrydex ${tcg} API error (${res.status})`);
+    throw new Error(`TCGdex API error (${res.status})`);
   }
 
-  const data = (await res.json()) as { data?: ScrydexCard[] };
-  return (data.data ?? []).map((card) => normalizeScrydexCard(card, tcg));
+  const cards = (await res.json()) as TCGdexCardBrief[];
+  return cards.slice(0, MAX_RESULTS).map(normalizeTCGdexCard);
 };
 
 // ---------------------------------------------------------------------------
@@ -165,9 +135,9 @@ const searchMtg = async (query: string): Promise<NormalizedCard[]> => {
 // ---------------------------------------------------------------------------
 
 const searchByTcg: Record<TcgType, (query: string) => Promise<NormalizedCard[]>> = {
-  pokemon: (query) => searchScrydex(query, 'pokemon'),
+  pokemon: searchPokemon,
   mtg: searchMtg,
-  onepiece: (query) => searchScrydex(query, 'onepiece'),
+  onepiece: async () => [],
 };
 
 // ---------------------------------------------------------------------------
