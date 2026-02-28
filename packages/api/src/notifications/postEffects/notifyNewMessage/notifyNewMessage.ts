@@ -1,23 +1,45 @@
 import type { PostEffect } from '../../../pipelines/definePipeline/definePipeline';
-import type { SendMessageInput, SendMessageResult } from '../../../pipelines/sendMessage/sendMessage';
+import sendPushNotification from '../../sendPushNotification/sendPushNotification';
+import formatNotificationBody from '../../formatNotificationBody/formatNotificationBody';
+
+type NewMessageInput = {
+  type: string;
+  body: string | null;
+};
+
+type NewMessageResult = {
+  recipient_id: string;
+};
 
 /**
- * Sends a push notification to the recipient after a new message is sent.
- * Fires as a post-effect -- failures are logged but do not roll back the message.
+ * Sends a push notification to the message recipient.
+ * Uses formatNotificationBody to build appropriate title/body based on message type.
+ * Skips system messages (they are not user-initiated).
  */
-export const notifyNewMessage: PostEffect<SendMessageInput, SendMessageResult> = {
+const notifyNewMessage: PostEffect<NewMessageInput, NewMessageResult> = {
   name: 'notifyNewMessage',
-  run: async (_input, result, context) => {
-    await context.supabase.functions.invoke('send-push-notification', {
-      body: {
-        recipientId: result.recipient_id,
-        type: 'new_message',
-        data: {
-          conversationId: result.conversation_id,
-          messageId: result.message_id,
-          senderId: result.sender_id,
-        },
-      },
+  run: async (input, result, context) => {
+    // System messages are not user-initiated, skip notification
+    if (input.type === 'system') return;
+
+    const sb = context.adminSupabase ?? context.supabase;
+
+    const { data: sender } = await sb
+      .from('profiles')
+      .select('display_name')
+      .eq('id', context.userId)
+      .single();
+
+    const senderName = sender?.display_name ?? 'Someone';
+    const content = formatNotificationBody(senderName, input.type, input.body);
+
+    await sendPushNotification(sb, {
+      recipientUserId: result.recipient_id,
+      title: content.title,
+      body: content.body,
+      data: { type: input.type },
     });
   },
 };
+
+export { notifyNewMessage };

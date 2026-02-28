@@ -18,6 +18,7 @@ import { useSheetPositionStore } from '@/stores/sheetPositionStore/sheetPosition
 import useMeetupDetail from '../../hooks/useMeetupDetail/useMeetupDetail';
 import useCompleteMeetup from '../../hooks/useCompleteMeetup/useCompleteMeetup';
 import useCancelMeetup from '../../hooks/useCancelMeetup/useCancelMeetup';
+import useRealtimeMeetupUpdates from '../../hooks/useRealtimeMeetupUpdates/useRealtimeMeetupUpdates';
 import RatingModal from '../RatingModal/RatingModal';
 import DevMeetupActions from '../DevMeetupActions/DevMeetupActions';
 import MeetupMapMarker from '../MeetupMapMarker/MeetupMapMarker';
