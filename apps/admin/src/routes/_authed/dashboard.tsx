@@ -3,6 +3,7 @@ import { GraphViewer } from 'flow-graph/react';
 import type { ScenarioStatus, ScenarioErrorInfo, MaestroSetupStatus } from 'flow-graph/react';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { graphOrpc, graphClient } from '@/lib/graphOrpc';
 import { ChatPanel } from '@/features/chat';
 import TestCoverage from '@/features/maestro/components/TestCoverage/TestCoverage';
 import RecordingModal from '@/features/maestro/components/RecordingModal/RecordingModal';
@@ -101,25 +102,9 @@ const useGraphHealth = () => {
   return { health, retry };
 };
 
-type MaestroHealthData = {
-  maestroInstalled: boolean;
-  maestroVersion: string | null;
-  simulatorBooted: boolean;
-  simulatorName: string | null;
-};
-
 const useMaestroHealth = (enabled: boolean) => {
   const { data } = useQuery({
-    queryKey: ['maestro-health'],
-    queryFn: async (): Promise<MaestroHealthData> => {
-      const res = await fetch(`${GRAPH_SERVER_URL}/api/maestro/health`, {
-        signal: AbortSignal.timeout(8_000),
-      });
-      if (!res.ok) {
-        return { maestroInstalled: false, maestroVersion: null, simulatorBooted: false, simulatorName: null };
-      }
-      return res.json() as Promise<MaestroHealthData>;
-    },
+    ...graphOrpc.maestro.health.queryOptions(),
     enabled,
     refetchInterval: 30_000,
   });
@@ -199,19 +184,14 @@ function AdminDashboard() {
 
   const runMutation = useMutation({
     mutationFn: async (scenarioId: string) => {
-      const res = await fetch(
-        `${GRAPH_SERVER_URL}/api/recordings/${encodeURIComponent(scenarioId)}/record`,
-        { method: 'POST' },
-      );
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({ error: 'Unknown error', code: 'UNKNOWN', hint: '' }));
-        const err = body as { error: string; code?: string; hint?: string };
-        const enriched = new Error(err.error) as Error & { code?: string; hint?: string };
-        enriched.code = err.code ?? 'UNKNOWN';
-        enriched.hint = err.hint ?? '';
-        throw enriched;
+      const result = await graphClient.maestro.record({ pathId: scenarioId });
+      if (!result.ok) {
+        const err = new Error(result.error) as Error & { code: string; hint: string };
+        err.code = result.code;
+        err.hint = result.hint;
+        throw err;
       }
-      return res.json();
+      return result.recording;
     },
     onMutate: (scenarioId) => {
       setRunningScenarioId(scenarioId);

@@ -10,6 +10,7 @@
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "paths": {
       "@/*": ["./src/*"],
+      "@tcg-trade-hub/api": ["../../packages/api/src"],
       "@tcg-trade-hub/database": ["../../packages/database/src"]
     }
   },

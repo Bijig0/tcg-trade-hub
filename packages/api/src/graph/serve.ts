@@ -26,7 +26,7 @@ import {
 } from "flow-graph";
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { triggerRecording, checkMaestroHealth, RecordingError } from "./recordingRunner";
+import { triggerRecording, checkMaestroHealth, RecordingError, type RecordingErrorCode } from "./recordingRunner";
 import { getScenarios } from "./scenarios";
 import { WebSocketServer, type WebSocket } from "ws";
 import { z } from "zod";
@@ -91,10 +91,28 @@ const readBody = (req: import("node:http").IncomingMessage): Promise<string> =>
     req.on("error", reject);
   });
 
-const CORS_HEADERS: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+// ---------------------------------------------------------------------------
+// Security: restrict CORS to localhost origins only
+// ---------------------------------------------------------------------------
+
+const ALLOWED_ORIGINS = new Set([
+  "http://localhost:3001",  // admin UI (dev)
+  "http://127.0.0.1:3001",
+  "http://localhost:3000",  // web app (dev)
+  "http://127.0.0.1:3000",
+  `http://localhost:${PORT}`,
+  `http://127.0.0.1:${PORT}`,
+]);
+
+const getCorsHeaders = (req: import("node:http").IncomingMessage): Record<string, string> => {
+  const origin = req.headers.origin ?? "";
+  const allowedOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Vary": "Origin",
+  };
 };
 
 const execFileAsync = promisify(execFile);
@@ -190,15 +208,17 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);
   const method = req.method ?? "GET";
 
+  const corsHeaders = getCorsHeaders(req);
+
   // CORS preflight
   if (method === "OPTIONS") {
-    res.writeHead(204, CORS_HEADERS);
+    res.writeHead(204, corsHeaders);
     res.end();
     return;
   }
 
   const respond = ({ body, status }: { body: string; status: number }) => {
-    res.writeHead(status, { "Content-Type": "application/json", ...CORS_HEADERS });
+    res.writeHead(status, { "Content-Type": "application/json", ...corsHeaders });
     res.end(body);
   };
 
@@ -344,21 +364,7 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    if (url.pathname === "/api/maestro/health" && method === "GET") {
-      try {
-        const health = await checkMaestroHealth();
-        respond(json(health));
-      } catch (err) {
-        console.error("Maestro health check error:", err);
-        respond(json({
-          maestroInstalled: false,
-          maestroVersion: null,
-          simulatorBooted: false,
-          simulatorName: null,
-        }));
-      }
-      return;
-    }
+    // maestro/health is now served through oRPC at /api/rpc/maestro.health
 
     if (url.pathname === "/api/maestro/coverage" && method === "GET") {
       const allPathIds = listPaths(db).map((p: { id: string }) => p.id);
@@ -404,7 +410,7 @@ const server = createServer(async (req, res) => {
       res.writeHead(200, {
         "Content-Type": contentType,
         "Content-Length": String(data.length),
-        ...CORS_HEADERS,
+        ...corsHeaders,
       });
       res.end(data);
       return;
@@ -520,6 +526,33 @@ const server = createServer(async (req, res) => {
         context: {
           getWsClientCount: () => wsClients.size,
           getPathCount: () => listPaths(db).length,
+          getMaestroHealth: () => checkMaestroHealth(),
+          triggerMaestroRecording: async (pathId) => {
+            try {
+              const recording = await triggerRecording(db, pathId, RECORDINGS_DIR);
+              return {
+                ok: true as const,
+                recording: {
+                  id: recording.id,
+                  pathId: recording.pathId,
+                  filename: recording.filename,
+                  durationMs: recording.durationMs,
+                  stepTimestamps: recording.stepTimestamps,
+                  createdAt: recording.createdAt,
+                },
+              };
+            } catch (err) {
+              if (err instanceof RecordingError) {
+                return {
+                  ok: false as const,
+                  error: err.message,
+                  code: err.code,
+                  hint: err.hint,
+                };
+              }
+              return { ok: false as const, error: (err as Error).message, code: "UNKNOWN" as const, hint: "" };
+            }
+          },
         },
       });
       if (matched) return;
@@ -556,7 +589,7 @@ server.on("upgrade", (req, socket, head) => {
 // Start
 // ---------------------------------------------------------------------------
 
-server.listen(PORT, () => {
+server.listen(PORT, "127.0.0.1", () => {
   console.log(`Graph API server running at http://localhost:${PORT}`);
   console.log(`  JSON:      http://localhost:${PORT}/api/graph.json`);
   console.log(`  Cytoscape: http://localhost:${PORT}/api/graph.cytoscape`);

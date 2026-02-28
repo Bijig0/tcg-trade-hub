@@ -20,6 +20,12 @@ importers:
       '@ai-sdk/react':
         specifier: ^3.0.105
         version: 3.0.105(react@19.1.0)(zod@3.25.76)
+      '@orpc/client':
+        specifier: ^1.13.0
+        version: 1.13.5
+      '@orpc/tanstack-query':
+        specifier: ^1.13.0
+        version: 1.13.5(@orpc/client@1.13.5)(@tanstack/query-core@5.90.20)
       '@supabase/ssr':
         specifier: ^0.5.0
         version: 0.5.2(@supabase/supabase-js@2.95.3)
@@ -35,6 +41,9 @@ importers:
       '@tanstack/react-start':
         specifier: ^1.161.0
         version: 1.161.1(react-dom@19.1.0)(react@19.1.0)(vite@7.3.1)
+      '@tcg-trade-hub/api':
+        specifier: workspace:*
+        version: link:../../packages/api
       '@tcg-trade-hub/database':
         specifier: workspace:*
         version: link:../../packages/database
