@@ -5,6 +5,7 @@ import type { Database } from '@tcg-trade-hub/database';
 type PipelineContext = {
   supabase: SupabaseClient<Database>;
   userId: string;
+  adminSupabase?: SupabaseClient<Database>;
 };
 
 /**
