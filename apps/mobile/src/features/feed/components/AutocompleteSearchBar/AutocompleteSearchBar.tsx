@@ -68,7 +68,7 @@ const AutocompleteSearchBar = ({ onCardSelect }: AutocompleteSearchBarProps) => 
   return (
     <View className="relative z-50">
       {/* Search input */}
-      <View className="mx-4 flex-row items-center rounded-xl border border-border bg-card px-3 py-2.5">
+      <View className="mx-4 flex-row items-center rounded-xl border border-border bg-card px-3 py-3">
         <Search size={18} className="text-muted-foreground" />
         <TextInput
           value={query}
@@ -77,7 +77,7 @@ const AutocompleteSearchBar = ({ onCardSelect }: AutocompleteSearchBarProps) => 
           onBlur={handleBlur}
           placeholder="Search cards..."
           className="ml-2 flex-1 text-sm text-foreground"
-          style={{ paddingVertical: 0 }}
+          style={{ padding: 0, height: 18, textAlignVertical: 'center' }}
           placeholderTextColor="#a1a1aa"
           returnKeyType="search"
           autoCorrect={false}
