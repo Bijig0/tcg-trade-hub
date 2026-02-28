@@ -1,10 +1,9 @@
+import { E as redirect } from "../_chunks/_libs/@tanstack/router-core.mjs";
 import { c as createRouter$1, a as createRootRoute, b as createFileRoute, l as lazyRouteComponent, O as Outlet, H as HeadContent, S as Scripts } from "../_chunks/_libs/@tanstack/react-router.mjs";
 import { j as jsxRuntimeExports } from "../_chunks/_libs/react.mjs";
 import { c as QueryClient } from "../_chunks/_libs/@tanstack/query-core.mjs";
 import { Q as QueryClientProvider } from "../_chunks/_libs/@tanstack/react-query.mjs";
 import { c as createServerFn, T as TSS_SERVER_FUNCTION, g as getServerFnById } from "./index.mjs";
-import "../_libs/tiny-warning.mjs";
-import "../_chunks/_libs/@tanstack/router-core.mjs";
 import "../_libs/cookie-es.mjs";
 import "../_chunks/_libs/@tanstack/history.mjs";
 import "../_libs/tiny-invariant.mjs";
@@ -12,6 +11,7 @@ import "../_libs/seroval.mjs";
 import "../_libs/seroval-plugins.mjs";
 import "node:stream/web";
 import "node:stream";
+import "../_libs/tiny-warning.mjs";
 import "../_chunks/_libs/react-dom.mjs";
 import "util";
 import "crypto";
@@ -25,7 +25,7 @@ import "../_libs/srvx.mjs";
 import "node:http";
 import "node:https";
 import "node:http2";
-const globalsCss = "/assets/globals-NOyUyxS9.css";
+const globalsCss = "/assets/globals-BEjhYhmJ.css";
 const JsonLd = ({ data }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
   "script",
   {
@@ -65,7 +65,7 @@ function RootComponent() {
     /* @__PURE__ */ jsxRuntimeExports.jsx(JsonLd, { data: organizationJsonLd })
   ] }) });
 }
-const Route$5 = createRootRoute({
+const Route$6 = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -99,8 +99,8 @@ const Route$5 = createRootRoute({
   }),
   component: RootComponent
 });
-const $$splitComponentImporter$3 = () => import("./terms-B5Sw5bLD.mjs");
-const Route$4 = createFileRoute("/terms")({
+const $$splitComponentImporter$4 = () => import("./terms-B5Sw5bLD.mjs");
+const Route$5 = createFileRoute("/terms")({
   head: () => ({
     meta: [{
       title: "Terms of Service - TCG Trade Hub"
@@ -109,10 +109,10 @@ const Route$4 = createFileRoute("/terms")({
       content: "Terms of Service for TCG Trade Hub."
     }]
   }),
-  component: lazyRouteComponent($$splitComponentImporter$3, "component")
+  component: lazyRouteComponent($$splitComponentImporter$4, "component")
 });
-const $$splitComponentImporter$2 = () => import("./privacy-Bsv8G4ba.mjs");
-const Route$3 = createFileRoute("/privacy")({
+const $$splitComponentImporter$3 = () => import("./privacy-Bsv8G4ba.mjs");
+const Route$4 = createFileRoute("/privacy")({
   head: () => ({
     meta: [{
       title: "Privacy Policy - TCG Trade Hub"
@@ -121,30 +121,39 @@ const Route$3 = createFileRoute("/privacy")({
       content: "Privacy Policy for TCG Trade Hub."
     }]
   }),
-  component: lazyRouteComponent($$splitComponentImporter$2, "component")
+  component: lazyRouteComponent($$splitComponentImporter$3, "component")
 });
-const $$splitComponentImporter$1 = () => import("./demo-BYkD9hWA.mjs");
-const Route$2 = createFileRoute("/demo")({
+const $$splitComponentImporter$2 = () => import("./get-started-CqJw8gcZ.mjs");
+const Route$3 = createFileRoute("/get-started")({
   head: () => ({
     meta: [{
-      title: "Try the Demo - TCG Trade Hub"
+      title: "Get Started - TCG Trade Hub"
     }, {
       name: "description",
-      content: "Experience TCG Trade Hub's chat and trade offer system. Build a counter-offer and see how local card trading works."
+      content: "Start trading cards locally in minutes. Chat with a collector, build a trade offer, and sign up for early access."
     }, {
       property: "og:title",
-      content: "Try the Demo - TCG Trade Hub"
+      content: "Get Started - TCG Trade Hub"
     }, {
       property: "og:description",
-      content: "Experience TCG Trade Hub's chat and trade offer system. Build a counter-offer and see how local card trading works."
+      content: "Start trading cards locally in minutes. Chat with a collector, build a trade offer, and sign up for early access."
     }, {
       property: "og:image",
       content: `${SITE_URL}${DEFAULT_OG_IMAGE}`
     }]
   }),
+  component: lazyRouteComponent($$splitComponentImporter$2, "component")
+});
+const $$splitComponentImporter$1 = () => import("./demo-BTU5dmpx.mjs");
+const Route$2 = createFileRoute("/demo")({
+  beforeLoad: () => {
+    throw redirect({
+      to: "/get-started"
+    });
+  },
   component: lazyRouteComponent($$splitComponentImporter$1, "component")
 });
-const $$splitComponentImporter = () => import("./index-CGYkwRrO.mjs");
+const $$splitComponentImporter = () => import("./index-sCPa1x1_.mjs");
 const Route$1 = createFileRoute("/")({
   head: () => ({
     meta: [{
@@ -175,7 +184,7 @@ const createSsrRpc = (functionId, importer) => {
     [TSS_SERVER_FUNCTION]: true
   });
 };
-createServerFn().handler(createSsrRpc("7cd112cb9c129b39d307d5bc6528cb82d36a292dffc76c0b1ff6b2cffc0480b9", () => import("./_-B4uPrFSD.mjs").then((m) => m["rpcHandler_createServerFn_handler"])));
+createServerFn().handler(createSsrRpc("7cd112cb9c129b39d307d5bc6528cb82d36a292dffc76c0b1ff6b2cffc0480b9", () => import("./_-pTqXjA2s.mjs").then((m) => m["rpcHandler_createServerFn_handler"])));
 const Route = createFileRoute("/api/rpc/$")({
   server: {
     handlers: {
@@ -184,45 +193,51 @@ const Route = createFileRoute("/api/rpc/$")({
       }) => {
         const {
           handleRPC
-        } = await import("./rpcHandler.server-ByL3AL0l.mjs");
+        } = await import("./rpcHandler.server-DxDRD0Hh.mjs");
         return handleRPC(request);
       }
     }
   }
 });
-const TermsRoute = Route$4.update({
+const TermsRoute = Route$5.update({
   id: "/terms",
   path: "/terms",
-  getParentRoute: () => Route$5
+  getParentRoute: () => Route$6
 });
-const PrivacyRoute = Route$3.update({
+const PrivacyRoute = Route$4.update({
   id: "/privacy",
   path: "/privacy",
-  getParentRoute: () => Route$5
+  getParentRoute: () => Route$6
+});
+const GetStartedRoute = Route$3.update({
+  id: "/get-started",
+  path: "/get-started",
+  getParentRoute: () => Route$6
 });
 const DemoRoute = Route$2.update({
   id: "/demo",
   path: "/demo",
-  getParentRoute: () => Route$5
+  getParentRoute: () => Route$6
 });
 const IndexRoute = Route$1.update({
   id: "/",
   path: "/",
-  getParentRoute: () => Route$5
+  getParentRoute: () => Route$6
 });
 const ApiRpcSplatRoute = Route.update({
   id: "/api/rpc/$",
   path: "/api/rpc/$",
-  getParentRoute: () => Route$5
+  getParentRoute: () => Route$6
 });
 const rootRouteChildren = {
   IndexRoute,
   DemoRoute,
+  GetStartedRoute,
   PrivacyRoute,
   TermsRoute,
   ApiRpcSplatRoute
 };
-const routeTree = Route$5._addFileChildren(rootRouteChildren)._addFileTypes();
+const routeTree = Route$6._addFileChildren(rootRouteChildren)._addFileTypes();
 const createRouter = () => {
   return createRouter$1({
     routeTree,

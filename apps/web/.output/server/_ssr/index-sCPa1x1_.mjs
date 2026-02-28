@@ -1,14 +1,6 @@
 import { j as jsxRuntimeExports, r as reactExports } from "../_chunks/_libs/react.mjs";
-import { u as useMutation } from "../_chunks/_libs/@tanstack/react-query.mjs";
-import { D as DemoOfferCard, a as DemoMeetupCard, P as PhoneFrame, o as orpc, S as SuccessScreen, C as CardAutocomplete } from "./CardAutocomplete-b7spMNHe.mjs";
 import { L as Link } from "../_chunks/_libs/@tanstack/react-router.mjs";
-import { J as JsonLd, S as SITE_URL } from "./router-B2HqKRbu.mjs";
-import "../_chunks/_libs/@tanstack/query-core.mjs";
-import "../_chunks/_libs/@orpc/client.mjs";
-import "../_chunks/_libs/@orpc/shared.mjs";
-import "../_chunks/_libs/@orpc/standard-server-fetch.mjs";
-import "../_chunks/_libs/@orpc/standard-server.mjs";
-import "../_chunks/_libs/@orpc/tanstack-query.mjs";
+import { J as JsonLd, S as SITE_URL } from "./router-DuKOZM9X.mjs";
 import "../_libs/tiny-warning.mjs";
 import "../_chunks/_libs/@tanstack/router-core.mjs";
 import "../_libs/cookie-es.mjs";
@@ -24,6 +16,8 @@ import "crypto";
 import "async_hooks";
 import "stream";
 import "../_libs/isbot.mjs";
+import "../_chunks/_libs/@tanstack/query-core.mjs";
+import "../_chunks/_libs/@tanstack/react-query.mjs";
 import "./index.mjs";
 import "node:async_hooks";
 import "../_libs/h3-v2.mjs";
@@ -32,240 +26,6 @@ import "../_libs/srvx.mjs";
 import "node:http";
 import "node:https";
 import "node:http2";
-const TCG_OPTIONS = [
-  { value: "pokemon", label: "Pokemon" },
-  { value: "mtg", label: "Magic: The Gathering" },
-  { value: "yugioh", label: "Yu-Gi-Oh!" }
-];
-const LISTING_TYPE_OPTIONS = [
-  { value: "wtt", label: "Trade", description: "Looking to trade" },
-  { value: "wtb", label: "Buy", description: "Looking to buy" },
-  { value: "wts", label: "Sell", description: "Looking to sell" }
-];
-const PreRegistrationForm = () => {
-  const [email, setEmail] = reactExports.useState("");
-  const [displayName, setDisplayName] = reactExports.useState("");
-  const [tcg, setTcg] = reactExports.useState("pokemon");
-  const [selectedCard, setSelectedCard] = reactExports.useState(null);
-  const [cardName, setCardName] = reactExports.useState("");
-  const [listingType, setListingType] = reactExports.useState("wtt");
-  const [askingPrice, setAskingPrice] = reactExports.useState("");
-  const [city, setCity] = reactExports.useState("");
-  const [zipCode, setZipCode] = reactExports.useState("");
-  const mutation = useMutation(
-    orpc.preRegistration.create.mutationOptions()
-  );
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    mutation.mutate({
-      email,
-      display_name: displayName || null,
-      tcg,
-      card_name: selectedCard?.name ?? cardName,
-      card_set: selectedCard?.setName ?? null,
-      card_external_id: selectedCard?.externalId ?? null,
-      card_image_url: selectedCard?.imageUrl ?? null,
-      listing_type: listingType,
-      asking_price: askingPrice ? parseFloat(askingPrice) : null,
-      city: city || null,
-      zip_code: zipCode || null
-    });
-  };
-  const handleReset = () => {
-    mutation.reset();
-    setEmail("");
-    setDisplayName("");
-    setTcg("pokemon");
-    setSelectedCard(null);
-    setCardName("");
-    setListingType("wtt");
-    setAskingPrice("");
-    setCity("");
-    setZipCode("");
-  };
-  if (mutation.isSuccess) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      SuccessScreen,
-      {
-        position: mutation.data.position,
-        email,
-        onReset: handleReset
-      }
-    );
-  }
-  const resolvedCardName = selectedCard?.name ?? cardName;
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleSubmit, className: "mx-auto max-w-lg space-y-5", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { htmlFor: "email", className: "block text-sm font-medium text-foreground mb-1.5", children: [
-        "Email ",
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-destructive", children: "*" })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "input",
-        {
-          id: "email",
-          type: "email",
-          required: true,
-          value: email,
-          onChange: (e) => setEmail(e.target.value),
-          placeholder: "you@example.com",
-          className: "w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { htmlFor: "displayName", className: "block text-sm font-medium text-foreground mb-1.5", children: [
-        "Display Name ",
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-muted-foreground text-xs", children: "(optional)" })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "input",
-        {
-          id: "displayName",
-          type: "text",
-          value: displayName,
-          onChange: (e) => setDisplayName(e.target.value),
-          placeholder: "TraderJoe",
-          className: "w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "block text-sm font-medium text-foreground mb-1.5", children: [
-        "Which TCG? ",
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-destructive", children: "*" })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-2", children: TCG_OPTIONS.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          type: "button",
-          onClick: () => {
-            setTcg(option.value);
-            setSelectedCard(null);
-            setCardName("");
-          },
-          className: `flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${tcg === option.value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-foreground hover:bg-accent"}`,
-          children: option.label
-        },
-        option.value
-      )) })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "block text-sm font-medium text-foreground mb-1.5", children: [
-        "What card? ",
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-destructive", children: "*" })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        CardAutocomplete,
-        {
-          tcg,
-          onSelect: (card) => {
-            setSelectedCard(card);
-            setCardName(card.name);
-          },
-          selectedCard,
-          onClear: () => {
-            setSelectedCard(null);
-            setCardName("");
-          }
-        }
-      ),
-      !selectedCard && /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "input",
-        {
-          type: "text",
-          value: cardName,
-          onChange: (e) => setCardName(e.target.value),
-          placeholder: "Or type card name manually",
-          className: "mt-2 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "block text-sm font-medium text-foreground mb-1.5", children: [
-        "What do you want to do? ",
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-destructive", children: "*" })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-2", children: LISTING_TYPE_OPTIONS.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        "button",
-        {
-          type: "button",
-          onClick: () => setListingType(option.value),
-          className: `flex-1 rounded-lg border px-3 py-2.5 text-center transition-colors ${listingType === option.value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-foreground hover:bg-accent"}`,
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "block text-sm font-medium", children: option.label }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `block text-xs ${listingType === option.value ? "text-primary-foreground/70" : "text-muted-foreground"}`, children: option.description })
-          ]
-        },
-        option.value
-      )) })
-    ] }),
-    (listingType === "wts" || listingType === "wtb") && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { htmlFor: "askingPrice", className: "block text-sm font-medium text-foreground mb-1.5", children: [
-        listingType === "wts" ? "Asking Price" : "Budget",
-        " ",
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-muted-foreground text-xs", children: "(optional)" })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground", children: "$" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            id: "askingPrice",
-            type: "number",
-            step: "0.01",
-            min: "0",
-            value: askingPrice,
-            onChange: (e) => setAskingPrice(e.target.value),
-            placeholder: "0.00",
-            className: "w-full rounded-lg border border-input bg-background pl-7 pr-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          }
-        )
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "city", className: "block text-sm font-medium text-foreground mb-1.5", children: "City" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            id: "city",
-            type: "text",
-            value: city,
-            onChange: (e) => setCity(e.target.value),
-            placeholder: "San Francisco",
-            className: "w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "zipCode", className: "block text-sm font-medium text-foreground mb-1.5", children: "Zip Code" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            id: "zipCode",
-            type: "text",
-            value: zipCode,
-            onChange: (e) => setZipCode(e.target.value),
-            placeholder: "94102",
-            className: "w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          }
-        )
-      ] })
-    ] }),
-    mutation.isError && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-lg bg-destructive/10 p-3 text-sm text-destructive", children: mutation.error.message || "Something went wrong. Please try again." }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "button",
-      {
-        type: "submit",
-        disabled: mutation.isPending || !email || !resolvedCardName,
-        className: "w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
-        children: mutation.isPending ? "Registering..." : "Get Early Access"
-      }
-    ),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-center text-xs text-muted-foreground", children: "No spam, ever. We'll only email when we launch in your area." })
-  ] });
-};
 const Navbar = () => {
   const [scrolled, setScrolled] = reactExports.useState(false);
   reactExports.useEffect(() => {
@@ -284,28 +44,67 @@ const Navbar = () => {
           /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "#features", className: "text-sm text-muted-foreground hover:text-foreground transition-colors", children: "Features" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "#faq", className: "text-sm text-muted-foreground hover:text-foreground transition-colors", children: "FAQ" })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Link,
-            {
-              to: "/demo",
-              className: "text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline",
-              children: "Try Demo"
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "a",
-            {
-              href: "#register",
-              className: "rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90",
-              children: "Get Early Access"
-            }
-          )
-        ] })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center gap-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Link,
+          {
+            to: "/get-started",
+            className: "rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90",
+            children: "Get Started"
+          }
+        ) })
       ] })
     }
   );
 };
+const PhoneFrame = ({ children, className }) => {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mx-auto flex w-full max-w-[420px] flex-col overflow-hidden rounded-[2.5rem] border-2 border-border bg-background shadow-2xl ${className ?? "h-[85vh] max-h-[800px]"}`, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between px-8 pb-1 pt-3 text-xs text-muted-foreground", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "9:41" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1.5", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { className: "h-3.5 w-3.5", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z" }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { className: "h-3.5 w-3.5", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z" }) })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-1 flex-col overflow-hidden", children })
+  ] });
+};
+const CardChip$1 = ({ name, set, price }) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 rounded-lg bg-background/60 px-3 py-2", children: [
+  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-8 w-6 rounded bg-primary/20 text-[8px] flex items-center justify-center text-primary font-bold", children: "TCG" }),
+  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs font-medium text-foreground truncate", children: name }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-[10px] text-muted-foreground", children: [
+      set,
+      " · ",
+      price
+    ] })
+  ] })
+] });
+const StaticOfferCard = () => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-xl border border-border bg-card overflow-hidden", children: [
+  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-primary/10 px-4 py-2.5", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs font-semibold text-primary", children: "Trade Offer" }) }),
+  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-3 p-4", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground", children: "Offering" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardChip$1, { name: "Charizard ex", set: "151", price: "$185" })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-px flex-1 bg-border" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground", children: "↓" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-px flex-1 bg-border" })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground", children: "Requesting" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1.5", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(CardChip$1, { name: "Umbreon ex", set: "Obsidian Flames", price: "$95" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(CardChip$1, { name: "Mew ex", set: "151", price: "$35" })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 rounded-lg bg-success/10 px-3 py-2", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm", children: "💰" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs font-medium text-success", children: "+ $50 cash" })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full rounded-xl bg-primary py-3 text-center text-sm font-semibold text-primary-foreground", children: "Make Your Counter-Offer" })
+  ] })
+] });
 const StaticChatPreview = () => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-1 flex-col", children: [
   /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-b border-border px-4 py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary", children: "TM" }),
@@ -319,8 +118,7 @@ const StaticChatPreview = () => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { 
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex justify-start", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-[80%] rounded-2xl rounded-bl-md bg-secondary px-3 py-2 text-xs text-secondary-foreground", children: "Hey! Saw your Charizard listing. Interested in a trade?" }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex justify-end", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-[80%] rounded-2xl rounded-br-md bg-primary px-3 py-2 text-xs text-primary-foreground", children: "Sure! What do you have?" }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex justify-start", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-[80%] rounded-2xl rounded-bl-md bg-secondary px-3 py-2 text-xs text-secondary-foreground", children: "Here's what I'm thinking:" }) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-[90%]", children: /* @__PURE__ */ jsxRuntimeExports.jsx(DemoOfferCard, { onCounterOffer: () => {
-    } }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-[90%]", children: /* @__PURE__ */ jsxRuntimeExports.jsx(StaticOfferCard, {}) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-6" })
   ] })
 ] });
@@ -334,11 +132,11 @@ const Hero = () => /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className:
     /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-4 text-lg text-muted-foreground lg:text-xl", children: "No shipping fees. No scam risk. Meet collectors near you and trade face-to-face." }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "a",
+        Link,
         {
-          href: "#register",
+          to: "/get-started",
           className: "inline-block rounded-xl bg-primary px-8 py-3.5 text-center text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90",
-          children: "Get Early Access"
+          children: "Get Started"
         }
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -592,13 +390,105 @@ const Footer = () => /* @__PURE__ */ jsxRuntimeExports.jsx("footer", { className
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       Link,
       {
-        to: "/demo",
+        to: "/get-started",
         className: "text-sm text-muted-foreground hover:text-foreground transition-colors",
-        children: "Demo"
+        children: "Get Started"
       }
     )
   ] })
 ] }) });
+const offeringCards = [
+  { name: "Charizard ex", set: "151", price: "$185" }
+];
+const requestingCards = [
+  { name: "Umbreon ex", set: "Obsidian Flames", price: "$95" },
+  { name: "Mew ex", set: "151", price: "$35" }
+];
+const CardChip = ({ card }) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 rounded-lg bg-background/60 px-3 py-2", children: [
+  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-8 w-6 rounded bg-primary/20 text-[8px] flex items-center justify-center text-primary font-bold", children: "TCG" }),
+  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs font-medium text-foreground truncate", children: card.name }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-[10px] text-muted-foreground", children: [
+      card.set,
+      " · ",
+      card.price
+    ] })
+  ] })
+] });
+const DemoOfferCard = ({ onCounterOffer }) => {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-xl border border-border bg-card overflow-hidden", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-primary/10 px-4 py-2.5", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs font-semibold text-primary", children: "Trade Offer" }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-3 p-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground", children: "Offering" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-1.5", children: offeringCards.map((card) => /* @__PURE__ */ jsxRuntimeExports.jsx(CardChip, { card }, card.name)) })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-px flex-1 bg-border" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground", children: "↓" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-px flex-1 bg-border" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground", children: "Requesting" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-1.5", children: requestingCards.map((card) => /* @__PURE__ */ jsxRuntimeExports.jsx(CardChip, { card }, card.name)) })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 rounded-lg bg-success/10 px-3 py-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm", children: "💰" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs font-medium text-success", children: "+ $50 cash" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          onClick: onCounterOffer,
+          className: "w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90",
+          children: "Make Your Counter-Offer"
+        }
+      )
+    ] })
+  ] });
+};
+const DemoMeetupCard = () => {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-xl border border-border bg-card overflow-hidden", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-success/10 px-4 py-2.5", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs font-semibold text-success", children: "Meetup Proposal" }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-3 p-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2.5", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-lg", children: "📍" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-medium text-foreground", children: "Cool Stuff Games" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground", children: "1234 Main St, Orlando, FL" })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2.5", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-lg", children: "📅" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-medium text-foreground", children: "Saturday, 2:00 PM" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground", children: "Mar 8, 2025" })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2 pt-1", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "button",
+          {
+            type: "button",
+            disabled: true,
+            className: "flex-1 rounded-lg border border-success/30 bg-success/10 py-2 text-xs font-medium text-success/50 cursor-not-allowed",
+            children: "Accept"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "button",
+          {
+            type: "button",
+            disabled: true,
+            className: "flex-1 rounded-lg border border-border bg-secondary py-2 text-xs font-medium text-muted-foreground cursor-not-allowed",
+            children: "Suggest New Time"
+          }
+        )
+      ] })
+    ] })
+  ] });
+};
 const softwareAppJsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
@@ -655,11 +545,11 @@ function LandingPage() {
     /* @__PURE__ */ jsxRuntimeExports.jsx(TcgShowcase, {}),
     /* @__PURE__ */ jsxRuntimeExports.jsx(TrustSafety, {}),
     /* @__PURE__ */ jsxRuntimeExports.jsx(FaqSection, {}),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("section", { id: "register", className: "scroll-mt-20 px-4 py-16 lg:py-24", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mx-auto max-w-3xl", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-2xl border border-border bg-card p-8 shadow-sm", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "mb-1 text-center text-2xl font-bold text-foreground", children: "Be First in Your Area" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mb-8 text-center text-muted-foreground", children: "Pre-register with a card you want to trade. Your listing goes live on day one." }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(PreRegistrationForm, {})
-    ] }) }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "px-4 py-16 text-center lg:py-24", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mx-auto max-w-2xl", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-3xl font-bold tracking-tight text-foreground sm:text-4xl", children: "Ready to start trading?" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-3 text-lg text-muted-foreground", children: "Try the experience and sign up for early access in under a minute." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { to: "/get-started", className: "mt-6 inline-block rounded-xl bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90", children: "Get Started" })
+    ] }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(Footer, {}),
     /* @__PURE__ */ jsxRuntimeExports.jsx(JsonLd, { data: softwareAppJsonLd })
   ] });

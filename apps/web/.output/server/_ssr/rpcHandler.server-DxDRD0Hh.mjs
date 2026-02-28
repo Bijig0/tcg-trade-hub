@@ -24,7 +24,7 @@ const ListingStatusSchema = enumType(["active", "matched", "completed", "expired
 const SwipeDirectionSchema = enumType(["like", "pass"]);
 const MatchStatusSchema = enumType(["active", "completed", "cancelled"]);
 const MessageTypeSchema = enumType(["text", "image", "card_offer", "card_offer_response", "meetup_proposal", "meetup_response", "system"]);
-const MeetupStatusSchema = enumType(["confirmed", "completed", "cancelled"]);
+const MeetupStatusSchema = enumType(["proposed", "confirmed", "completed", "cancelled"]);
 const ReportCategorySchema = enumType(["inappropriate_content", "scam", "counterfeit", "no_show", "harassment", "other"]);
 const ReportStatusSchema = enumType(["pending", "reviewed", "resolved"]);
 const GradingCompanySchema = enumType(["psa", "cgc", "bgs"]);
@@ -228,7 +228,7 @@ const OfferRowSchema = objectType({
   offerer_id: stringType().uuid(),
   status: OfferStatusSchema,
   cash_amount: numberType(),
-  message: stringType().nullable(),
+  offerer_note: stringType().nullable(),
   parent_offer_id: stringType().uuid().nullable(),
   created_at: stringType(),
   updated_at: stringType()
@@ -240,7 +240,7 @@ OfferRowSchema.omit({
   updated_at: true
 }).extend({
   cash_amount: numberType().default(0),
-  message: stringType().nullable().optional(),
+  offerer_note: stringType().nullable().optional(),
   parent_offer_id: stringType().uuid().nullable().optional()
 });
 const OfferItemRowSchema = objectType({
@@ -456,12 +456,26 @@ ReportRowSchema.omit({
   created_at: true,
   updated_at: true
 });
+const NoteEntrySchema = objectType({
+  author_id: stringType().uuid(),
+  author_name: stringType(),
+  author_avatar_url: stringType().nullable(),
+  text: stringType().min(1).max(500),
+  created_at: stringType()
+});
 const CardOfferPayloadSchema = objectType({
   offering: arrayType(CardRefSchema),
   requesting: arrayType(CardRefSchema),
   cash_amount: numberType().optional(),
   cash_direction: enumType(["offering", "requesting"]).optional(),
-  note: stringType().optional()
+  offering_note: stringType().optional(),
+  requesting_note: stringType().optional(),
+  /** @deprecated Use offering_note / requesting_note. Kept for backward compat with old messages. */
+  note: stringType().optional(),
+  /** Multi-author notes on the offering side. Takes precedence over offering_note. */
+  offering_notes: arrayType(NoteEntrySchema).optional(),
+  /** Multi-author notes on the requesting side. Takes precedence over requesting_note. */
+  requesting_notes: arrayType(NoteEntrySchema).optional()
 });
 const CardOfferResponsePayloadSchema = objectType({
   offer_message_id: stringType().uuid(),
@@ -543,6 +557,7 @@ const MATCH_TRANSITIONS = {
   cancelled: []
 };
 const MEETUP_TRANSITIONS = {
+  proposed: ["confirmed", "cancelled"],
   confirmed: ["completed", "cancelled"],
   completed: [],
   cancelled: []
@@ -1190,7 +1205,7 @@ const OfferItemSchema = objectType({
 const CreateOfferInputSchema = objectType({
   listingId: stringType().uuid(),
   cashAmount: numberType().min(0),
-  message: stringType().nullable(),
+  offeringNote: stringType().nullable(),
   items: arrayType(OfferItemSchema)
 });
 const CreateOfferResultSchema = objectType({
@@ -1216,7 +1231,7 @@ const createOffer = definePipeline({
       p_listing_id: input.listingId,
       p_offerer_id: ctx.userId,
       p_cash_amount: input.cashAmount,
-      p_message: input.message,
+      p_offerer_note: input.offeringNote,
       p_items: JSON.stringify(input.items)
     }),
     resultSchema: CreateOfferResultSchema

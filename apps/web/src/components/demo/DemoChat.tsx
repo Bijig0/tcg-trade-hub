@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { NormalizedCard, TcgType, ListingType } from '@tcg-trade-hub/database';
 import { SuccessScreen } from '@/components/SuccessScreen';
 import { PhoneFrame } from './PhoneFrame';
@@ -28,6 +28,10 @@ export const DemoChat = () => {
 
   const phaseIndex = PHASE_ORDER.indexOf(phase);
 
+  useEffect(() => {
+    console.log('[DemoChat] phase changed:', phase, 'index:', phaseIndex);
+  }, [phase, phaseIndex]);
+
   const handleAddCard = (card: NormalizedCard) => {
     setSelectedCards((prev) => {
       if (prev.some((c) => c.externalId === card.externalId)) return prev;
@@ -54,6 +58,11 @@ export const DemoChat = () => {
     }, 500);
   }, []);
 
+  const goToPhase = useCallback((next: Phase) => {
+    console.log('[DemoChat] goToPhase called:', next);
+    setPhase(next);
+  }, []);
+
   return (
     <PhoneFrame>
       <div
@@ -62,7 +71,7 @@ export const DemoChat = () => {
       >
         {/* Chat panel */}
         <div
-          className="min-w-full flex flex-col overflow-hidden"
+          className="w-full shrink-0 flex flex-col overflow-hidden"
           aria-hidden={phase !== 'chat'}
           inert={phase !== 'chat' || undefined}
         >
@@ -85,7 +94,7 @@ export const DemoChat = () => {
                 return (
                   <ReservationCard
                     key={msg.id}
-                    onBuildList={() => setPhase('trade-editor')}
+                    onBuildList={() => goToPhase('trade-editor')}
                   />
                 );
               }
@@ -96,7 +105,7 @@ export const DemoChat = () => {
 
         {/* Trade Editor panel */}
         <div
-          className="min-w-full flex flex-col overflow-hidden"
+          className="w-full shrink-0 flex flex-col overflow-hidden"
           aria-hidden={phase !== 'trade-editor'}
           inert={phase !== 'trade-editor' || undefined}
         >
@@ -108,14 +117,14 @@ export const DemoChat = () => {
             onListingTypeChange={setListingType}
             onAddCard={handleAddCard}
             onRemoveCard={handleRemoveCard}
-            onSubmit={() => setPhase('email')}
-            onBack={() => setPhase('chat')}
+            onSubmit={() => goToPhase('email')}
+            onBack={() => goToPhase('chat')}
           />
         </div>
 
         {/* Email Capture panel */}
         <div
-          className="min-w-full flex flex-col overflow-hidden"
+          className="w-full shrink-0 flex flex-col overflow-hidden"
           aria-hidden={phase !== 'email'}
           inert={phase !== 'email' || undefined}
         >
@@ -124,15 +133,15 @@ export const DemoChat = () => {
             listingType={listingType}
             onSuccess={(position, email) => {
               setSuccessData({ position, email });
-              setPhase('success');
+              goToPhase('success');
             }}
-            onBack={() => setPhase('trade-editor')}
+            onBack={() => goToPhase('trade-editor')}
           />
         </div>
 
         {/* Success panel */}
         <div
-          className="min-w-full flex flex-col overflow-hidden"
+          className="w-full shrink-0 flex flex-col overflow-hidden"
           aria-hidden={phase !== 'success'}
           inert={phase !== 'success' || undefined}
         >

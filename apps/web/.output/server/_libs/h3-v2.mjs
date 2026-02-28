@@ -1,5 +1,5 @@
 import { N as NullProtoObj } from "./rou3.mjs";
-import { F as FastURL, N as NodeResponse } from "./srvx.mjs";
+import { b as FastURL, c as NodeResponse } from "./srvx.mjs";
 const kEventNS = "h3.internal.event.";
 const kEventRes = /* @__PURE__ */ Symbol.for(`${kEventNS}res`);
 const kEventResHeaders = /* @__PURE__ */ Symbol.for(`${kEventNS}res.headers`);
