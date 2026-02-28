@@ -10,6 +10,9 @@ import { TradeEditor } from './TradeEditor';
 import { EmailCaptureStep } from './EmailCaptureStep';
 import { demoConversation } from './demoConversation';
 
+// eslint-disable-next-line no-console
+console.log('[DemoChat] module loaded');
+
 type Phase = 'chat' | 'trade-editor' | 'email' | 'success';
 
 const PHASE_ORDER: Phase[] = ['chat', 'trade-editor', 'email', 'success'];
@@ -28,9 +31,13 @@ export const DemoChat = () => {
 
   const phaseIndex = PHASE_ORDER.indexOf(phase);
 
+  // eslint-disable-next-line no-console
+  console.log('[DemoChat] render, phase:', phase, 'index:', phaseIndex);
+
   useEffect(() => {
-    console.log('[DemoChat] phase changed:', phase, 'index:', phaseIndex);
-  }, [phase, phaseIndex]);
+    // eslint-disable-next-line no-console
+    console.log('[DemoChat] hydrated/mounted');
+  }, []);
 
   const handleAddCard = (card: NormalizedCard) => {
     setSelectedCards((prev) => {
@@ -58,11 +65,6 @@ export const DemoChat = () => {
     }, 500);
   }, []);
 
-  const goToPhase = useCallback((next: Phase) => {
-    console.log('[DemoChat] goToPhase called:', next);
-    setPhase(next);
-  }, []);
-
   return (
     <PhoneFrame>
       <div
@@ -70,11 +72,7 @@ export const DemoChat = () => {
         style={{ transform: `translateX(-${phaseIndex * 100}%)` }}
       >
         {/* Chat panel */}
-        <div
-          className="w-full shrink-0 flex flex-col overflow-hidden"
-          aria-hidden={phase !== 'chat'}
-          inert={phase !== 'chat' || undefined}
-        >
+        <div className="w-full shrink-0 flex flex-col overflow-hidden">
           <DemoChatHeader name="TCG Trade Hub" />
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {demoConversation.map((msg) => {
@@ -94,7 +92,11 @@ export const DemoChat = () => {
                 return (
                   <ReservationCard
                     key={msg.id}
-                    onBuildList={() => goToPhase('trade-editor')}
+                    onBuildList={() => {
+                      // eslint-disable-next-line no-console
+                      console.log('[DemoChat] Build Your List clicked');
+                      setPhase('trade-editor');
+                    }}
                   />
                 );
               }
@@ -104,11 +106,7 @@ export const DemoChat = () => {
         </div>
 
         {/* Trade Editor panel */}
-        <div
-          className="w-full shrink-0 flex flex-col overflow-hidden"
-          aria-hidden={phase !== 'trade-editor'}
-          inert={phase !== 'trade-editor' || undefined}
-        >
+        <div className="w-full shrink-0 flex flex-col overflow-hidden">
           <TradeEditor
             selectedCards={selectedCards}
             tcg={tcg}
@@ -117,34 +115,26 @@ export const DemoChat = () => {
             onListingTypeChange={setListingType}
             onAddCard={handleAddCard}
             onRemoveCard={handleRemoveCard}
-            onSubmit={() => goToPhase('email')}
-            onBack={() => goToPhase('chat')}
+            onSubmit={() => setPhase('email')}
+            onBack={() => setPhase('chat')}
           />
         </div>
 
         {/* Email Capture panel */}
-        <div
-          className="w-full shrink-0 flex flex-col overflow-hidden"
-          aria-hidden={phase !== 'email'}
-          inert={phase !== 'email' || undefined}
-        >
+        <div className="w-full shrink-0 flex flex-col overflow-hidden">
           <EmailCaptureStep
             selectedCards={selectedCards}
             listingType={listingType}
             onSuccess={(position, email) => {
               setSuccessData({ position, email });
-              goToPhase('success');
+              setPhase('success');
             }}
-            onBack={() => goToPhase('trade-editor')}
+            onBack={() => setPhase('trade-editor')}
           />
         </div>
 
         {/* Success panel */}
-        <div
-          className="w-full shrink-0 flex flex-col overflow-hidden"
-          aria-hidden={phase !== 'success'}
-          inert={phase !== 'success' || undefined}
-        >
+        <div className="w-full shrink-0 flex flex-col overflow-hidden">
           {successData ? (
             <div className="flex flex-1 items-center overflow-y-auto">
               <SuccessScreen
