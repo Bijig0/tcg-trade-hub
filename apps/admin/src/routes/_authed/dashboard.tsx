@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { GraphViewer } from 'flow-graph/react';
-import type { ScenarioStatus } from 'flow-graph/react';
+import type { ScenarioStatus, ScenarioErrorInfo, MaestroSetupStatus } from 'flow-graph/react';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChatPanel } from '@/features/chat';
@@ -101,6 +101,40 @@ const useGraphHealth = () => {
   return { health, retry };
 };
 
+type MaestroHealthData = {
+  maestroInstalled: boolean;
+  maestroVersion: string | null;
+  simulatorBooted: boolean;
+  simulatorName: string | null;
+};
+
+const useMaestroHealth = (enabled: boolean) => {
+  const { data } = useQuery({
+    queryKey: ['maestro-health'],
+    queryFn: async (): Promise<MaestroHealthData> => {
+      const res = await fetch(`${GRAPH_SERVER_URL}/api/maestro/health`, {
+        signal: AbortSignal.timeout(8_000),
+      });
+      if (!res.ok) {
+        return { maestroInstalled: false, maestroVersion: null, simulatorBooted: false, simulatorName: null };
+      }
+      return res.json() as Promise<MaestroHealthData>;
+    },
+    enabled,
+    refetchInterval: 30_000,
+  });
+
+  const setupStatus: MaestroSetupStatus = !data
+    ? 'checking'
+    : !data.maestroInstalled
+      ? 'maestro-missing'
+      : !data.simulatorBooted
+        ? 'no-simulator'
+        : 'ready';
+
+  return { maestroHealth: data ?? null, setupStatus };
+};
+
 export const Route = createFileRoute('/_authed/dashboard')({
   component: AdminDashboard,
 });
@@ -120,6 +154,7 @@ function AdminDashboard() {
   const [isTestCoverageOpen, setIsTestCoverageOpen] = useState(false);
   const [recordingPathId, setRecordingPathId] = useState<string | null>(null);
   const mobileLink = useMobileLink();
+  const { setupStatus } = useMaestroHealth(health.status === 'healthy');
 
   // Scenarios
   const { data: scenariosList } = useQuery({
@@ -160,7 +195,7 @@ function AdminDashboard() {
 
   // --- Scenario run orchestration ---
   const [runningScenarioId, setRunningScenarioId] = useState<string | null>(null);
-  const [scenarioErrors, setScenarioErrors] = useState<Record<string, string>>({});
+  const [scenarioErrors, setScenarioErrors] = useState<Record<string, ScenarioErrorInfo>>({});
 
   const runMutation = useMutation({
     mutationFn: async (scenarioId: string) => {
@@ -169,8 +204,12 @@ function AdminDashboard() {
         { method: 'POST' },
       );
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error((err as { error: string }).error);
+        const body = await res.json().catch(() => ({ error: 'Unknown error', code: 'UNKNOWN', hint: '' }));
+        const err = body as { error: string; code?: string; hint?: string };
+        const enriched = new Error(err.error) as Error & { code?: string; hint?: string };
+        enriched.code = err.code ?? 'UNKNOWN';
+        enriched.hint = err.hint ?? '';
+        throw enriched;
       }
       return res.json();
     },
@@ -190,9 +229,14 @@ function AdminDashboard() {
     },
     onError: (err, scenarioId) => {
       setRunningScenarioId(null);
+      const enriched = err as Error & { code?: string; hint?: string };
       setScenarioErrors((prev) => ({
         ...prev,
-        [scenarioId]: err instanceof Error ? err.message : 'Unknown error',
+        [scenarioId]: {
+          message: enriched.message ?? 'Unknown error',
+          code: enriched.code ?? 'UNKNOWN',
+          hint: enriched.hint ?? '',
+        },
       }));
     },
   });
@@ -290,6 +334,7 @@ function AdminDashboard() {
             onRunScenario={handleRunScenario}
             onPlayScenarioRecording={handlePlayRecording}
             onRerunScenario={handleRerunScenario}
+            setupStatus={setupStatus}
           />
         </div>
         <ChatPanel isOpen={isChatOpen} onToggle={toggleChat} />

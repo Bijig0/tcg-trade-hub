@@ -26,7 +26,7 @@ import {
 } from "flow-graph";
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { triggerRecording } from "./recordingRunner";
+import { triggerRecording, checkMaestroHealth, RecordingError } from "./recordingRunner";
 import { getScenarios } from "./scenarios";
 import { WebSocketServer, type WebSocket } from "ws";
 import { z } from "zod";
@@ -344,6 +344,22 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    if (url.pathname === "/api/maestro/health" && method === "GET") {
+      try {
+        const health = await checkMaestroHealth();
+        respond(json(health));
+      } catch (err) {
+        console.error("Maestro health check error:", err);
+        respond(json({
+          maestroInstalled: false,
+          maestroVersion: null,
+          simulatorBooted: false,
+          simulatorName: null,
+        }));
+      }
+      return;
+    }
+
     if (url.pathname === "/api/maestro/coverage" && method === "GET") {
       const allPathIds = listPaths(db).map((p: { id: string }) => p.id);
       const coveredIds = new Set(maestroManifest.coverage.map((c) => c.pathId));
@@ -402,7 +418,11 @@ const server = createServer(async (req, res) => {
         respond(json(result, 201));
       } catch (err) {
         console.error("Recording error:", err);
-        respond(json({ error: (err as Error).message }, 500));
+        if (err instanceof RecordingError) {
+          respond(json({ error: err.message, code: err.code, hint: err.hint }, 500));
+        } else {
+          respond(json({ error: (err as Error).message, code: "UNKNOWN", hint: "" }, 500));
+        }
       }
       return;
     }
