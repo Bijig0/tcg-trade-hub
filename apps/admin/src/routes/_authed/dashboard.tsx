@@ -159,6 +159,7 @@ function AdminDashboard() {
             activePath={controlledPath}
             activeStep={controlledStep}
             mobileActivePaths={mobileActivePaths}
+            deviceName={mobileLink.linkedSimulator?.name ?? null}
           />
         </div>
         <ChatPanel isOpen={isChatOpen} onToggle={toggleChat} />
