@@ -7,24 +7,23 @@ import { cn } from '@/lib/cn';
 
 import { useFeedStore } from '@/stores/feedStore/feedStore';
 import FeedSwipeView from '../FeedSwipeView/FeedSwipeView';
-import type { ListingType } from '@tcg-trade-hub/database';
-
-const TYPE_CHIPS: { label: string; value: ListingType }[] = [
-  { label: 'WTS', value: 'wts' },
-  { label: 'WTB', value: 'wtb' },
-  { label: 'WTT', value: 'wtt' },
-];
+import SearchBar from '../SearchBar/SearchBar';
 
 /**
  * Discover tab screen — the app's primary landing tab.
  *
- * Renders the swipe-based FeedSwipeView with a header linking to the
- * Browse screen and filter chips for listing type (WTS/WTB/WTT).
+ * Has a search bar for card name search, [Buying]/[Trading] intent pills,
+ * and the swipe-based FeedSwipeView.
  */
 const DiscoverScreen = () => {
   const router = useRouter();
-  const listingTypes = useFeedStore((s) => s.filters.listingTypes);
-  const toggleListingType = useFeedStore((s) => s.toggleListingType);
+  const wantToBuy = useFeedStore((s) => s.filters.wantToBuy);
+  const wantToTrade = useFeedStore((s) => s.filters.wantToTrade);
+  const toggleWantToBuy = useFeedStore((s) => s.toggleWantToBuy);
+  const toggleWantToTrade = useFeedStore((s) => s.toggleWantToTrade);
+
+  const hasActiveFilters = wantToBuy || wantToTrade;
+
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       {/* Header */}
@@ -49,35 +48,58 @@ const DiscoverScreen = () => {
         </View>
       </View>
 
-      {/* Type filter chips */}
-      <View className="flex-row items-center gap-2 px-4 py-2">
-        {TYPE_CHIPS.map((chip) => {
-          const active = listingTypes.includes(chip.value);
-          return (
-            <Pressable
-              key={chip.value}
-              onPress={() => toggleListingType(chip.value)}
-              className={cn(
-                'rounded-full border px-3 py-1',
-                active
-                  ? 'border-primary bg-primary'
-                  : 'border-border bg-card',
-              )}
-            >
-              <Text
-                className={cn(
-                  'text-xs font-medium',
-                  active ? 'text-primary-foreground' : 'text-foreground',
-                )}
-              >
-                {chip.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-        {listingTypes.length > 0 && (
+      {/* Search bar */}
+      <View className="py-2">
+        <SearchBar />
+      </View>
+
+      {/* Intent filter pills */}
+      <View className="flex-row items-center gap-2 px-4 pb-2">
+        <Pressable
+          onPress={toggleWantToBuy}
+          className={cn(
+            'rounded-full border px-3 py-1',
+            wantToBuy
+              ? 'border-primary bg-primary'
+              : 'border-border bg-card',
+          )}
+        >
+          <Text
+            className={cn(
+              'text-xs font-medium',
+              wantToBuy ? 'text-primary-foreground' : 'text-foreground',
+            )}
+          >
+            Buying
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={toggleWantToTrade}
+          className={cn(
+            'rounded-full border px-3 py-1',
+            wantToTrade
+              ? 'border-primary bg-primary'
+              : 'border-border bg-card',
+          )}
+        >
+          <Text
+            className={cn(
+              'text-xs font-medium',
+              wantToTrade ? 'text-primary-foreground' : 'text-foreground',
+            )}
+          >
+            Trading
+          </Text>
+        </Pressable>
+
+        {hasActiveFilters && (
           <Pressable
-            onPress={() => useFeedStore.getState().setFilter('listingTypes', [])}
+            onPress={() => {
+              const store = useFeedStore.getState();
+              if (store.filters.wantToBuy) store.toggleWantToBuy();
+              if (store.filters.wantToTrade) store.toggleWantToTrade();
+            }}
             className="px-1"
           >
             <Text className="text-xs text-muted-foreground">Clear</Text>

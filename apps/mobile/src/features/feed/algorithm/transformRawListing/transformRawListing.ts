@@ -23,6 +23,9 @@ export type RawFeedListing = {
   total_value: number;
   description: string | null;
   photos: string[];
+  trade_wants: unknown[];
+  accepts_cash: boolean;
+  accepts_trades: boolean;
   status: string;
   created_at: string;
   updated_at: string;
@@ -51,6 +54,9 @@ const transformRawListing = (raw: RawFeedListing): ListingWithDistance => {
     total_value: raw.total_value,
     description: raw.description,
     photos: raw.photos,
+    trade_wants: raw.trade_wants ?? [],
+    accepts_cash: raw.accepts_cash ?? false,
+    accepts_trades: raw.accepts_trades ?? false,
     status: raw.status,
     created_at: raw.created_at,
     updated_at: raw.updated_at,

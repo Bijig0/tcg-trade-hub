@@ -13,6 +13,8 @@ const makeListing = (overrides: Partial<ListingWithDistance>): ListingWithDistan
     total_value: 0,
     description: null,
     photos: [],
+    accepts_cash: true,
+    accepts_trades: false,
     status: 'active',
     created_at: '2026-01-01T00:00:00Z',
     updated_at: '2026-01-01T00:00:00Z',

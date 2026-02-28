@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Trash2, Clock, Zap } from 'lucide-react-native';
-import ListingTypeBadge from '../ListingTypeBadge/ListingTypeBadge';
+import ListingTypeBadges from '../ListingTypeBadges/ListingTypeBadges';
 import BundlePreview from '../BundlePreview/BundlePreview';
 import formatListingDate from '../../utils/formatListingDate/formatListingDate';
 import type { MyListingWithOffers } from '../../schemas';
@@ -31,7 +31,7 @@ const ActiveListingCard = ({ listing, onDelete }: ActiveListingCardProps) => {
       <View className="ml-3 flex-1 justify-between">
         <View>
           <View className="flex-row items-center gap-2">
-            <ListingTypeBadge type={listing.type} />
+            <ListingTypeBadges listing={listing} />
             {listing.offer_count > 0 && (
               <View className="rounded-full bg-primary px-2 py-0.5">
                 <Text className="text-xs font-semibold text-primary-foreground">
@@ -39,7 +39,7 @@ const ActiveListingCard = ({ listing, onDelete }: ActiveListingCardProps) => {
                 </Text>
               </View>
             )}
-            {listing.type === 'wtt' && (listing.trade_wants ?? []).length > 0 && (
+            {(listing.accepts_trades || listing.type === 'wtt') && (listing.trade_wants ?? []).length > 0 && (
               <View className="flex-row items-center gap-0.5 rounded-full bg-amber-500/10 px-2 py-0.5">
                 <Zap size={10} color="#f59e0b" />
                 <Text className="text-xs font-semibold text-amber-500">

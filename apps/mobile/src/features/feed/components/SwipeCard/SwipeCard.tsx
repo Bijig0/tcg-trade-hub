@@ -89,6 +89,8 @@ const SwipeCard = ({ listing, className, onOpenDetail }: SwipeCardProps) => {
         photoIndex={photoIndex}
         onPhotoIndexChange={setPhotoIndex}
         listingType={listing.type}
+        acceptsCash={listing.accepts_cash}
+        acceptsTrades={listing.accepts_trades}
       />
 
       {/* Card info */}

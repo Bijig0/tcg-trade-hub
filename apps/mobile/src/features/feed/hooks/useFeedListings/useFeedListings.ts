@@ -19,9 +19,10 @@ type FeedPage = {
 /**
  * Hook that fetches the feed listings using an infinite query.
  *
- * Queries Supabase directly — fetches active listings from other users,
- * joins listing_items and user profiles. Delegates exclusion set building,
- * data transformation, and sorting to pure functions in `algorithm/`.
+ * Supports the Have/Want filter model:
+ * - wantToBuy → filters listings where accepts_cash = true
+ * - wantToTrade → filters listings where accepts_trades = true
+ * - searchQuery → filters by card name via listing_items join
  */
 const useFeedListings = () => {
   const { user } = useAuth();
@@ -47,11 +48,14 @@ const useFeedListings = () => {
       const { swipedIds, blockedUserIds } = buildExclusionSets(swipes, blocks, user.id);
 
       // 2. Build the listings query
+      // When searching by card name, we need to filter via listing_items
+      const hasSearch = filters.searchQuery.length > 0;
+
       let query = supabase
         .from('listings')
         .select(`
           *,
-          listing_items (*),
+          listing_items${hasSearch ? '!inner' : ''} (*),
           users!inner (
             id,
             display_name,
@@ -64,6 +68,11 @@ const useFeedListings = () => {
         .eq('status', 'active')
         .neq('user_id', user.id);
 
+      // Card name search via listing_items
+      if (hasSearch) {
+        query = query.ilike('listing_items.card_name', `%${filters.searchQuery}%`);
+      }
+
       if (swipedIds.length > 0) {
         query = query.not('id', 'in', `(${swipedIds.join(',')})`);
       }
@@ -74,9 +83,14 @@ const useFeedListings = () => {
       if (filters.tcg) {
         query = query.eq('tcg', filters.tcg);
       }
-      if (filters.listingTypes.length > 0) {
-        query = query.in('type', filters.listingTypes);
+
+      // Have/Want intent-based filters
+      if (filters.wantToBuy && !filters.wantToTrade) {
+        query = query.eq('accepts_cash', true);
+      } else if (filters.wantToTrade && !filters.wantToBuy) {
+        query = query.eq('accepts_trades', true);
       }
+      // If both or neither are active, no filter — show all
 
       if (pageParam) {
         query = query.lt('created_at', pageParam as string);
@@ -96,7 +110,7 @@ const useFeedListings = () => {
         return { listings: [], nextCursor: null };
       }
 
-      console.log(`[useFeedListings] user=${user.id}, swipedIds=${swipedIds.length}, blockedUserIds=${blockedUserIds.length}, fetched=${rawListings.length}`);
+      console.log(`[useFeedListings] user=${user.id}, swipedIds=${swipedIds.length}, blockedUserIds=${blockedUserIds.length}, search="${filters.searchQuery}", fetched=${rawListings.length}`);
 
       // 3. Transform and sort
       const listings = (rawListings as unknown as RawFeedListing[]).map(transformRawListing);

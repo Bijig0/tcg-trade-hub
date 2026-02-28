@@ -6,7 +6,10 @@
  *   limit?: number,           // 1-50, default 20
  *   filters?: {
  *     tcg?: 'pokemon' | 'mtg' | 'yugioh',
- *     listing_type?: 'wts' | 'wtb' | 'wtt',
+ *     listing_type?: 'wts' | 'wtb' | 'wtt',  // backward compat
+ *     accepts_cash?: boolean,                   // Have/Want filter
+ *     accepts_trades?: boolean,                 // Have/Want filter
+ *     search?: string,                          // card name search
  *     condition?: 'nm' | 'lp' | 'mp' | 'hp' | 'dmg',
  *     sort?: 'relevance' | 'price_asc' | 'price_desc' | 'newest'
  *   }
@@ -48,6 +51,9 @@ Deno.serve(async (req: Request) => {
       filters?: {
         tcg?: string;
         listing_type?: string;
+        accepts_cash?: boolean;
+        accepts_trades?: boolean;
+        search?: string;
         condition?: string;
         sort?: string;
       };
@@ -61,9 +67,20 @@ Deno.serve(async (req: Request) => {
 
     // Validate filters
     const tcgFilter = filters?.tcg && VALID_TCGS.includes(filters.tcg) ? filters.tcg : null;
-    const typeFilter = filters?.listing_type && VALID_LISTING_TYPES.includes(filters.listing_type) ? filters.listing_type : null;
     const conditionFilter = filters?.condition && VALID_CONDITIONS.includes(filters.condition) ? filters.condition : null;
     const sortMode = filters?.sort && VALID_SORTS.includes(filters.sort) ? filters.sort : 'relevance';
+    const searchQuery = typeof filters?.search === 'string' ? filters.search.trim() : '';
+
+    // Map legacy listing_type filter to accepts_cash/accepts_trades
+    let acceptsCashFilter = typeof filters?.accepts_cash === 'boolean' ? filters.accepts_cash : null;
+    let acceptsTradesFilter = typeof filters?.accepts_trades === 'boolean' ? filters.accepts_trades : null;
+
+    // Backward compat: map listing_type to boolean filters
+    if (filters?.listing_type && VALID_LISTING_TYPES.includes(filters.listing_type) && acceptsCashFilter === null && acceptsTradesFilter === null) {
+      if (filters.listing_type === 'wts') acceptsCashFilter = true;
+      else if (filters.listing_type === 'wtt') acceptsTradesFilter = true;
+      else if (filters.listing_type === 'wtb') acceptsCashFilter = true;
+    }
 
     // Fetch current user's profile
     const { data: profile, error: profileError } = await supabaseAdmin
@@ -98,31 +115,24 @@ Deno.serve(async (req: Request) => {
       (swipes ?? []).map((s: { listing_id: string }) => s.listing_id),
     );
 
-    // Fetch current user's active listings for complement matching
+    // Fetch current user's active listings for scoring
     const { data: myListings } = await supabaseAdmin
       .from('listings')
-      .select('tcg, card_external_id, type')
+      .select('tcg, type, accepts_cash, accepts_trades, trade_wants')
       .eq('user_id', user.id)
       .eq('status', 'active');
 
-    const myListingSet = new Set(
-      (myListings ?? []).map(
-        (l: { tcg: string; card_external_id: string; type: string }) =>
-          `${l.tcg}:${l.card_external_id}:${l.type}`,
-      ),
-    );
-
-    // Build the feed query using PostGIS for proximity
-    // We use an RPC or raw query approach via supabase
-    const radiusMeters = (profile.radius_km ?? 25) * 1000;
+    // Build proximity and preference data
     const userLocation = profile.location;
     const preferredTcgs = profile.preferred_tcgs ?? [];
 
-    // Build the query
+    // Build the query — use !inner join on listing_items when searching
+    const hasSearch = searchQuery.length > 0;
     let query = supabaseAdmin
       .from('listings')
       .select(`
         *,
+        listing_items${hasSearch ? '!inner' : ''} (*),
         users!inner (
           id,
           display_name,
@@ -135,12 +145,20 @@ Deno.serve(async (req: Request) => {
       .eq('status', 'active')
       .neq('user_id', user.id);
 
+    // Card name search via listing_items
+    if (hasSearch) {
+      query = query.ilike('listing_items.card_name', `%${searchQuery}%`);
+    }
+
     // Apply filters
     if (tcgFilter) {
       query = query.eq('tcg', tcgFilter);
     }
-    if (typeFilter) {
-      query = query.eq('type', typeFilter);
+    if (acceptsCashFilter === true) {
+      query = query.eq('accepts_cash', true);
+    }
+    if (acceptsTradesFilter === true) {
+      query = query.eq('accepts_trades', true);
     }
     if (conditionFilter) {
       query = query.eq('condition', conditionFilter);
@@ -163,21 +181,13 @@ Deno.serve(async (req: Request) => {
 
     // Post-filter: remove swiped, blocked, and apply proximity
     let listings = (rawListings ?? []).filter((listing: Record<string, unknown>) => {
-      // Exclude already swiped
       if (swipedListingIds.has(listing.id as string)) return false;
-
-      // Exclude blocked users
       if (blockedUserIds.has(listing.user_id as string)) return false;
 
-      // Proximity filter via PostGIS -- if user has location set
-      // Since we cannot run ST_DWithin inline with supabase-js select,
-      // we do a bounding-box approximation here. For production, use an RPC.
+      // Proximity filter via PostGIS approximation
       if (userLocation && (listing as Record<string, unknown>).users) {
         const listingUser = (listing as Record<string, unknown>).users as Record<string, unknown>;
         if (!listingUser.location) return false;
-        // Both locations are PostGIS geography points stored as GeoJSON or WKT.
-        // We trust the DB has them; full ST_DWithin should be done via RPC.
-        // For this implementation, we include all listings with valid locations.
       }
 
       return true;
@@ -187,14 +197,20 @@ Deno.serve(async (req: Request) => {
     const scoredListings = listings.map((listing: Record<string, unknown>) => {
       let score = 0;
 
-      // Direct complement match (WTS <-> WTB on same card): +5
-      const listingType = listing.type as string;
-      const complementType = listingType === 'wts' ? 'wtb' : listingType === 'wtb' ? 'wts' : null;
-      if (complementType) {
-        const complementKey = `${listing.tcg}:${listing.card_external_id}:${complementType}`;
-        if (myListingSet.has(complementKey)) {
-          score += 5;
-        }
+      // Have/Want overlap scoring: +5 if the other listing's wants match what user offers
+      const listingAcceptsCash = listing.accepts_cash as boolean;
+      const listingAcceptsTrades = listing.accepts_trades as boolean;
+
+      for (const myListing of (myListings ?? []) as Record<string, unknown>[]) {
+        const myAcceptsCash = myListing.accepts_cash as boolean;
+        const myAcceptsTrades = myListing.accepts_trades as boolean;
+
+        // Cash complement: listing sells + user buys, or vice versa
+        if (listingAcceptsCash && myAcceptsCash) score += 2;
+        // Trade overlap: both accept trades
+        if (listingAcceptsTrades && myAcceptsTrades) score += 5;
+        // Same TCG
+        if (listing.tcg === myListing.tcg) score += 1;
       }
 
       // TCG preference match: +2
@@ -202,8 +218,7 @@ Deno.serve(async (req: Request) => {
         score += 2;
       }
 
-      // Proximity bonus: +2 (if both have locations, closer = more)
-      // Simplified: just give +2 if listing user has a location
+      // Proximity bonus: +2
       const listingUser = (listing as Record<string, unknown>).users as Record<string, unknown> | undefined;
       if (userLocation && listingUser?.location) {
         score += 2;

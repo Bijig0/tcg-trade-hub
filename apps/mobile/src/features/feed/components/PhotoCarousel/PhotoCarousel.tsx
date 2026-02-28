@@ -3,7 +3,7 @@ import { View, Pressable } from 'react-native';
 import { Image, type ImageLoadEventData } from 'expo-image';
 import { ImageOff } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
-import { ListingTypeBadge } from '@/features/listings';
+import ListingTypeBadges from '@/features/listings/components/ListingTypeBadges/ListingTypeBadges';
 import type { ListingType } from '@tcg-trade-hub/database';
 
 type PhotoCarouselProps = {
@@ -17,6 +17,10 @@ type PhotoCarouselProps = {
   onPhotoIndexChange: (index: number) => void;
   /** Listing type for the badge overlay */
   listingType: ListingType;
+  /** Whether listing accepts cash (for dual badge rendering) */
+  acceptsCash?: boolean;
+  /** Whether listing accepts trades (for dual badge rendering) */
+  acceptsTrades?: boolean;
 };
 
 /**
@@ -32,6 +36,8 @@ const PhotoCarousel = ({
   photoIndex,
   onPhotoIndexChange,
   listingType,
+  acceptsCash,
+  acceptsTrades,
 }: PhotoCarouselProps) => {
   const [imageError, setImageError] = useState(false);
   const handleImageError = useCallback(() => setImageError(true), []);
@@ -101,8 +107,11 @@ const PhotoCarousel = ({
         </View>
       )}
 
-      {/* Listing type badge */}
-      <ListingTypeBadge type={listingType} className="absolute left-3 top-3 px-3 py-1.5" />
+      {/* Listing type badge(s) */}
+      <ListingTypeBadges
+        listing={{ type: listingType, accepts_cash: acceptsCash, accepts_trades: acceptsTrades }}
+        className="absolute left-3 top-3"
+      />
 
       {/* Tap zones for photo navigation (only when multiple photos) */}
       {hasPhotos && photos.length > 1 && (

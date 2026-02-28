@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import {
   TcgTypeSchema,
-  ListingTypeSchema,
   CardConditionSchema,
   ListingRowSchema,
   ListingItemRowSchema,
@@ -12,9 +11,11 @@ export type FeedSort = z.infer<typeof FeedSortSchema>;
 
 export const FeedFiltersSchema = z.object({
   tcg: TcgTypeSchema.nullable().default(null),
-  listingTypes: z.array(ListingTypeSchema).default([]),
+  wantToBuy: z.boolean().default(false),
+  wantToTrade: z.boolean().default(false),
   condition: CardConditionSchema.nullable().default(null),
   sort: FeedSortSchema.default('relevance'),
+  searchQuery: z.string().default(''),
 });
 
 export type FeedFilters = z.infer<typeof FeedFiltersSchema>;
