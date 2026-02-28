@@ -1,5 +1,6 @@
 export { cardDataService, createCardDataService } from './cardDataService';
 export { createMockAdapter } from './mockAdapter';
+export { createScrydexAdapter } from './scrydexAdapter';
 export type {
   CardDataAdapter,
   SearchCardsAdapter,

@@ -1,7 +1,7 @@
 /**
  * card-search Edge Function
  *
- * POST { tcg: 'pokemon' | 'mtg' | 'yugioh', query: string }
+ * POST { tcg: 'pokemon' | 'mtg' | 'onepiece', query: string }
  * Returns { cards: NormalizedCard[] }
  *
  * Proxies to the appropriate external card API and normalizes results.
@@ -11,11 +11,11 @@ import {
   type NormalizedCard,
   normalizePokemonCard,
   normalizeMtgCard,
-  normalizeYugiohCard,
+  normalizeOnePieceCard,
 } from '../_shared/normalizeCard.ts';
 import { cacheCardImages } from '../_shared/cacheCardImage.ts';
 
-const VALID_TCGS = ['pokemon', 'mtg', 'yugioh'] as const;
+const VALID_TCGS = ['pokemon', 'mtg', 'onepiece'] as const;
 type TcgType = (typeof VALID_TCGS)[number];
 
 // Max results to return per search
@@ -61,21 +61,27 @@ async function searchMtg(query: string): Promise<NormalizedCard[]> {
   return cards.map(normalizeMtgCard);
 }
 
-async function searchYugioh(query: string): Promise<NormalizedCard[]> {
-  const url = `https://db.ygoprodeck.com/api/v7/cardinfo.php?fname=${encodeURIComponent(query)}&num=${MAX_RESULTS}&offset=0`;
-  const res = await fetch(url);
+async function searchOnePiece(query: string): Promise<NormalizedCard[]> {
+  const apiKey = Deno.env.get('SCRYDEX_API_KEY');
+  const teamId = Deno.env.get('SCRYDEX_TEAM_ID');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (apiKey) headers['X-Api-Key'] = apiKey;
+  if (teamId) headers['X-Team-ID'] = teamId;
+
+  const url = `https://api.scrydex.com/onepiece/v1/cards?q=name:${encodeURIComponent(query)}&page_size=${MAX_RESULTS}&select=id,name,number,rarity,images,expansion&include=prices`;
+  const res = await fetch(url, { headers });
 
   if (!res.ok) {
-    // YGOProDeck returns non-200 when no cards found
-    if (res.status === 400) return [];
+    if (res.status === 404) return [];
     const text = await res.text();
-    throw new Error(`YGOProDeck API error (${res.status}): ${text}`);
+    throw new Error(`Scrydex One Piece API error (${res.status}): ${text}`);
   }
 
   const data = await res.json();
-  if (data.error) return [];
-  const cards = (data.data ?? []).slice(0, MAX_RESULTS);
-  return cards.map(normalizeYugiohCard);
+  const cards = data.data ?? [];
+  return cards.map(normalizeOnePieceCard);
 }
 
 Deno.serve(async (req: Request) => {
@@ -119,8 +125,8 @@ Deno.serve(async (req: Request) => {
       case 'mtg':
         cards = await searchMtg(trimmedQuery);
         break;
-      case 'yugioh':
-        cards = await searchYugioh(trimmedQuery);
+      case 'onepiece':
+        cards = await searchOnePiece(trimmedQuery);
         break;
       default:
         cards = [];

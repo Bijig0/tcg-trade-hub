@@ -58,7 +58,7 @@ const MultiCardSelector = ({ selectedCards, onToggle }: MultiCardSelectorProps) 
   const TCG_LABELS: Record<TcgType, string> = {
     pokemon: 'Pokemon',
     mtg: 'MTG',
-    yugioh: 'Yu-Gi-Oh!',
+    onepiece: 'One Piece',
   };
 
   const handleExternalSelect = (card: NormalizedCard) => {
@@ -198,7 +198,7 @@ const MultiCardSelector = ({ selectedCards, onToggle }: MultiCardSelectorProps) 
           <View className="gap-1">
             <Text className="text-xs text-muted-foreground">TCG</Text>
             <View className="flex-row gap-2">
-              {(['pokemon', 'mtg', 'yugioh'] as const).map((tcg) => (
+              {(['pokemon', 'mtg', 'onepiece'] as const).map((tcg) => (
                 <Pressable
                   key={tcg}
                   onPress={() => setExternalTcg(tcg)}

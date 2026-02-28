@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import MapView, { type Region } from 'react-native-maps';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { ArrowLeft, PackageOpen } from 'lucide-react-native';
+import type { NormalizedCard } from '@tcg-trade-hub/database';
 
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
@@ -13,6 +14,7 @@ import TraderMarker from '@/features/listings/components/TraderMarker/TraderMark
 import FilterBar from '../FilterBar/FilterBar';
 import ListingCard from '../ListingCard/ListingCard';
 import MarkerDetailContent from '../MarkerDetailContent/MarkerDetailContent';
+import AutocompleteSearchBar from '../AutocompleteSearchBar/AutocompleteSearchBar';
 import useFeedListings from '../../hooks/useFeedListings/useFeedListings';
 import useBrowseShops from '../../hooks/useBrowseShops/useBrowseShops';
 import useUserLocation from '@/hooks/useUserLocation/useUserLocation';
@@ -153,6 +155,13 @@ const BrowseMapScreen = () => {
     router.back();
   }, [router]);
 
+  const handleCardSelect = useCallback(
+    (card: NormalizedCard) => {
+      router.push(`/(tabs)/(discover)/card/${card.externalId}?tcg=${card.tcg}`);
+    },
+    [router],
+  );
+
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
@@ -256,10 +265,10 @@ const BrowseMapScreen = () => {
         ))}
       </MapView>
 
-      {/* Floating header */}
+      {/* Floating header with autocomplete */}
       <SafeAreaView
         edges={['top']}
-        className="absolute left-0 right-0 top-0"
+        className="absolute left-0 right-0 top-0 z-50"
         style={{ pointerEvents: 'box-none' }}
       >
         <View className="mx-4 mt-1 flex-row items-center rounded-xl bg-background/90 px-3 py-2.5 shadow-sm">
@@ -269,6 +278,11 @@ const BrowseMapScreen = () => {
           <Text className="ml-3 text-base font-semibold text-foreground">
             Browse
           </Text>
+        </View>
+        <View className="mt-2" style={{ pointerEvents: 'auto' }}>
+          <AutocompleteSearchBar
+            onCardSelect={handleCardSelect}
+          />
         </View>
       </SafeAreaView>
 

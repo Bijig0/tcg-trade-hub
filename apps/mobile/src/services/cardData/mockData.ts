@@ -208,47 +208,47 @@ export const MOCK_MTG_CARDS: NormalizedCard[] = [
   },
 ];
 
-/** Hardcoded Yu-Gi-Oh! cards for development/demo purposes. */
-export const MOCK_YUGIOH_CARDS: NormalizedCard[] = [
+/** Hardcoded One Piece cards for development/demo purposes. */
+export const MOCK_ONEPIECE_CARDS: NormalizedCard[] = [
   {
-    externalId: 'lede-060',
-    tcg: 'yugioh',
-    name: 'Snake-Eye Ash',
-    setName: 'Legacy of Destruction',
-    setCode: 'lede',
-    number: '060',
-    imageUrl: 'https://images.ygoprodeck.com/images/cards_small/100421063.jpg',
-    marketPrice: 22.0,
-    rarity: 'Ultra Rare',
-  },
-  {
-    externalId: 'phni-003',
-    tcg: 'yugioh',
-    name: 'Fiendsmith Engraver',
-    setName: 'Phantom Nightmare',
-    setCode: 'phni',
-    number: '003',
-    imageUrl: 'https://images.ygoprodeck.com/images/cards_small/100421060.jpg',
-    marketPrice: 15.0,
+    externalId: 'op05-119',
+    tcg: 'onepiece',
+    name: 'Monkey.D.Luffy',
+    setName: 'Awakening of the New Era',
+    setCode: 'OP05',
+    number: '119',
+    imageUrl: 'https://images.pokemontcg.io/sv3pt5/6.png',
+    marketPrice: 45.0,
     rarity: 'Secret Rare',
   },
   {
-    externalId: 'dune-050',
-    tcg: 'yugioh',
-    name: 'Blue-Eyes White Dragon',
-    setName: 'Duelist Nexus',
-    setCode: 'dune',
-    number: '050',
-    imageUrl: 'https://images.ygoprodeck.com/images/cards_small/89631139.jpg',
-    marketPrice: 8.5,
-    rarity: 'Ultra Rare',
+    externalId: 'op06-118',
+    tcg: 'onepiece',
+    name: 'Roronoa Zoro',
+    setName: 'Wings of the Captain',
+    setCode: 'OP06',
+    number: '118',
+    imageUrl: 'https://images.pokemontcg.io/sv3pt5/199.png',
+    marketPrice: 30.0,
+    rarity: 'Super Rare',
+  },
+  {
+    externalId: 'op04-083',
+    tcg: 'onepiece',
+    name: 'Portgas.D.Ace',
+    setName: 'Kingdoms of Intrigue',
+    setCode: 'OP04',
+    number: '083',
+    imageUrl: 'https://images.pokemontcg.io/sv4/18.png',
+    marketPrice: 18.5,
+    rarity: 'Super Rare',
   },
 ];
 
 const ALL_MOCK_CARDS: Record<string, NormalizedCard[]> = {
   pokemon: MOCK_POKEMON_CARDS,
   mtg: MOCK_MTG_CARDS,
-  yugioh: MOCK_YUGIOH_CARDS,
+  onepiece: MOCK_ONEPIECE_CARDS,
 };
 
 /** Hardcoded sets for development/demo purposes. */
@@ -286,7 +286,7 @@ export const getMockCardDetail = (externalId: string): CardDetail | null => {
   const allCards = [
     ...MOCK_POKEMON_CARDS,
     ...MOCK_MTG_CARDS,
-    ...MOCK_YUGIOH_CARDS,
+    ...MOCK_ONEPIECE_CARDS,
   ];
   const card = allCards.find((c) => c.externalId === externalId);
   if (!card) return null;

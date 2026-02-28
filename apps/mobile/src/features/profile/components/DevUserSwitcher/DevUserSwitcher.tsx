@@ -7,7 +7,7 @@ import { cn } from '@/lib/cn';
 const TEST_USERS = [
   { email: 'alice@test.dev', password: 'testtest123', name: 'Alice (Pokemon Pro)', tcgs: 'pokemon, mtg' },
   { email: 'bob@test.dev', password: 'testtest123', name: 'Bob (MTG Collector)', tcgs: 'mtg' },
-  { email: 'charlie@test.dev', password: 'testtest123', name: 'Charlie (Yu-Gi-Oh Fan)', tcgs: 'yugioh, pokemon' },
+  { email: 'charlie@test.dev', password: 'testtest123', name: 'Charlie (One Piece Fan)', tcgs: 'onepiece, pokemon' },
 ] as const;
 
 /**
