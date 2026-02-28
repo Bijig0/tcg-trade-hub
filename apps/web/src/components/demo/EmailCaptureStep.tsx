@@ -18,8 +18,7 @@ export const EmailCaptureStep = ({
 }: EmailCaptureStepProps) => {
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [city, setCity] = useState('');
-  const [zipCode, setZipCode] = useState('');
+  const [location, setLocation] = useState('');
 
   const firstCard = selectedCards[0];
 
@@ -42,8 +41,8 @@ export const EmailCaptureStep = ({
         card_image_url: firstCard.imageUrl ?? null,
         listing_type: listingType,
         asking_price: null,
-        city: city || null,
-        zip_code: zipCode || null,
+        city: location || null,
+        zip_code: null,
       },
       {
         onSuccess: (data) => {
@@ -126,33 +125,18 @@ export const EmailCaptureStep = ({
         </div>
 
         {/* Location */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="demo-city" className="block text-xs font-medium text-foreground mb-1.5">
-              City
-            </label>
-            <input
-              id="demo-city"
-              type="text"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="San Francisco"
-              className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-          <div>
-            <label htmlFor="demo-zip" className="block text-xs font-medium text-foreground mb-1.5">
-              Zip Code
-            </label>
-            <input
-              id="demo-zip"
-              type="text"
-              value={zipCode}
-              onChange={(e) => setZipCode(e.target.value)}
-              placeholder="94102"
-              className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
+        <div>
+          <label htmlFor="demo-city" className="block text-xs font-medium text-foreground mb-1.5">
+            City
+          </label>
+          <input
+            id="demo-city"
+            type="text"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="San Francisco"
+            className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
         </div>
 
         {/* Error */}

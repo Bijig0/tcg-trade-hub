@@ -1,12 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { GraphViewer } from 'flow-graph/react';
+import type { ScenarioStatus } from 'flow-graph/react';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChatPanel } from '@/features/chat';
 import TestCoverage from '@/features/maestro/components/TestCoverage/TestCoverage';
 import RecordingModal from '@/features/maestro/components/RecordingModal/RecordingModal';
 import useMobileLink from '@/hooks/useMobileLink/useMobileLink';
-import { useRecording, useRecordingList } from '@/hooks/useRecording/useRecording';
+import { useRecording, useRecordingList, recordingKeys } from '@/hooks/useRecording/useRecording';
 import type { Simulator } from '@/hooks/useMobileLink/useMobileLink';
 
 const GRAPH_SERVER_URL = 'http://localhost:4243';
@@ -141,8 +142,9 @@ function AdminDashboard() {
   }, [scenariosList]);
 
   // Recordings
+  const queryClient = useQueryClient();
   const { data: recordingsList } = useRecordingList();
-  const recordingScenarioIds = useMemo(
+  const recordedIds = useMemo(
     () => new Set(recordingsList?.map((r) => r.pathId) ?? []),
     [recordingsList],
   );
@@ -155,6 +157,72 @@ function AdminDashboard() {
     deleteRecording: deleteRec,
     isDeleting,
   } = useRecording(recordingPathId);
+
+  // --- Scenario run orchestration ---
+  const [runningScenarioId, setRunningScenarioId] = useState<string | null>(null);
+  const [scenarioErrors, setScenarioErrors] = useState<Record<string, string>>({});
+
+  const runMutation = useMutation({
+    mutationFn: async (scenarioId: string) => {
+      const res = await fetch(
+        `${GRAPH_SERVER_URL}/api/recordings/${encodeURIComponent(scenarioId)}/record`,
+        { method: 'POST' },
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error((err as { error: string }).error);
+      }
+      return res.json();
+    },
+    onMutate: (scenarioId) => {
+      setRunningScenarioId(scenarioId);
+      // Clear any previous error for this scenario
+      setScenarioErrors((prev) => {
+        if (!prev[scenarioId]) return prev;
+        const next = { ...prev };
+        delete next[scenarioId];
+        return next;
+      });
+    },
+    onSuccess: () => {
+      setRunningScenarioId(null);
+      queryClient.invalidateQueries({ queryKey: recordingKeys.all });
+    },
+    onError: (err, scenarioId) => {
+      setRunningScenarioId(null);
+      setScenarioErrors((prev) => ({
+        ...prev,
+        [scenarioId]: err instanceof Error ? err.message : 'Unknown error',
+      }));
+    },
+  });
+
+  // Derive per-scenario statuses
+  const scenarioStatuses = useMemo(() => {
+    const map: Record<string, ScenarioStatus> = {};
+    for (const scenarios of Object.values(scenariosByPath)) {
+      for (const s of scenarios) {
+        if (s.id === runningScenarioId) {
+          map[s.id] = 'running';
+        } else if (scenarioErrors[s.id]) {
+          map[s.id] = 'error';
+        } else if (recordedIds.has(s.id)) {
+          map[s.id] = 'recorded';
+        } else {
+          map[s.id] = 'idle';
+        }
+      }
+    }
+    return map;
+  }, [scenariosByPath, runningScenarioId, scenarioErrors, recordedIds]);
+
+  const handleRunScenario = useCallback((scenarioId: string) => {
+    runMutation.mutate(scenarioId);
+  }, [runMutation]);
+
+  const handleRerunScenario = useCallback((scenarioId: string) => {
+    runMutation.mutate(scenarioId);
+  }, [runMutation]);
 
   const toggleChat = useCallback(() => {
     setIsChatOpen((prev) => !prev);
@@ -217,8 +285,11 @@ function AdminDashboard() {
             mobileActivePaths={mobileActivePaths}
             deviceName={mobileLink.linkedSimulator?.name ?? null}
             scenarios={scenariosByPath}
-            recordingScenarioIds={recordingScenarioIds}
+            scenarioStatuses={scenarioStatuses}
+            scenarioErrors={scenarioErrors}
+            onRunScenario={handleRunScenario}
             onPlayScenarioRecording={handlePlayRecording}
+            onRerunScenario={handleRerunScenario}
           />
         </div>
         <ChatPanel isOpen={isChatOpen} onToggle={toggleChat} />
