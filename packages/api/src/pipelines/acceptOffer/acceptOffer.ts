@@ -3,6 +3,7 @@ import definePipeline from '../definePipeline/definePipeline';
 import type { PipelineContext, PreCheck } from '../definePipeline/definePipeline';
 import { assertTransition } from '@tcg-trade-hub/database';
 import type { OfferStatus, ListingStatus } from '@tcg-trade-hub/database';
+import { notifyOfferAccepted } from '../../notifications/postEffects/notifyOfferAccepted/notifyOfferAccepted';
 
 const AcceptOfferInputSchema = z.object({
   offerId: z.string().uuid(),
@@ -83,7 +84,7 @@ const acceptOffer = definePipeline({
     resultSchema: AcceptOfferResultSchema,
   },
 
-  postEffects: [],
+  postEffects: [notifyOfferAccepted],
 });
 
 export default acceptOffer;

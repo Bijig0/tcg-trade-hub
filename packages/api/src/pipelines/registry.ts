@@ -3,6 +3,7 @@ import declineOffer from './declineOffer/declineOffer';
 import completeMeetup from './completeMeetup/completeMeetup';
 import expireListing from './expireListing/expireListing';
 import createOffer from './createOffer/createOffer';
+import sendMessage from './sendMessage/sendMessage';
 
 /**
  * The pipeline registry: the single source of truth for all state-changing
@@ -22,6 +23,7 @@ export const pipelineRegistry = {
   completeMeetup,
   expireListing,
   createOffer,
+  sendMessage,
 } as const;
 
 export type PipelineName = keyof typeof pipelineRegistry;

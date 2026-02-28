@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import definePipeline from '../definePipeline/definePipeline';
 import type { PreCheck } from '../definePipeline/definePipeline';
+import { notifyMeetupCompleted } from '../../notifications/postEffects/notifyMeetupCompleted/notifyMeetupCompleted';
 
 const CompleteMeetupInputSchema = z.object({
   meetupId: z.string().uuid(),
@@ -67,7 +68,7 @@ const completeMeetup = definePipeline({
     resultSchema: CompleteMeetupResultSchema,
   },
 
-  postEffects: [],
+  postEffects: [notifyMeetupCompleted],
 });
 
 export default completeMeetup;

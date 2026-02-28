@@ -14,6 +14,7 @@ import { declineOfferProcedure } from './procedures/pipelines/declineOffer';
 import { completeMeetupProcedure } from './procedures/pipelines/completeMeetup';
 import { expireListingProcedure } from './procedures/pipelines/expireListing';
 import { createOfferProcedure } from './procedures/pipelines/createOffer';
+import { sendMessageProcedure } from './procedures/pipelines/sendMessage';
 
 export const router = {
   preRegistration: { create },
@@ -39,6 +40,7 @@ export const router = {
     completeMeetup: completeMeetupProcedure,
     expireListing: expireListingProcedure,
     createOffer: createOfferProcedure,
+    sendMessage: sendMessageProcedure,
   },
 };
 

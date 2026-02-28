@@ -3,6 +3,7 @@ import definePipeline from '../definePipeline/definePipeline';
 import type { PreCheck } from '../definePipeline/definePipeline';
 import { assertTransition } from '@tcg-trade-hub/database';
 import type { OfferStatus } from '@tcg-trade-hub/database';
+import { notifyOfferDeclined } from '../../notifications/postEffects/notifyOfferDeclined/notifyOfferDeclined';
 
 const DeclineOfferInputSchema = z.object({
   offerId: z.string().uuid(),
@@ -66,7 +67,7 @@ const declineOffer = definePipeline({
     resultSchema: DeclineOfferResultSchema,
   },
 
-  postEffects: [],
+  postEffects: [notifyOfferDeclined],
 });
 
 export default declineOffer;

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import definePipeline from '../definePipeline/definePipeline';
 import type { PreCheck } from '../definePipeline/definePipeline';
+import { notifyOfferCreated } from '../../notifications/postEffects/notifyOfferCreated/notifyOfferCreated';
 
 const OfferItemSchema = z.object({
   card_name: z.string(),
@@ -73,7 +74,7 @@ const createOffer = definePipeline({
     resultSchema: CreateOfferResultSchema,
   },
 
-  postEffects: [],
+  postEffects: [notifyOfferCreated],
 });
 
 export default createOffer;

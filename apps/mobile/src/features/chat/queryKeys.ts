@@ -14,4 +14,6 @@ export const chatKeys = {
     [...chatKeys.all, 'previousOffer', conversationId] as const,
   offerNotes: (conversationId: string) =>
     [...chatKeys.all, 'offerNotes', conversationId] as const,
+  readReceipt: (conversationId: string) =>
+    [...chatKeys.all, 'readReceipt', conversationId] as const,
 };

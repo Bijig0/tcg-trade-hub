@@ -6,6 +6,7 @@ export { default as declineOffer } from './declineOffer/declineOffer';
 export { default as completeMeetup } from './completeMeetup/completeMeetup';
 export { default as expireListing } from './expireListing/expireListing';
 export { default as createOffer } from './createOffer/createOffer';
+export { default as sendMessage } from './sendMessage/sendMessage';
 
 export { default as definePipeline } from './definePipeline/definePipeline';
 export type {
