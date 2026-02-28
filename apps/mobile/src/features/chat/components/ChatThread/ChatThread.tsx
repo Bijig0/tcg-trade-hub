@@ -15,7 +15,9 @@ import { Send, Handshake, MapPin, Ban, ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/context/AuthProvider';
+import { usePresence } from '@/context/OnlinePresenceProvider';
 import Avatar from '@/components/ui/Avatar/Avatar';
+import OnlineIndicator from '@/components/OnlineIndicator/OnlineIndicator';
 import ReportModal from '@/features/safety/components/ReportModal/ReportModal';
 import useMessages, {
   type MessageWithSender,
@@ -30,6 +32,8 @@ import useTypingIndicator from '../../hooks/useTypingIndicator/useTypingIndicato
 import useNegotiationStatus from '../../hooks/useNegotiationStatus/useNegotiationStatus';
 import useChatBlockCheck from '../../hooks/useChatBlockCheck/useChatBlockCheck';
 import useLongPressMessage from '../../hooks/useLongPressMessage/useLongPressMessage';
+import useOtherUserReadReceipt from '../../hooks/useOtherUserReadReceipt/useOtherUserReadReceipt';
+import useRealtimeReadReceipts from '../../hooks/useRealtimeReadReceipts/useRealtimeReadReceipts';
 import generateDefaultChatName from '../../utils/generateDefaultChatName/generateDefaultChatName';
 import MessageBubble from '../MessageBubble/MessageBubble';
 import OfferCard from '../OfferCard/OfferCard';
@@ -70,6 +74,7 @@ const ChatThread = ({
   onOpenCounterOffer,
 }: ChatThreadProps) => {
   const { user } = useAuth();
+  const { isOnline } = usePresence();
   const router = useRouter();
   const [text, setText] = useState('');
   const {

@@ -47,6 +47,7 @@ const MeetupDetailScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { data: meetup, isLoading, isError } = useMeetupDetail(id ?? '');
+  useRealtimeMeetupUpdates(id ?? '');
   const [ratingVisible, setRatingVisible] = useState(false);
   const [rateeId, setRateeId] = useState('');
   const [routeInfo, setRouteInfo] = useState<{ distance: number; duration: number } | null>(null);
