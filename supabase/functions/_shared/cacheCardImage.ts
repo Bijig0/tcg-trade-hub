@@ -4,7 +4,7 @@
  * Storage path convention: {tcg}/{safeExternalId}.{ext}
  *   - pokemon/sv3-223.png
  *   - mtg/9a879b60-4381-447d-8a5a-8e0b6a1d49ca.jpg
- *   - yugioh/46986414.jpg
+ *   - onepiece/op05-119.jpg
  *
  * If caching fails at any step, the original external URL is returned.
  */

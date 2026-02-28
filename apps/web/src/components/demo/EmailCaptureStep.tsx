@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { orpc } from '@/lib/orpc';
+import emailjs from '@emailjs/browser';
 import type { NormalizedCard, ListingType } from '@tcg-trade-hub/database';
 
 type EmailCaptureStepProps = {
@@ -18,39 +17,51 @@ export const EmailCaptureStep = ({
 }: EmailCaptureStepProps) => {
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [city, setCity] = useState('');
-  const [zipCode, setZipCode] = useState('');
+  const [location, setLocation] = useState('');
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const markTouched = (field: string) =>
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+  const emailError =
+    !email.trim()
+      ? 'Email is required'
+      : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+        ? 'Please enter a valid email'
+        : null;
+
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const firstCard = selectedCards[0];
 
-  const mutation = useMutation(
-    orpc.preRegistration.create.mutationOptions(),
-  );
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstCard) return;
+    setTouched({ email: true });
+    if (emailError || !firstCard) return;
 
-    mutation.mutate(
-      {
-        email,
-        display_name: displayName || null,
-        tcg: firstCard.tcg,
-        card_name: firstCard.name,
-        card_set: firstCard.setName ?? null,
-        card_external_id: firstCard.externalId ?? null,
-        card_image_url: firstCard.imageUrl ?? null,
-        listing_type: listingType,
-        asking_price: null,
-        city: city || null,
-        zip_code: zipCode || null,
-      },
-      {
-        onSuccess: (data) => {
-          onSuccess(data.position, email);
+    setIsPending(true);
+    setError(null);
+
+    try {
+      await emailjs.send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        {
+          to_email: email,
+          display_name: displayName || 'Collector',
+          card_name: firstCard.name,
+          city: location || 'your area',
+          listing_type: listingType,
         },
-      },
-    );
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+      );
+      onSuccess(1, email);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (
@@ -71,7 +82,7 @@ export const EmailCaptureStep = ({
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-4">
+      <form noValidate onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-4">
         <p className="text-sm text-muted-foreground">
           Enter your email to save your offer and get notified when TCG Trade Hub launches.
         </p>
@@ -105,9 +116,17 @@ export const EmailCaptureStep = ({
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onBlur={() => markTouched('email')}
             placeholder="you@example.com"
-            className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            aria-invalid={touched.email && !!emailError}
+            aria-describedby={touched.email && emailError ? 'demo-email-error' : undefined}
+            className={`w-full rounded-lg border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${touched.email && emailError ? 'border-destructive ring-2 ring-destructive/30 focus:ring-destructive' : 'border-input focus:ring-ring'}`}
           />
+          {touched.email && emailError && (
+            <p id="demo-email-error" role="alert" className="mt-1 text-xs text-destructive">
+              {emailError}
+            </p>
+          )}
         </div>
 
         {/* Display Name */}
@@ -126,49 +145,34 @@ export const EmailCaptureStep = ({
         </div>
 
         {/* Location */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="demo-city" className="block text-xs font-medium text-foreground mb-1.5">
-              City
-            </label>
-            <input
-              id="demo-city"
-              type="text"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="San Francisco"
-              className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-          <div>
-            <label htmlFor="demo-zip" className="block text-xs font-medium text-foreground mb-1.5">
-              Zip Code
-            </label>
-            <input
-              id="demo-zip"
-              type="text"
-              value={zipCode}
-              onChange={(e) => setZipCode(e.target.value)}
-              placeholder="94102"
-              className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
+        <div>
+          <label htmlFor="demo-city" className="block text-xs font-medium text-foreground mb-1.5">
+            City
+          </label>
+          <input
+            id="demo-city"
+            type="text"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="San Francisco"
+            className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
         </div>
 
         {/* Error */}
-        {mutation.isError && (
+        {error && (
           <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
-            {mutation.error.message || 'Something went wrong. Please try again.'}
+            {error}
           </div>
         )}
 
         {/* Submit */}
         <button
           type="submit"
-          disabled={mutation.isPending || !email}
+          disabled={isPending}
           className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {mutation.isPending ? 'Registering...' : 'Get Early Access'}
+          {isPending ? 'Registering...' : 'Get Early Access'}
         </button>
 
         <p className="text-center text-[10px] text-muted-foreground">

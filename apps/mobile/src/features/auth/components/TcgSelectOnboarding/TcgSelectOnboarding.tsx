@@ -15,7 +15,7 @@ type TcgOption = {
 const TCG_OPTIONS: TcgOption[] = [
   { value: 'pokemon', label: 'Pokemon', emoji: '\u26A1' },
   { value: 'mtg', label: 'Magic: The Gathering', emoji: '\u2728' },
-  { value: 'yugioh', label: 'Yu-Gi-Oh!', emoji: '\uD83C\uDFAD' },
+  { value: 'onepiece', label: 'One Piece', emoji: '\u2693' },
 ];
 
 const TcgSelectOnboarding = () => {

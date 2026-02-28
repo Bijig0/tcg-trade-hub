@@ -1,14 +1,23 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { ScrollView, Pressable, Text, View } from 'react-native';
+import { ChevronDown, ChevronUp } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import { useFeedStore } from '@/stores/feedStore/feedStore';
-import type { TcgType, CardCondition } from '@tcg-trade-hub/database';
+import type { TcgType, CardCondition, ListingCategory } from '@tcg-trade-hub/database';
 
 const TCG_OPTIONS: { label: string; value: TcgType | null }[] = [
   { label: 'All TCGs', value: null },
   { label: 'Pokemon', value: 'pokemon' },
   { label: 'MTG', value: 'mtg' },
-  { label: 'Yu-Gi-Oh', value: 'yugioh' },
+  { label: 'One Piece', value: 'onepiece' },
+];
+
+const CATEGORY_OPTIONS: { label: string; value: ListingCategory | null }[] = [
+  { label: 'All', value: null },
+  { label: 'Singles', value: 'singles' },
+  { label: 'Sealed', value: 'sealed' },
+  { label: 'Graded', value: 'graded' },
+  { label: 'Bulk', value: 'bulk' },
 ];
 
 const CONDITION_OPTIONS: { label: string; value: CardCondition | null }[] = [
@@ -61,23 +70,33 @@ export type FilterBarProps = {
 /**
  * Horizontal scrollable filter chips with searcher-intent pills.
  *
- * Row 1: [Buying] [Trading] | [Pokemon] [MTG] [Yu-Gi-Oh]
- * Row 2: [NM] [LP] [MP] [HP] [DMG] | [Relevance] [Distance] [Price] [Newest]
+ * Row 1: [Buying] [Trading] | [All TCGs] [Pokemon] [MTG] [One Piece]
+ * Row 2: [All] [Singles] [Sealed] [Graded] [Bulk]
+ * Row 3 (collapsed): [Any Condition] [NM] [LP] ... | [Relevance] [Distance] ...
  */
 const FilterBar = ({ className }: FilterBarProps) => {
   const filters = useFeedStore((s) => s.filters);
   const setFilter = useFeedStore((s) => s.setFilter);
   const toggleWantToBuy = useFeedStore((s) => s.toggleWantToBuy);
   const toggleWantToTrade = useFeedStore((s) => s.toggleWantToTrade);
+  const setCategory = useFeedStore((s) => s.setCategory);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const advancedFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.condition) count++;
+    if (filters.sort !== 'relevance') count++;
+    return count;
+  }, [filters.condition, filters.sort]);
 
   return (
     <View className={cn('gap-2', className)}>
+      {/* Row 1: Intent + TCG */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="px-4 py-2"
       >
-        {/* Searcher-intent pills */}
         <FilterChip
           label="Buying"
           active={filters.wantToBuy}
@@ -91,7 +110,6 @@ const FilterBar = ({ className }: FilterBarProps) => {
 
         <View className="mx-1 w-px bg-border" />
 
-        {/* TCG filters */}
         {TCG_OPTIONS.map((opt) => (
           <FilterChip
             key={`tcg-${opt.value}`}
@@ -102,31 +120,78 @@ const FilterBar = ({ className }: FilterBarProps) => {
         ))}
       </ScrollView>
 
+      {/* Row 2: Category + Advanced toggle */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="px-4 pb-2"
       >
-        {CONDITION_OPTIONS.map((opt) => (
+        {CATEGORY_OPTIONS.map((opt) => (
           <FilterChip
-            key={`cond-${opt.value}`}
+            key={`cat-${opt.value}`}
             label={opt.label}
-            active={filters.condition === opt.value}
-            onPress={() => setFilter('condition', opt.value)}
+            active={filters.category === opt.value}
+            onPress={() => setCategory(opt.value)}
           />
         ))}
 
         <View className="mx-1 w-px bg-border" />
 
-        {SORT_OPTIONS.map((opt) => (
-          <FilterChip
-            key={`sort-${opt.value}`}
-            label={opt.label}
-            active={filters.sort === opt.value}
-            onPress={() => setFilter('sort', opt.value)}
-          />
-        ))}
+        <Pressable
+          onPress={() => setShowAdvanced((prev) => !prev)}
+          className={cn(
+            'mr-2 flex-row items-center rounded-full border px-3 py-1.5',
+            showAdvanced || advancedFilterCount > 0
+              ? 'border-primary bg-primary/10'
+              : 'border-border bg-card',
+          )}
+        >
+          <Text
+            className={cn(
+              'text-xs font-medium',
+              showAdvanced || advancedFilterCount > 0
+                ? 'text-primary'
+                : 'text-foreground',
+            )}
+          >
+            Filters{advancedFilterCount > 0 ? ` (${advancedFilterCount})` : ''}
+          </Text>
+          {showAdvanced ? (
+            <ChevronUp size={12} className="ml-1 text-muted-foreground" />
+          ) : (
+            <ChevronDown size={12} className="ml-1 text-muted-foreground" />
+          )}
+        </Pressable>
       </ScrollView>
+
+      {/* Row 3: Advanced (condition + sort) — collapsed by default */}
+      {showAdvanced && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerClassName="px-4 pb-2"
+        >
+          {CONDITION_OPTIONS.map((opt) => (
+            <FilterChip
+              key={`cond-${opt.value}`}
+              label={opt.label}
+              active={filters.condition === opt.value}
+              onPress={() => setFilter('condition', opt.value)}
+            />
+          ))}
+
+          <View className="mx-1 w-px bg-border" />
+
+          {SORT_OPTIONS.map((opt) => (
+            <FilterChip
+              key={`sort-${opt.value}`}
+              label={opt.label}
+              active={filters.sort === opt.value}
+              onPress={() => setFilter('sort', opt.value)}
+            />
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 };

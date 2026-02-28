@@ -70,7 +70,7 @@ const buildDemoOffers = (): ListingOffersResponse => {
       address: '333 Divisadero St, San Francisco',
       lat: 37.7749 + 0.008,
       lng: -122.4194 - 0.012,
-      supported_tcgs: ['pokemon', 'mtg', 'yugioh'],
+      supported_tcgs: ['pokemon', 'mtg', 'onepiece'],
       verified: true,
     },
     {

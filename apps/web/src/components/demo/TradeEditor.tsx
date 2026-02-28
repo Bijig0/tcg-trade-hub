@@ -235,6 +235,40 @@ const OfferSection = ({
   );
 };
 
+type CashOnlySectionProps = {
+  label: string;
+  borderColor: string;
+  dotColor: string;
+};
+
+const CashOnlySection = ({ label, borderColor, dotColor }: CashOnlySectionProps) => {
+  return (
+    <div className={`rounded-xl border-2 ${borderColor} bg-card overflow-hidden`}>
+      {/* Section header */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className={`h-2.5 w-2.5 rounded-full ${dotColor}`} />
+          <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+            {label}
+          </span>
+        </div>
+      </div>
+
+      <div className="border-t border-border/50" />
+
+      {/* Cash indicator */}
+      <div className="flex flex-col items-center gap-2 px-4 py-6">
+        <svg className="h-10 w-10 text-muted-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+        </svg>
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Cash
+        </span>
+      </div>
+    </div>
+  );
+};
+
 export const TradeEditor = ({
   listingType,
   myOfferItems,
@@ -245,16 +279,13 @@ export const TradeEditor = ({
   onSubmit,
   onBack,
 }: TradeEditorProps) => {
-  const showMyOffer = listingType === 'wtt' || listingType === 'wts';
-  const showTheirOffer = listingType === 'wtt' || listingType === 'wtb';
-
   const isSubmitDisabled =
     (listingType === 'wtt' && (myOfferItems.length === 0 || theirOfferItems.length === 0)) ||
     (listingType === 'wts' && myOfferItems.length === 0) ||
     (listingType === 'wtb' && theirOfferItems.length === 0);
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex flex-1 flex-col overflow-hidden min-h-0">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-border bg-card px-4 py-3">
         <button
@@ -296,7 +327,9 @@ export const TradeEditor = ({
         </div>
 
         {/* MY OFFER section */}
-        {showMyOffer && (
+        {listingType === 'wtb' ? (
+          <CashOnlySection label="My Offer" borderColor="border-primary" dotColor="bg-primary" />
+        ) : (
           <OfferSection
             label="My Offer"
             items={myOfferItems}
@@ -308,7 +341,9 @@ export const TradeEditor = ({
         )}
 
         {/* THEIR OFFER section */}
-        {showTheirOffer && (
+        {listingType === 'wts' ? (
+          <CashOnlySection label="Their Offer" borderColor="border-violet-400" dotColor="bg-violet-400" />
+        ) : (
           <OfferSection
             label="Their Offer"
             items={theirOfferItems}

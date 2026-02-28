@@ -46,7 +46,7 @@ export const DemoChat = () => {
   return (
     <PhoneFrame>
       <div
-        className="flex flex-1 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+        className="flex flex-1 min-h-0 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
         style={{ transform: `translateX(-${phaseIndex * 100}%)` }}
       >
         {/* Chat panel */}
@@ -80,7 +80,7 @@ export const DemoChat = () => {
         </div>
 
         {/* Trade Editor panel */}
-        <div className="w-full shrink-0 flex flex-col overflow-hidden">
+        <div className="w-full shrink-0 flex flex-col overflow-hidden min-h-0">
           <TradeEditor
             listingType={listingType}
             myOfferItems={myOfferItems}

@@ -1,10 +1,11 @@
-import type { TcgType, CardCondition } from '@tcg-trade-hub/database';
+import type { TcgType, CardCondition, ListingCategory } from '@tcg-trade-hub/database';
 
 type FeedFiltersParam = {
   tcg?: TcgType | null;
   wantToBuy?: boolean;
   wantToTrade?: boolean;
   condition?: CardCondition | null;
+  category?: ListingCategory | null;
   sort?: string;
   searchQuery?: string;
 };
@@ -17,4 +18,5 @@ export const feedKeys = {
   detail: (id: string) => [...feedKeys.all, 'detail', id] as const,
   shops: () => [...feedKeys.all, 'shops'] as const,
   liked: () => [...feedKeys.all, 'liked'] as const,
+  cardListings: (externalId: string) => [...feedKeys.all, 'card-listings', externalId] as const,
 };

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   TcgTypeSchema,
   CardConditionSchema,
+  ListingCategorySchema,
   ListingRowSchema,
   ListingItemRowSchema,
 } from '@tcg-trade-hub/database';
@@ -14,6 +15,7 @@ export const FeedFiltersSchema = z.object({
   wantToBuy: z.boolean().default(false),
   wantToTrade: z.boolean().default(false),
   condition: CardConditionSchema.nullable().default(null),
+  category: ListingCategorySchema.nullable().default(null),
   sort: FeedSortSchema.default('relevance'),
   searchQuery: z.string().default(''),
 });

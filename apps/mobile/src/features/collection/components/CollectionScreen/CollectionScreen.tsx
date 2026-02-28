@@ -281,7 +281,7 @@ const CollectionScreen: React.FC = () => {
 
       {/* TCG Filter Chips */}
       <View className="mb-3 flex-row gap-2">
-        {(['all', 'pokemon', 'mtg', 'yugioh'] as const).map((tcg) => (
+        {(['all', 'pokemon', 'mtg', 'onepiece'] as const).map((tcg) => (
           <Pressable
             key={tcg}
             onPress={() => setFilterTcg(tcg)}

@@ -6,7 +6,7 @@
 
 export type NormalizedCard = {
   externalId: string;
-  tcg: 'pokemon' | 'mtg' | 'yugioh';
+  tcg: 'pokemon' | 'mtg' | 'onepiece';
   name: string;
   setName: string;
   setCode: string;
@@ -140,58 +140,42 @@ export function normalizeMtgCard(card: ScryfallCard): NormalizedCard {
 }
 
 // ---------------------------------------------------------------------------
-// YGOProDeck API (https://db.ygoprodeck.com/api/v7)
+// Scrydex One Piece API (https://api.scrydex.com/onepiece/v1)
 // ---------------------------------------------------------------------------
 
-interface YugiohCard {
-  id: number;
+interface OnePieceCard {
+  id: string;
   name: string;
-  card_sets?: Array<{
-    set_name: string;
-    set_code: string;
-    set_rarity: string;
-    set_price: string;
+  number: string;
+  rarity: string;
+  images?: Array<{
+    small?: string;
+    medium?: string;
+    large?: string;
   }>;
-  card_images: Array<{
-    id: number;
-    image_url: string;
-    image_url_small: string;
-    image_url_cropped: string;
-  }>;
-  card_prices: Array<{
-    cardmarket_price: string;
-    tcgplayer_price: string;
-    ebay_price: string;
-    amazon_price: string;
-    coolstuffinc_price: string;
+  expansion?: {
+    name: string;
+    code: string;
+  };
+  prices?: Array<{
+    variant: string;
+    market?: number;
   }>;
 }
 
-export function normalizeYugiohCard(card: YugiohCard): NormalizedCard {
-  const firstSet = card.card_sets?.[0];
-  const firstImage = card.card_images?.[0];
-  const firstPrice = card.card_prices?.[0];
-
-  let marketPrice: number | null = null;
-  if (firstPrice) {
-    const tcgPrice = parseFloat(firstPrice.tcgplayer_price);
-    const cmPrice = parseFloat(firstPrice.cardmarket_price);
-    if (!isNaN(tcgPrice) && tcgPrice > 0) {
-      marketPrice = tcgPrice;
-    } else if (!isNaN(cmPrice) && cmPrice > 0) {
-      marketPrice = cmPrice;
-    }
-  }
+export function normalizeOnePieceCard(card: OnePieceCard): NormalizedCard {
+  const image = card.images?.[0];
+  const price = card.prices?.find((p) => p.variant === 'normal') ?? card.prices?.[0];
 
   return {
-    externalId: String(card.id),
-    tcg: 'yugioh',
+    externalId: card.id,
+    tcg: 'onepiece',
     name: card.name,
-    setName: firstSet?.set_name ?? 'Unknown Set',
-    setCode: firstSet?.set_code?.split('-')[0] ?? 'N/A',
-    number: firstSet?.set_code ?? String(card.id),
-    imageUrl: firstImage?.image_url ?? '',
-    marketPrice,
-    rarity: firstSet?.set_rarity ?? 'Unknown',
+    setName: card.expansion?.name ?? 'Unknown Set',
+    setCode: card.expansion?.code ?? 'N/A',
+    number: card.number ?? card.id,
+    imageUrl: image?.medium ?? image?.small ?? '',
+    marketPrice: price?.market ?? null,
+    rarity: card.rarity ?? 'Unknown',
   };
 }
