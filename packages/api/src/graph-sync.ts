@@ -8,7 +8,6 @@ import {
 import {
   stateTransitionEntries,
   stateFlowDefinitions,
-  scenarioFlowDefinitions,
 } from "./graph/stateTransitions";
 
 const db = openDb();
@@ -20,7 +19,6 @@ importFromProcedureMeta(
   {
     flowDefinitions: {
       ...stateFlowDefinitions,
-      ...scenarioFlowDefinitions,
       ...pipelineFlowDefinitions,
     },
   },

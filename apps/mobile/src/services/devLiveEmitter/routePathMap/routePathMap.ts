@@ -80,11 +80,6 @@ const ROUTE_PATH_MAP: Record<string, RoutePathMapping> = {
     label: 'Meetup Detail',
     flows: [
       { pathId: 'state:meetup', stepIndex: 1 },
-      // Scenario paths — meetup detail is where confirm/cancel/complete actions happen
-      { pathId: 'scenario:meetup-confirmed', stepIndex: 0 },
-      { pathId: 'scenario:meetup-completed', stepIndex: 0 },
-      { pathId: 'scenario:meetup-cancelled-from-proposed', stepIndex: 0 },
-      { pathId: 'scenario:meetup-cancelled-from-confirmed', stepIndex: 0 },
     ],
   },
 
