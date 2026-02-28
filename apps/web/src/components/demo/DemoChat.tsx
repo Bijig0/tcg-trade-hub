@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import type { NormalizedCard, TcgType, ListingType } from '@tcg-trade-hub/database';
 import { SuccessScreen } from '@/components/SuccessScreen';
 import { PhoneFrame } from './PhoneFrame';
@@ -9,9 +9,6 @@ import { ReservationCard } from './ReservationCard';
 import { TradeEditor } from './TradeEditor';
 import { EmailCaptureStep } from './EmailCaptureStep';
 import { demoConversation } from './demoConversation';
-
-// eslint-disable-next-line no-console
-console.log('[DemoChat] module loaded');
 
 type Phase = 'chat' | 'trade-editor' | 'email' | 'success';
 
@@ -30,14 +27,6 @@ export const DemoChat = () => {
   const [successData, setSuccessData] = useState<SuccessData | null>(null);
 
   const phaseIndex = PHASE_ORDER.indexOf(phase);
-
-  // eslint-disable-next-line no-console
-  console.log('[DemoChat] render, phase:', phase, 'index:', phaseIndex);
-
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[DemoChat] hydrated/mounted');
-  }, []);
 
   const handleAddCard = (card: NormalizedCard) => {
     setSelectedCards((prev) => {
@@ -92,11 +81,7 @@ export const DemoChat = () => {
                 return (
                   <ReservationCard
                     key={msg.id}
-                    onBuildList={() => {
-                      // eslint-disable-next-line no-console
-                      console.log('[DemoChat] Build Your List clicked');
-                      setPhase('trade-editor');
-                    }}
+                    onBuildList={() => setPhase('trade-editor')}
                   />
                 );
               }
