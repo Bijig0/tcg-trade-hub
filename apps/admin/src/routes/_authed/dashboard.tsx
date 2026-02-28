@@ -123,9 +123,12 @@ function AdminDashboard() {
   // Scenarios
   const { data: scenariosList } = useQuery({
     queryKey: ['scenarios'],
-    queryFn: () =>
-      fetch(`${GRAPH_SERVER_URL}/api/scenarios`)
-        .then((r) => r.json()) as Promise<ScenarioConfig[]>,
+    queryFn: async () => {
+      const res = await fetch(`${GRAPH_SERVER_URL}/api/scenarios`);
+      if (!res.ok) return [] as ScenarioConfig[];
+      const data = await res.json();
+      return Array.isArray(data) ? (data as ScenarioConfig[]) : [];
+    },
     enabled: health.status === 'healthy',
   });
 
