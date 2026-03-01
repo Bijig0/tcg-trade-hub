@@ -111,12 +111,12 @@ export const Hero = () => (
           >
             Get Started
           </Link>
-          <a
-            href="#how-it-works"
+          <Link
+            to="/get-started"
             className="inline-block rounded-xl border border-border px-8 py-3.5 text-center text-sm font-semibold text-foreground transition-colors hover:bg-accent"
           >
             See How It Works
-          </a>
+          </Link>
         </div>
       </div>
 

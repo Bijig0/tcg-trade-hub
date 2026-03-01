@@ -1,6 +1,4 @@
-type DemoOfferCardProps = {
-  onCounterOffer: () => void;
-};
+import { Link } from '@tanstack/react-router';
 
 type OfferCardItem = {
   name: string;
