@@ -270,9 +270,9 @@ const MeetupDetailScreen = () => {
         >
           <Pressable
             onPress={handleCenterOnMarker}
-            className="h-11 w-11 items-center justify-center rounded-full border border-border bg-card shadow-md"
+            className="h-11 w-11 items-center justify-center rounded-full bg-primary shadow-md"
           >
-            <Crosshair size={20} className="text-primary" />
+            <Crosshair size={20} color="white" />
           </Pressable>
         </Animated.View>
       ) : null}
