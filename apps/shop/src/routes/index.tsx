@@ -14,7 +14,7 @@ function LandingPage() {
           <span className="block text-primary">Shop Portal</span>
         </h1>
         <p className="mt-4 text-muted-foreground">
-          Register your local game store, create events, and connect with
+          Manage your local game store, create events, and connect with
           collectors in your area.
         </p>
         <div className="mt-8 flex flex-col gap-3">
@@ -23,12 +23,6 @@ function LandingPage() {
             className="rounded-lg bg-primary px-6 py-3 text-center font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Sign In
-          </Link>
-          <Link
-            to="/auth/signup"
-            className="rounded-lg border border-border bg-card px-6 py-3 text-center font-medium text-card-foreground transition-colors hover:bg-accent"
-          >
-            Create Account
           </Link>
         </div>
       </div>

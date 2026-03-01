@@ -11,9 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
-import { Route as AuthedRegisterRouteImport } from './routes/_authed/register'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
 import { Route as ApiRpcSplatRouteImport } from './routes/api/rpc/$'
@@ -31,20 +29,10 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthSignupRoute = AuthSignupRouteImport.update({
-  id: '/auth/signup',
-  path: '/auth/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthedRegisterRoute = AuthedRegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => AuthedRoute,
 } as any)
 const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
   id: '/dashboard',
@@ -88,9 +76,7 @@ const AuthedDashboardEventsNewRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof AuthedDashboardRouteWithChildren
-  '/register': typeof AuthedRegisterRoute
   '/auth/login': typeof AuthLoginRoute
-  '/auth/signup': typeof AuthSignupRoute
   '/dashboard/notifications': typeof AuthedDashboardNotificationsRoute
   '/dashboard/profile': typeof AuthedDashboardProfileRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
@@ -100,9 +86,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/register': typeof AuthedRegisterRoute
   '/auth/login': typeof AuthLoginRoute
-  '/auth/signup': typeof AuthSignupRoute
   '/dashboard/notifications': typeof AuthedDashboardNotificationsRoute
   '/dashboard/profile': typeof AuthedDashboardProfileRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
@@ -115,9 +99,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
   '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
-  '/_authed/register': typeof AuthedRegisterRoute
   '/auth/login': typeof AuthLoginRoute
-  '/auth/signup': typeof AuthSignupRoute
   '/_authed/dashboard/notifications': typeof AuthedDashboardNotificationsRoute
   '/_authed/dashboard/profile': typeof AuthedDashboardProfileRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
@@ -130,9 +112,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
-    | '/register'
     | '/auth/login'
-    | '/auth/signup'
     | '/dashboard/notifications'
     | '/dashboard/profile'
     | '/api/rpc/$'
@@ -142,9 +122,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/register'
     | '/auth/login'
-    | '/auth/signup'
     | '/dashboard/notifications'
     | '/dashboard/profile'
     | '/api/rpc/$'
@@ -156,9 +134,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authed'
     | '/_authed/dashboard'
-    | '/_authed/register'
     | '/auth/login'
-    | '/auth/signup'
     | '/_authed/dashboard/notifications'
     | '/_authed/dashboard/profile'
     | '/api/rpc/$'
@@ -171,7 +147,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRoute: typeof AuthedRouteWithChildren
   AuthLoginRoute: typeof AuthLoginRoute
-  AuthSignupRoute: typeof AuthSignupRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
 }
 
@@ -191,26 +166,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/signup': {
-      id: '/auth/signup'
-      path: '/auth/signup'
-      fullPath: '/auth/signup'
-      preLoaderRoute: typeof AuthSignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth/login': {
       id: '/auth/login'
       path: '/auth/login'
       fullPath: '/auth/login'
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authed/register': {
-      id: '/_authed/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof AuthedRegisterRouteImport
-      parentRoute: typeof AuthedRoute
     }
     '/_authed/dashboard': {
       id: '/_authed/dashboard'
@@ -286,12 +247,10 @@ const AuthedDashboardRouteWithChildren = AuthedDashboardRoute._addFileChildren(
 
 interface AuthedRouteChildren {
   AuthedDashboardRoute: typeof AuthedDashboardRouteWithChildren
-  AuthedRegisterRoute: typeof AuthedRegisterRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedDashboardRoute: AuthedDashboardRouteWithChildren,
-  AuthedRegisterRoute: AuthedRegisterRoute,
 }
 
 const AuthedRouteWithChildren =
@@ -301,18 +260,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
   AuthLoginRoute: AuthLoginRoute,
-  AuthSignupRoute: AuthSignupRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

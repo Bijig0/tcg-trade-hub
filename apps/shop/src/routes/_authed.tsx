@@ -9,12 +9,14 @@ export const Route = createFileRoute('/_authed')({
 function AuthedLayout() {
   const { user, roles, isLoading, signOut } = useAuth();
   const hasSignedOut = useRef(false);
+  const wasRejected = useRef(false);
 
   const isShopOwner = roles.includes('shop_owner');
 
   useEffect(() => {
     if (!isLoading && user && !isShopOwner && !hasSignedOut.current) {
       hasSignedOut.current = true;
+      wasRejected.current = true;
       signOut();
     }
   }, [isLoading, user, isShopOwner, signOut]);
@@ -28,7 +30,10 @@ function AuthedLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/auth/login" search={{ error: 'unauthorized' }} />;
+    if (wasRejected.current) {
+      return <Navigate to="/auth/login" search={{ error: 'unauthorized' }} />;
+    }
+    return <Navigate to="/auth/login" />;
   }
 
   if (!isShopOwner) {
