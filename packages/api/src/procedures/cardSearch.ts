@@ -9,7 +9,7 @@ const MAX_RESULTS = 20;
 const FETCH_TIMEOUT_MS = 10_000;
 
 // ---------------------------------------------------------------------------
-// Scrydex API (One Piece) — requires SCRYDEX_API_KEY + SCRYDEX_TEAM_ID
+// Scrydex API (Pokemon, One Piece) — requires SCRYDEX_API_KEY + SCRYDEX_TEAM_ID
 // https://api.scrydex.com/{tcg}/v1
 // ---------------------------------------------------------------------------
 
@@ -71,22 +71,32 @@ const searchScrydex = async (
     return [];
   }
 
-  const url = `https://api.scrydex.com/onepiece/v1/cards?q=name:${encodeURIComponent(query)}*&page_size=${MAX_RESULTS}&select=id,name,number,rarity,images,expansion&include=prices`;
-  const res = await fetchWithTimeout(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Api-Key': apiKey,
-      'X-Team-ID': teamId,
-    },
-  });
+  const url = `https://api.scrydex.com/${tcg}/v1/cards?q=name:${encodeURIComponent(query)}*&page_size=${MAX_RESULTS}&select=id,name,number,rarity,images,expansion&include=prices`;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': apiKey,
+        'X-Team-ID': teamId,
+      },
+    });
+    clearTimeout(timer);
 
-  if (res.status === 404) return [];
-  if (!res.ok) {
-    throw new Error(`Scrydex ${tcg} API error (${res.status})`);
+    if (res.status === 404) return [];
+    if (!res.ok) {
+      console.warn(`[cardSearch] Scrydex ${tcg} API error (${res.status})`);
+      return [];
+    }
+
+    const data = (await res.json()) as { data?: ScrydexCard[] };
+    return (data.data ?? []).map((card) => normalizeScrydexCard(card, tcg));
+  } catch (err) {
+    console.warn(`[cardSearch] Scrydex ${tcg} fetch failed:`, err);
+    return [];
   }
-
-  const data = (await res.json()) as { data?: ScrydexCard[] };
-  return (data.data ?? []).map((card) => normalizeScrydexCard(card, tcg));
 };
 
 // ---------------------------------------------------------------------------
@@ -146,15 +156,24 @@ const normalizeMtgCard = (card: ScryfallCard): NormalizedCard => {
 
 const searchMtg = async (query: string): Promise<NormalizedCard[]> => {
   const url = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(query)}&unique=prints&order=released&dir=desc`;
-  const res = await fetchWithTimeout(url);
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
 
-  if (res.status === 404) return [];
-  if (!res.ok) {
-    throw new Error(`Scryfall API error (${res.status})`);
+    if (res.status === 404) return [];
+    if (!res.ok) {
+      console.warn(`[cardSearch] Scryfall API error (${res.status})`);
+      return [];
+    }
+
+    const data = (await res.json()) as { data?: ScryfallCard[] };
+    return (data.data ?? []).slice(0, MAX_RESULTS).map(normalizeMtgCard);
+  } catch (err) {
+    console.warn('[cardSearch] Scryfall fetch failed:', err);
+    return [];
   }
-
-  const data = (await res.json()) as { data?: ScryfallCard[] };
-  return (data.data ?? []).slice(0, MAX_RESULTS).map(normalizeMtgCard);
 };
 
 // ---------------------------------------------------------------------------
@@ -162,7 +181,7 @@ const searchMtg = async (query: string): Promise<NormalizedCard[]> => {
 // ---------------------------------------------------------------------------
 
 const searchByTcg: Record<TcgType, (query: string) => Promise<NormalizedCard[]>> = {
-  pokemon: searchPokemon,
+  pokemon: (query) => searchScrydex(query, 'pokemon'),
   mtg: searchMtg,
   onepiece: (query) => searchScrydex(query, 'onepiece'),
 };
