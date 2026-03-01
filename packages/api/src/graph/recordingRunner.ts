@@ -152,7 +152,7 @@ const triggerRecording = async (
   try {
     await execFileAsync(
       "maestro",
-      ["record", testFile, outputPath],
+      ["record", "--local", testFile, outputPath],
       { timeout: 120_000 },
     );
   } catch (err) {

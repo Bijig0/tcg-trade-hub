@@ -140,7 +140,7 @@ const runMaestroRecord = (
 ): Promise<MaestroRecordResult> => {
   return new Promise((resolve) => {
     const startTime = Date.now();
-    const child = spawn("maestro", ["record", testFile, outputPath], {
+    const child = spawn("maestro", ["record", "--local", testFile, outputPath], {
       stdio: ["ignore", "pipe", "pipe"],
       timeout: timeoutMs,
     });
