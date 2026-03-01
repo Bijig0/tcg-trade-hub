@@ -9,6 +9,7 @@ import TestCoverage from '@/features/maestro/components/TestCoverage/TestCoverag
 import RecordingModal from '@/features/maestro/components/RecordingModal/RecordingModal';
 import useMobileLink from '@/hooks/useMobileLink/useMobileLink';
 import { useRecording, useRecordingList, recordingKeys } from '@/hooks/useRecording/useRecording';
+import useBatchTestRun from '@/hooks/useBatchTestRun/useBatchTestRun';
 import type { Simulator } from '@/hooks/useMobileLink/useMobileLink';
 
 const GRAPH_SERVER_URL = 'http://localhost:4243';
@@ -178,6 +179,9 @@ function AdminDashboard() {
     isDeleting,
   } = useRecording(recordingPathId);
 
+  // --- Batch test run ---
+  const batch = useBatchTestRun();
+
   // --- Scenario run orchestration ---
   const [runningScenarioId, setRunningScenarioId] = useState<string | null>(null);
   const [scenarioErrors, setScenarioErrors] = useState<Record<string, ScenarioErrorInfo>>({});
@@ -221,15 +225,57 @@ function AdminDashboard() {
     },
   });
 
-  // Derive per-scenario statuses
+  // Derive per-scenario statuses (batch progress takes priority)
   const scenarioStatuses = useMemo(() => {
     const map: Record<string, ScenarioStatus> = {};
     for (const scenarios of Object.values(scenariosByPath)) {
       for (const s of scenarios) {
+        // Batch progress events override everything when batch is running
+        const batchEntry = batch.scenarioProgress[s.id];
+        if (batchEntry) {
+          if (batchEntry.phase === 'testing') {
+            map[s.id] = 'testing';
+            continue;
+          }
+          if (batchEntry.phase === 'recording') {
+            map[s.id] = 'recording';
+            continue;
+          }
+          if (batchEntry.phase === 'done' && batchEntry.status === 'cached') {
+            map[s.id] = 'cached';
+            continue;
+          }
+          if (batchEntry.phase === 'done' && batchEntry.status === 'passed') {
+            map[s.id] = 'cached';
+            continue;
+          }
+          if (batchEntry.phase === 'done' && batchEntry.status === 'failed') {
+            map[s.id] = 'error';
+            if (!scenarioErrors[s.id]) {
+              // Batch runner reported failure but we don't have an error object yet
+              // The error message is in batchEntry.message
+            }
+            continue;
+          }
+          if (batchEntry.phase === 'hash-check') {
+            map[s.id] = 'batch-queued';
+            continue;
+          }
+        }
+
+        // When batch is running but this scenario hasn't been reached yet
+        if (batch.isBatchRunning && !batchEntry) {
+          map[s.id] = 'batch-queued';
+          continue;
+        }
+
+        // Regular status derivation
         if (s.id === runningScenarioId) {
           map[s.id] = 'running';
         } else if (scenarioErrors[s.id]) {
           map[s.id] = 'error';
+        } else if (batch.scenarioLastPassed[s.id]) {
+          map[s.id] = 'cached';
         } else if (recordedIds.has(s.id)) {
           map[s.id] = 'recorded';
         } else {
@@ -238,7 +284,7 @@ function AdminDashboard() {
       }
     }
     return map;
-  }, [scenariosByPath, runningScenarioId, scenarioErrors, recordedIds]);
+  }, [scenariosByPath, runningScenarioId, scenarioErrors, recordedIds, batch.scenarioProgress, batch.isBatchRunning, batch.scenarioLastPassed]);
 
   const handleRunScenario = useCallback((scenarioId: string) => {
     runMutation.mutate(scenarioId);
@@ -317,6 +363,11 @@ function AdminDashboard() {
             onPlayScenarioRecording={handlePlayRecording}
             onRerunScenario={handleRerunScenario}
             setupStatus={setupStatus}
+            scenarioLastPassed={batch.scenarioLastPassed}
+            onRunAll={batch.runAll}
+            onRunFailed={batch.runFailed}
+            isBatchRunning={batch.isBatchRunning}
+            batchProgress={batch.batchProgress}
           />
         </div>
         <ChatPanel isOpen={isChatOpen} onToggle={toggleChat} />
