@@ -106,6 +106,8 @@ export type GraphContext = {
   getLatestTestRuns: () => z.infer<typeof TestRunMetaSchema>[];
   triggerBatchTest: (mode: z.infer<typeof BatchModeSchema>) => Promise<BatchResultType>;
   isBatchRunning: () => boolean;
+  abortBatch: () => boolean;
+  resetBatchState: () => void;
 };
 
 const os = baseOs.$context<GraphContext>();
@@ -169,6 +171,19 @@ const maestroBatchStatus = os
     return { running: context.isBatchRunning() };
   });
 
+const maestroBatchAbort = os
+  .output(z.object({ aborted: z.boolean() }))
+  .handler(async ({ context }) => {
+    return { aborted: context.abortBatch() };
+  });
+
+const maestroBatchReset = os
+  .output(z.object({ reset: z.literal(true) }))
+  .handler(async ({ context }) => {
+    context.resetBatchState();
+    return { reset: true as const };
+  });
+
 // ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
@@ -181,6 +196,8 @@ export const graphRouter = {
     testRuns: maestroTestRuns,
     batchRun: maestroBatchRun,
     batchStatus: maestroBatchStatus,
+    batchAbort: maestroBatchAbort,
+    batchReset: maestroBatchReset,
   },
 };
 

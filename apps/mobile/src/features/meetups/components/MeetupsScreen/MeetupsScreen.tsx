@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, SectionList, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import EmptyState from '@/components/ui/EmptyState/EmptyState';
 import RefreshableScreen from '@/components/ui/RefreshableScreen/RefreshableScreen';
 import useMeetups, { type MeetupWithDetails } from '../../hooks/useMeetups/useMeetups';
@@ -19,38 +18,8 @@ type MeetupSection = {
 const MeetupsScreen = () => {
   const { data, isLoading, isError } = useMeetups();
 
-  if (isLoading) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['top']}>
-        <ActivityIndicator size="large" />
-      </SafeAreaView>
-    );
-  }
-
-  if (isError) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-background px-6" edges={['top']}>
-        <Text className="text-center text-base text-destructive">
-          Failed to load meetups. Pull to retry.
-        </Text>
-      </SafeAreaView>
-    );
-  }
-
   const upcoming = data?.upcoming ?? [];
   const past = data?.past ?? [];
-
-  if (upcoming.length === 0 && past.length === 0) {
-    return (
-      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-        <EmptyState
-          icon={<Text className="text-5xl">🤝</Text>}
-          title="No meetups yet"
-          description="Match and chat with traders to plan meetups!"
-        />
-      </SafeAreaView>
-    );
-  }
 
   const sections: MeetupSection[] = [];
   if (upcoming.length > 0) {
@@ -86,6 +55,30 @@ const MeetupsScreen = () => {
           refreshing={isRefreshing}
           contentContainerClassName="pb-8"
           stickySectionHeadersEnabled={false}
+          ListHeaderComponent={
+            <View className="px-4 pb-3 pt-4">
+              <Text className="text-2xl font-bold text-foreground">Meetups</Text>
+            </View>
+          }
+          ListEmptyComponent={
+            isLoading ? (
+              <View className="flex-1 items-center justify-center pt-40">
+                <ActivityIndicator size="large" />
+              </View>
+            ) : isError ? (
+              <View className="flex-1 items-center justify-center px-6 pt-40">
+                <Text className="text-center text-base text-destructive">
+                  Failed to load meetups. Pull to retry.
+                </Text>
+              </View>
+            ) : (
+              <EmptyState
+                icon={<Text className="text-5xl">🤝</Text>}
+                title="No meetups yet"
+                description="Match and chat with traders to plan meetups!"
+              />
+            )
+          }
         />
       )}
     </RefreshableScreen>

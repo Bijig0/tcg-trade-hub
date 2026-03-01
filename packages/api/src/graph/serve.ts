@@ -28,7 +28,7 @@ import {
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { triggerRecording, checkMaestroHealth, RecordingError, type RecordingErrorCode } from "./recordingRunner";
-import { runBatchTests, isBatchRunning } from "./batchTestRunner";
+import { runBatchTests, isBatchRunning, abortBatch, killAllActiveProcesses } from "./batchTestRunner";
 import { getScenarios } from "./scenarios";
 import { WebSocketServer, type WebSocket } from "ws";
 import { z } from "zod";
@@ -572,6 +572,10 @@ const server = createServer(async (req, res) => {
             });
           },
           isBatchRunning: () => isBatchRunning(),
+          abortBatch: () => abortBatch(),
+          resetBatchState: () => {
+            killAllActiveProcesses();
+          },
         },
       });
       if (matched) return;
@@ -620,4 +624,18 @@ server.listen(PORT, "127.0.0.1", () => {
   console.log(`  Maestro:   http://localhost:${PORT}/api/maestro/manifest`);
   console.log(`  Sims:      http://localhost:${PORT}/api/simulators`);
   console.log(`  Recordings:http://localhost:${PORT}/api/recordings`);
+});
+
+// ---------------------------------------------------------------------------
+// Graceful shutdown — kill orphaned maestro processes
+// ---------------------------------------------------------------------------
+
+process.on("SIGTERM", () => {
+  killAllActiveProcesses();
+  process.exit(0);
+});
+
+process.on("SIGINT", () => {
+  killAllActiveProcesses();
+  process.exit(0);
 });

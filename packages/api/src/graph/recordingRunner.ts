@@ -227,5 +227,5 @@ const checkMaestroHealth = async (): Promise<{
   return { maestroInstalled, maestroVersion, simulatorBooted, simulatorName };
 };
 
-export { triggerRecording, checkMaestroHealth, RecordingError, SCENARIO_TEST_MAP };
+export { triggerRecording, checkMaestroHealth, RecordingError, parseMaestroError, SCENARIO_TEST_MAP };
 export type { RecordingErrorCode };

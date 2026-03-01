@@ -1,15 +1,14 @@
 /**
  * Batch Maestro test runner with content-based caching.
  *
- * Two-phase execution per scenario:
- *   1. Fast `maestro test <flow.yaml>` — exit 0 = pass, 1 = fail
- *   2. `maestro record <flow.yaml> <output.mp4>` — only if phase 1 passed
+ * Single-phase execution per scenario:
+ *   `maestro record <flow.yaml> <output.mp4>` — produces exit code + video
+ *   Video is saved regardless of pass/fail so failures are visible.
  *
  * Results are cached in SQLite keyed on SHA-256 of flow file contents.
  * Subsequent runs skip scenarios whose flow files haven't changed.
  */
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
+import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
@@ -22,10 +21,8 @@ import {
 } from "flow-graph";
 import type Database from "better-sqlite3";
 import { hashFlowFile } from "./flowHasher";
-import { SCENARIO_TEST_MAP } from "./recordingRunner";
+import { SCENARIO_TEST_MAP, parseMaestroError } from "./recordingRunner";
 import { getScenarios, type ScenarioConfig } from "./scenarios";
-
-const execFileAsync = promisify(execFile);
 
 const E2E_BASE = resolve(
   import.meta.dirname ?? __dirname,
@@ -42,7 +39,7 @@ type BatchProgressEvent = {
   type: "batch-progress";
   batchId: string;
   scenarioId: string;
-  phase: "hash-check" | "testing" | "recording" | "done";
+  phase: "hash-check" | "recording" | "done";
   status: "running" | "passed" | "failed" | "cached";
   message: string;
   progress: number; // 0-1
@@ -63,12 +60,109 @@ type BatchOptions = {
 };
 
 // ---------------------------------------------------------------------------
-// Concurrency guard
+// Process registry — tracks spawned child processes for cleanup
 // ---------------------------------------------------------------------------
 
-let batchRunning = false;
+const activeProcesses = new Set<ChildProcess>();
 
-const isBatchRunning = (): boolean => batchRunning;
+const killAllActiveProcesses = (): void => {
+  for (const proc of activeProcesses) {
+    try {
+      proc.kill("SIGTERM");
+    } catch {
+      /* already dead */
+    }
+  }
+  activeProcesses.clear();
+};
+
+// ---------------------------------------------------------------------------
+// Timestamp-based liveness (replaces boolean flag)
+// ---------------------------------------------------------------------------
+
+let batchStartedAt: number | null = null;
+
+const BATCH_STALENESS_MS = 15 * 60 * 1000; // 15 minutes
+
+const isBatchRunning = (): boolean => {
+  if (batchStartedAt === null) return false;
+  if (Date.now() - batchStartedAt > BATCH_STALENESS_MS) {
+    batchStartedAt = null;
+    killAllActiveProcesses();
+    return false;
+  }
+  return true;
+};
+
+// ---------------------------------------------------------------------------
+// Abort support
+// ---------------------------------------------------------------------------
+
+let batchAbortController: AbortController | null = null;
+
+const abortBatch = (): boolean => {
+  if (!batchStartedAt) return false;
+  batchAbortController?.abort();
+  killAllActiveProcesses();
+  batchStartedAt = null;
+  batchAbortController = null;
+  return true;
+};
+
+// ---------------------------------------------------------------------------
+// Single-phase maestro record helper
+// ---------------------------------------------------------------------------
+
+type MaestroRecordResult = {
+  exitCode: number;
+  passed: boolean;
+  stderr: string;
+  videoProduced: boolean;
+  durationMs: number;
+};
+
+const runMaestroRecord = (
+  testFile: string,
+  outputPath: string,
+  timeoutMs: number,
+): Promise<MaestroRecordResult> => {
+  return new Promise((resolve) => {
+    const startTime = Date.now();
+    const child = spawn("maestro", ["record", testFile, outputPath], {
+      stdio: ["ignore", "ignore", "pipe"],
+      timeout: timeoutMs,
+    });
+
+    activeProcesses.add(child);
+
+    const stderrChunks: Buffer[] = [];
+    child.stderr.on("data", (chunk: Buffer) => stderrChunks.push(chunk));
+
+    child.on("close", (code) => {
+      activeProcesses.delete(child);
+      const exitCode = code ?? 1;
+      const stderr = Buffer.concat(stderrChunks).toString();
+      resolve({
+        exitCode,
+        passed: exitCode === 0,
+        stderr,
+        videoProduced: existsSync(outputPath),
+        durationMs: Date.now() - startTime,
+      });
+    });
+
+    child.on("error", () => {
+      activeProcesses.delete(child);
+      resolve({
+        exitCode: 1,
+        passed: false,
+        stderr: "Failed to spawn maestro process",
+        videoProduced: existsSync(outputPath),
+        durationMs: Date.now() - startTime,
+      });
+    });
+  });
+};
 
 // ---------------------------------------------------------------------------
 // Core runner
@@ -79,11 +173,13 @@ const runBatchTests = async (
   recordingsDir: string,
   options: BatchOptions,
 ): Promise<BatchResult> => {
-  if (batchRunning) {
+  if (isBatchRunning()) {
     throw new Error("A batch run is already in progress");
   }
 
-  batchRunning = true;
+  batchStartedAt = Date.now();
+  batchAbortController = new AbortController();
+  const { signal } = batchAbortController;
   const batchId = randomUUID();
   const startTime = Date.now();
 
@@ -113,6 +209,11 @@ const runBatchTests = async (
     let cached = 0;
 
     for (let i = 0; i < scenarios.length; i++) {
+      // Check for abort before each scenario
+      if (signal.aborted) {
+        break;
+      }
+
       const scenario = scenarios[i];
       const testRelPath = SCENARIO_TEST_MAP[scenario.id];
       if (!testRelPath) continue;
@@ -171,14 +272,14 @@ const runBatchTests = async (
         continue;
       }
 
-      // --- Phase 2: Run maestro test ---
+      // --- Phase 2: Record (single-phase — produces exit code + video) ---
       options.onProgress?.({
         type: "batch-progress",
         batchId,
         scenarioId: scenario.id,
-        phase: "testing",
+        phase: "recording",
         status: "running",
-        message: "Running test...",
+        message: "Recording...",
         progress: i / total,
       });
 
@@ -191,41 +292,51 @@ const runBatchTests = async (
         batchId,
       });
 
-      const testStartTime = Date.now();
-      let testPassed = false;
-      let testError: string | null = null;
+      const safeName = scenario.id.replace(/[^a-zA-Z0-9-]/g, "-");
+      const timestamp = Date.now();
+      const filename = `${safeName}-${timestamp}.mp4`;
+      const outputPath = join(recordingsDir, filename);
 
-      try {
-        await execFileAsync("maestro", ["test", testFile], {
-          timeout: 180_000,
+      const result = await runMaestroRecord(testFile, outputPath, 180_000);
+
+      // Save recording if video was produced (regardless of pass/fail)
+      if (result.videoProduced) {
+        upsertRecording(db, {
+          pathId: scenario.id,
+          filename,
+          durationMs: null,
+          stepTimestamps: [],
         });
-        testPassed = true;
-      } catch (err) {
-        const raw = (err as Error).message;
-        const lines = raw.split("\n").filter(Boolean);
-        testError =
-          lines.find(
-            (l) =>
-              !l.startsWith("Usage:") &&
-              !l.startsWith("maestro ") &&
-              !l.startsWith("-") &&
-              l.length > 10,
-          ) ??
-          lines[0] ??
-          raw;
-        if (testError.length > 200) testError = testError.slice(0, 200) + "...";
       }
 
-      const testDurationMs = Date.now() - testStartTime;
-
-      if (!testPassed) {
+      if (result.passed) {
+        upsertTestRun(db, {
+          scenarioId: scenario.id,
+          flowFile: testRelPath,
+          flowHash,
+          status: "passed",
+          durationMs: result.durationMs,
+          batchId,
+        });
+        passed++;
+        options.onProgress?.({
+          type: "batch-progress",
+          batchId,
+          scenarioId: scenario.id,
+          phase: "done",
+          status: "passed",
+          message: `Passed (${(result.durationMs / 1000).toFixed(1)}s)`,
+          progress,
+        });
+      } else {
+        const errorMessage = parseMaestroError(result.stderr);
         upsertTestRun(db, {
           scenarioId: scenario.id,
           flowFile: testRelPath,
           flowHash,
           status: "failed",
-          durationMs: testDurationMs,
-          errorMessage: testError,
+          durationMs: result.durationMs,
+          errorMessage,
           batchId,
         });
         failed++;
@@ -235,65 +346,10 @@ const runBatchTests = async (
           scenarioId: scenario.id,
           phase: "done",
           status: "failed",
-          message: testError ?? "Test failed",
+          message: errorMessage,
           progress,
         });
-        continue;
       }
-
-      // --- Phase 3: Record (best-effort) ---
-      options.onProgress?.({
-        type: "batch-progress",
-        batchId,
-        scenarioId: scenario.id,
-        phase: "recording",
-        status: "running",
-        message: "Recording video...",
-        progress: i / total,
-      });
-
-      const safeName = scenario.id.replace(/[^a-zA-Z0-9-]/g, "-");
-      const timestamp = Date.now();
-      const filename = `${safeName}-${timestamp}.mp4`;
-      const outputPath = join(recordingsDir, filename);
-
-      try {
-        await execFileAsync("maestro", ["record", testFile, outputPath], {
-          timeout: 180_000,
-        });
-
-        if (existsSync(outputPath)) {
-          upsertRecording(db, {
-            pathId: scenario.id,
-            filename,
-            durationMs: null,
-            stepTimestamps: [],
-          });
-        }
-      } catch {
-        // Recording is best-effort — test still passed
-      }
-
-      // Mark test as passed regardless of recording outcome
-      upsertTestRun(db, {
-        scenarioId: scenario.id,
-        flowFile: testRelPath,
-        flowHash,
-        status: "passed",
-        durationMs: testDurationMs,
-        batchId,
-      });
-      passed++;
-
-      options.onProgress?.({
-        type: "batch-progress",
-        batchId,
-        scenarioId: scenario.id,
-        phase: "done",
-        status: "passed",
-        message: `Passed (${(testDurationMs / 1000).toFixed(1)}s)`,
-        progress,
-      });
     }
 
     return {
@@ -305,7 +361,8 @@ const runBatchTests = async (
       durationMs: Date.now() - startTime,
     };
   } finally {
-    batchRunning = false;
+    batchStartedAt = null;
+    batchAbortController = null;
   }
 };
 
@@ -323,5 +380,5 @@ const formatAgo = (isoString: string): string => {
   return `${hours}h ago`;
 };
 
-export { runBatchTests, isBatchRunning };
+export { runBatchTests, isBatchRunning, abortBatch, killAllActiveProcesses };
 export type { BatchMode, BatchProgressEvent, BatchResult, BatchOptions };
