@@ -98,10 +98,14 @@ const readBody = (req: import("node:http").IncomingMessage): Promise<string> =>
 // ---------------------------------------------------------------------------
 
 const ALLOWED_ORIGINS = new Set([
-  "http://localhost:3001",  // admin UI (dev)
-  "http://127.0.0.1:3001",
   "http://localhost:3000",  // web app (dev)
   "http://127.0.0.1:3000",
+  "http://localhost:3001",  // admin UI (dev)
+  "http://127.0.0.1:3001",
+  "http://localhost:3004",  // admin UI (alt port)
+  "http://127.0.0.1:3004",
+  "http://localhost:5173",  // vite default
+  "http://127.0.0.1:5173",
   `http://localhost:${PORT}`,
   `http://127.0.0.1:${PORT}`,
 ]);
