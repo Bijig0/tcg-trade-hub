@@ -23,8 +23,12 @@ type TradeEditorProps = {
   listingType: ListingType;
   myOfferItems: OfferItem[];
   theirOfferItems: OfferItem[];
+  myOfferBlanked: boolean;
+  theirOfferBlanked: boolean;
   onMyOfferItemsChange: (items: OfferItem[]) => void;
   onTheirOfferItemsChange: (items: OfferItem[]) => void;
+  onMyOfferBlankedChange: (blanked: boolean) => void;
+  onTheirOfferBlankedChange: (blanked: boolean) => void;
   onListingTypeChange: (type: ListingType) => void;
   onSubmit: () => void;
   onBack: () => void;
@@ -34,6 +38,8 @@ type OfferSectionProps = {
   label: string;
   items: OfferItem[];
   onItemsChange: (items: OfferItem[]) => void;
+  blanked: boolean;
+  onBlankedChange: (blanked: boolean) => void;
   enableCash?: boolean;
   borderColor: string;
   dotColor: string;
@@ -43,6 +49,8 @@ const OfferSection = ({
   label,
   items,
   onItemsChange,
+  blanked,
+  onBlankedChange,
   enableCash = false,
   borderColor,
   dotColor,
@@ -65,6 +73,7 @@ const OfferSection = ({
 
   const handleClear = () => {
     onItemsChange([]);
+    onBlankedChange(false);
     setShowCash(false);
     setCashAmount('');
   };
@@ -94,7 +103,7 @@ const OfferSection = ({
             {label}
           </span>
         </div>
-        {items.length > 0 && (
+        {(items.length > 0 || blanked) && (
           <button
             type="button"
             onClick={handleClear}
