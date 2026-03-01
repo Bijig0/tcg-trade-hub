@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { client } from '@/lib/orpc';
+import { collectionKeys } from '@/features/collection/queryKeys';
+import { listingKeys } from '@/features/listings/queryKeys';
 
 export const Route = createFileRoute('/_authed/dashboard/')({
   component: DashboardHome,
@@ -26,6 +28,16 @@ function DashboardHome() {
     enabled: !!shopId,
   });
 
+  const { data: portfolioData } = useQuery({
+    queryKey: collectionKeys.summary(),
+    queryFn: () => client.collection.portfolioSummary(),
+  });
+
+  const { data: activeListingsData } = useQuery({
+    queryKey: listingKeys.list({ status: 'active' }),
+    queryFn: () => client.listing.myList({ status: 'active', limit: 1, offset: 0 }),
+  });
+
   const upcomingEvents = eventsData?.events?.filter(
     (e) => e.status === 'published' && new Date(e.starts_at) > new Date(),
   ) ?? [];
@@ -36,7 +48,31 @@ function DashboardHome() {
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-foreground">Dashboard</h2>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="rounded-xl border border-border bg-card p-5">
+          <div className="text-sm text-muted-foreground">Collection</div>
+          <div className="mt-1 text-2xl font-bold text-foreground">
+            {portfolioData?.total_items ?? 0}
+          </div>
+          <Link to="/dashboard/collection" className="mt-1 text-xs text-primary hover:underline">
+            View all
+          </Link>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <div className="text-sm text-muted-foreground">Portfolio Value</div>
+          <div className="mt-1 text-2xl font-bold text-foreground">
+            ${(portfolioData?.total_value ?? 0).toFixed(2)}
+          </div>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <div className="text-sm text-muted-foreground">Active Listings</div>
+          <div className="mt-1 text-2xl font-bold text-foreground">
+            {activeListingsData?.total ?? 0}
+          </div>
+          <Link to="/dashboard/listings" className="mt-1 text-xs text-primary hover:underline">
+            View all
+          </Link>
+        </div>
         <div className="rounded-xl border border-border bg-card p-5">
           <div className="text-sm text-muted-foreground">Upcoming Events</div>
           <div className="mt-1 text-2xl font-bold text-foreground">

@@ -116,6 +116,13 @@ export const CollectionItemRowSchema = z.object({
   updated_at: z.string(),
 });
 
+export const CollectionItemUpdateSchema = CollectionItemRowSchema.omit({
+  id: true,
+  user_id: true,
+  created_at: true,
+  updated_at: true,
+}).partial();
+
 export const CollectionItemInsertSchema = CollectionItemRowSchema.omit({
   id: true,
   created_at: true,

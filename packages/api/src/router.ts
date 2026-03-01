@@ -15,6 +15,16 @@ import { completeMeetupProcedure } from './procedures/pipelines/completeMeetup';
 import { expireListingProcedure } from './procedures/pipelines/expireListing';
 import { createOfferProcedure } from './procedures/pipelines/createOffer';
 import { sendMessageProcedure } from './procedures/pipelines/sendMessage';
+import { list as collectionList } from './procedures/collection/list';
+import { add as collectionAdd } from './procedures/collection/add';
+import { batchAdd as collectionBatchAdd } from './procedures/collection/batchAdd';
+import { update as collectionUpdate } from './procedures/collection/update';
+import { remove as collectionRemove } from './procedures/collection/remove';
+import { portfolioSummary as collectionPortfolioSummary } from './procedures/collection/portfolioSummary';
+import { myList as listingMyList } from './procedures/listing/myList';
+import { get as listingGet } from './procedures/listing/get';
+import { create as listingCreate } from './procedures/listing/create';
+import { list as listingOffersList } from './procedures/listing/offers/list';
 
 export const router = {
   preRegistration: { create },
@@ -32,6 +42,22 @@ export const router = {
     notifications: {
       list: shopNotificationList,
       markRead: shopNotificationMarkRead,
+    },
+  },
+  collection: {
+    list: collectionList,
+    add: collectionAdd,
+    batchAdd: collectionBatchAdd,
+    update: collectionUpdate,
+    remove: collectionRemove,
+    portfolioSummary: collectionPortfolioSummary,
+  },
+  listing: {
+    myList: listingMyList,
+    get: listingGet,
+    create: listingCreate,
+    offers: {
+      list: listingOffersList,
     },
   },
   pipeline: {
