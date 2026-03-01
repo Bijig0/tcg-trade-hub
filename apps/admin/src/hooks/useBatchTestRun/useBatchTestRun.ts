@@ -18,10 +18,26 @@ type BatchProgressEvent = {
   type: 'batch-progress';
   batchId: string;
   scenarioId: string;
-  phase: 'hash-check' | 'testing' | 'recording' | 'done';
+  phase: 'hash-check' | 'recording' | 'done';
   status: 'running' | 'passed' | 'failed' | 'cached';
   message: string;
   progress: number;
+};
+
+type BatchLogEvent = {
+  type: 'batch-log';
+  batchId: string;
+  scenarioId: string | null;
+  level: 'info' | 'error' | 'stderr';
+  message: string;
+  timestamp: number;
+};
+
+type BatchLogEntry = {
+  scenarioId: string | null;
+  level: 'info' | 'error' | 'stderr';
+  message: string;
+  timestamp: number;
 };
 
 type ScenarioProgressEntry = {
@@ -37,6 +53,7 @@ const useBatchTestRun = () => {
   const [scenarioProgress, setScenarioProgress] = useState<
     Record<string, ScenarioProgressEntry>
   >({});
+  const [batchLogs, setBatchLogs] = useState<BatchLogEntry[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
 
   // Fetch cached test run results
@@ -56,6 +73,15 @@ const useBatchTestRun = () => {
     return map;
   }, [testRuns]);
 
+  // Derive per-scenario message text from progress events
+  const scenarioMessages = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const [id, entry] of Object.entries(scenarioProgress)) {
+      if (entry.message) map[id] = entry.message;
+    }
+    return map;
+  }, [scenarioProgress]);
+
   // WebSocket listener for batch progress events
   useEffect(() => {
     if (!isBatchRunning) return;
@@ -66,18 +92,27 @@ const useBatchTestRun = () => {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data as string) as Record<string, unknown>;
-        if (data.type !== 'batch-progress') return;
 
-        const progressEvent = data as unknown as BatchProgressEvent;
-        setBatchProgress(progressEvent.progress);
-        setScenarioProgress((prev) => ({
-          ...prev,
-          [progressEvent.scenarioId]: {
-            phase: progressEvent.phase,
-            status: progressEvent.status,
-            message: progressEvent.message,
-          },
-        }));
+        if (data.type === 'batch-progress') {
+          const progressEvent = data as unknown as BatchProgressEvent;
+          setBatchProgress(progressEvent.progress);
+          setScenarioProgress((prev) => ({
+            ...prev,
+            [progressEvent.scenarioId]: {
+              phase: progressEvent.phase,
+              status: progressEvent.status,
+              message: progressEvent.message,
+            },
+          }));
+        } else if (data.type === 'batch-log') {
+          const logEvent = data as unknown as BatchLogEvent;
+          setBatchLogs((prev) => [...prev, {
+            scenarioId: logEvent.scenarioId,
+            level: logEvent.level,
+            message: logEvent.message,
+            timestamp: logEvent.timestamp,
+          }]);
+        }
       } catch {
         // Ignore non-JSON or non-batch messages
       }
@@ -111,6 +146,7 @@ const useBatchTestRun = () => {
       setIsBatchRunning(true);
       setBatchProgress(0);
       setScenarioProgress({});
+      setBatchLogs([]);
 
       const result = await graphClient.maestro.batchRun({ mode });
 
@@ -141,6 +177,8 @@ const useBatchTestRun = () => {
     batchProgress,
     scenarioProgress,
     scenarioLastPassed,
+    scenarioMessages,
+    batchLogs,
     runAll,
     runFailed,
     testRuns: testRuns ?? [],
@@ -148,4 +186,4 @@ const useBatchTestRun = () => {
 };
 
 export default useBatchTestRun;
-export type { ScenarioProgressEntry, BatchProgressEvent };
+export type { ScenarioProgressEntry, BatchProgressEvent, BatchLogEntry };

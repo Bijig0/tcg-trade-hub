@@ -54,9 +54,19 @@ type BatchResult = {
   durationMs: number;
 };
 
+type BatchLogEvent = {
+  type: "batch-log";
+  batchId: string;
+  scenarioId: string | null;
+  level: "info" | "error" | "stderr";
+  message: string;
+  timestamp: number;
+};
+
 type BatchOptions = {
   mode: BatchMode;
   onProgress?: (event: BatchProgressEvent) => void;
+  onLog?: (event: BatchLogEvent) => void;
 };
 
 // ---------------------------------------------------------------------------
@@ -125,21 +135,45 @@ const runMaestroRecord = (
   testFile: string,
   outputPath: string,
   timeoutMs: number,
+  onStderr?: (line: string) => void,
+  onStdout?: (line: string) => void,
 ): Promise<MaestroRecordResult> => {
   return new Promise((resolve) => {
     const startTime = Date.now();
     const child = spawn("maestro", ["record", testFile, outputPath], {
-      stdio: ["ignore", "ignore", "pipe"],
+      stdio: ["ignore", "pipe", "pipe"],
       timeout: timeoutMs,
     });
 
     activeProcesses.add(child);
 
     const stderrChunks: Buffer[] = [];
-    child.stderr.on("data", (chunk: Buffer) => stderrChunks.push(chunk));
+    let stderrBuffer = "";
+    child.stderr.on("data", (chunk: Buffer) => {
+      stderrChunks.push(chunk);
+      stderrBuffer += chunk.toString();
+      const lines = stderrBuffer.split("\n");
+      stderrBuffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (line.trim()) onStderr?.(line);
+      }
+    });
+
+    let stdoutBuffer = "";
+    child.stdout.on("data", (chunk: Buffer) => {
+      stdoutBuffer += chunk.toString();
+      const lines = stdoutBuffer.split("\n");
+      stdoutBuffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (line.trim()) onStdout?.(line);
+      }
+    });
 
     child.on("close", (code) => {
       activeProcesses.delete(child);
+      // Flush remaining partial lines
+      if (stderrBuffer.trim()) onStderr?.(stderrBuffer);
+      if (stdoutBuffer.trim()) onStdout?.(stdoutBuffer);
       const exitCode = code ?? 1;
       const stderr = Buffer.concat(stderrChunks).toString();
       resolve({
@@ -183,6 +217,29 @@ const runBatchTests = async (
   const batchId = randomUUID();
   const startTime = Date.now();
 
+  const emitLog = (
+    scenarioId: string | null,
+    level: BatchLogEvent["level"],
+    message: string,
+  ) => {
+    const logLine = scenarioId
+      ? `[Batch] ${scenarioId}: ${message}`
+      : `[Batch] ${message}`;
+    if (level === "error") {
+      console.error(logLine);
+    } else {
+      console.log(logLine);
+    }
+    options.onLog?.({
+      type: "batch-log",
+      batchId,
+      scenarioId,
+      level,
+      message,
+      timestamp: Date.now(),
+    });
+  };
+
   try {
     const allScenarios = getScenarios();
 
@@ -208,6 +265,8 @@ const runBatchTests = async (
     let failed = 0;
     let cached = 0;
 
+    emitLog(null, "info", `Starting batch run (id: ${batchId.slice(0, 8)}, mode: ${options.mode}, scenarios: ${total})`);
+
     for (let i = 0; i < scenarios.length; i++) {
       // Check for abort before each scenario
       if (signal.aborted) {
@@ -222,6 +281,7 @@ const runBatchTests = async (
       const progress = (i + 1) / total;
 
       // --- Phase 1: Hash check ---
+      emitLog(scenario.id, "info", "Checking cache...");
       options.onProgress?.({
         type: "batch-progress",
         batchId,
@@ -233,6 +293,7 @@ const runBatchTests = async (
       });
 
       if (!existsSync(testFile)) {
+        emitLog(scenario.id, "error", `Test file not found: ${testRelPath}`);
         upsertTestRun(db, {
           scenarioId: scenario.id,
           flowFile: testRelPath,
@@ -259,6 +320,8 @@ const runBatchTests = async (
       // Check cache
       const cachedRun = getTestRunByHash(db, scenario.id, flowHash);
       if (cachedRun && cachedRun.status === "passed") {
+        const ago = formatAgo(cachedRun.createdAt);
+        emitLog(scenario.id, "info", `Cache hit (passed ${ago}), skipping`);
         cached++;
         options.onProgress?.({
           type: "batch-progress",
@@ -266,13 +329,14 @@ const runBatchTests = async (
           scenarioId: scenario.id,
           phase: "done",
           status: "cached",
-          message: `Cached (passed ${formatAgo(cachedRun.createdAt)})`,
+          message: `Cached (passed ${ago})`,
           progress,
         });
         continue;
       }
 
       // --- Phase 2: Record (single-phase — produces exit code + video) ---
+      emitLog(scenario.id, "info", `Recording — maestro record ${testRelPath}`);
       options.onProgress?.({
         type: "batch-progress",
         batchId,
@@ -297,7 +361,13 @@ const runBatchTests = async (
       const filename = `${safeName}-${timestamp}.mp4`;
       const outputPath = join(recordingsDir, filename);
 
-      const result = await runMaestroRecord(testFile, outputPath, 180_000);
+      const result = await runMaestroRecord(
+        testFile,
+        outputPath,
+        180_000,
+        (line) => emitLog(scenario.id, "stderr", line),
+        (line) => emitLog(scenario.id, "info", line),
+      );
 
       // Save recording if video was produced (regardless of pass/fail)
       if (result.videoProduced) {
@@ -310,6 +380,8 @@ const runBatchTests = async (
       }
 
       if (result.passed) {
+        const durationStr = (result.durationMs / 1000).toFixed(1);
+        emitLog(scenario.id, "info", `Passed (${durationStr}s)`);
         upsertTestRun(db, {
           scenarioId: scenario.id,
           flowFile: testRelPath,
@@ -325,11 +397,12 @@ const runBatchTests = async (
           scenarioId: scenario.id,
           phase: "done",
           status: "passed",
-          message: `Passed (${(result.durationMs / 1000).toFixed(1)}s)`,
+          message: `Passed (${durationStr}s)`,
           progress,
         });
       } else {
         const errorMessage = parseMaestroError(result.stderr);
+        emitLog(scenario.id, "error", `Failed — ${errorMessage}`);
         upsertTestRun(db, {
           scenarioId: scenario.id,
           flowFile: testRelPath,
@@ -351,6 +424,9 @@ const runBatchTests = async (
         });
       }
     }
+
+    const totalDuration = ((Date.now() - startTime) / 1000).toFixed(1);
+    emitLog(null, "info", `Complete: ${passed} passed, ${failed} failed, ${cached} cached (${totalDuration}s)`);
 
     return {
       batchId,
@@ -381,4 +457,4 @@ const formatAgo = (isoString: string): string => {
 };
 
 export { runBatchTests, isBatchRunning, abortBatch, killAllActiveProcesses };
-export type { BatchMode, BatchProgressEvent, BatchResult, BatchOptions };
+export type { BatchMode, BatchProgressEvent, BatchLogEvent, BatchResult, BatchOptions };

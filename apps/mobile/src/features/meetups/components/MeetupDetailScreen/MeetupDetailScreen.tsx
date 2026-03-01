@@ -189,7 +189,15 @@ const MeetupDetailScreen = () => {
 
   const handleOpenChat = () => {
     if (meetup.conversation) {
-      router.push(`/(tabs)/(messages)/chat/${meetup.conversation.id}`);
+      router.push({
+        pathname: `/(tabs)/(messages)/chat/${meetup.conversation.id}`,
+        params: {
+          matchId: meetup.match.id,
+          otherUserId: other_user.id,
+          otherUserName: other_user.display_name,
+          otherUserAvatar: other_user.avatar_url ?? '',
+        },
+      });
     }
   };
 

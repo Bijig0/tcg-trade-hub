@@ -368,6 +368,8 @@ function AdminDashboard() {
             onRunFailed={batch.runFailed}
             isBatchRunning={batch.isBatchRunning}
             batchProgress={batch.batchProgress}
+            batchLogs={batch.batchLogs}
+            scenarioMessages={batch.scenarioMessages}
           />
         </div>
         <ChatPanel isOpen={isChatOpen} onToggle={toggleChat} />

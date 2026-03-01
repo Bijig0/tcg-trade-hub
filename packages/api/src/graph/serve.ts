@@ -569,6 +569,12 @@ const server = createServer(async (req, res) => {
                   try { ws.send(payload); } catch { /* noop */ }
                 });
               },
+              onLog: (event) => {
+                const payload = JSON.stringify(event);
+                wsClients.forEach((ws) => {
+                  try { ws.send(payload); } catch { /* noop */ }
+                });
+              },
             });
           },
           isBatchRunning: () => isBatchRunning(),
