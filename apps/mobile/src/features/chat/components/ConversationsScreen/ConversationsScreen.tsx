@@ -76,21 +76,21 @@ const ConversationItem = ({ conversation, onPress }: ConversationItemProps) => {
       )}
 
       <View className="flex-1">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-1 flex-row items-center gap-1.5">
-            <Text
-              className={cn(
-                'text-base text-foreground',
-                unreadCount > 0 ? 'font-bold' : 'font-medium',
-              )}
-              numberOfLines={1}
-            >
-              {displayName}
-            </Text>
-            {negotiationStatus && negotiationStatus !== 'chatting' && (
-              <NegotiationStatusBadge status={negotiationStatus} />
-            )}
+        {negotiationStatus && negotiationStatus !== 'chatting' && (
+          <View className="mb-0.5 flex-row">
+            <NegotiationStatusBadge status={negotiationStatus} />
           </View>
+        )}
+        <View className="flex-row items-center justify-between">
+          <Text
+            className={cn(
+              'flex-1 text-base text-foreground',
+              unreadCount > 0 ? 'font-bold' : 'font-medium',
+            )}
+            numberOfLines={1}
+          >
+            {displayName}
+          </Text>
           {timeLabel ? (
             <Text className="ml-2 text-xs text-muted-foreground">{timeLabel}</Text>
           ) : null}
