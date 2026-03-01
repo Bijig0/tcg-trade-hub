@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { orpc } from '@/lib/orpc';
-import type { NormalizedCard, ListingType } from '@tcg-trade-hub/database';
+import type { ListingType } from '@tcg-trade-hub/database';
+
+type TradeDataItem = { type: 'card'; card: { name: string; imageUrl: string; setName: string; [key: string]: unknown } } | { type: 'custom'; text: string };
+type TradeDataSide = { blanked: boolean; items: TradeDataItem[] };
+type TradeData = { listingType: string; myOffer: TradeDataSide; theirOffer: TradeDataSide };
 
 type EmailCaptureStepProps = {
-  selectedCards: NormalizedCard[];
+  tradeData: TradeData;
   listingType: ListingType;
   onSuccess: (position: number, email: string) => void;
   onBack: () => void;
 };
 
 export const EmailCaptureStep = ({
-  selectedCards,
+  tradeData,
   listingType,
   onSuccess,
   onBack,
@@ -31,7 +35,9 @@ export const EmailCaptureStep = ({
         ? 'Please enter a valid email'
         : null;
 
-  const firstCard = selectedCards[0];
+  // Derive preview card from trade data
+  const allItems = [...tradeData.myOffer.items, ...tradeData.theirOffer.items];
+  const firstCardItem = allItems.find((i): i is TradeDataItem & { type: 'card' } => i.type === 'card');
 
   const mutation = useMutation(
     orpc.preRegistration.create.mutationOptions(),
@@ -46,11 +52,8 @@ export const EmailCaptureStep = ({
       {
         email,
         display_name: displayName || null,
-        tcg: firstCard?.tcg ?? 'pokemon',
-        card_name: firstCard?.name ?? 'Open to suggestions',
-        card_set: firstCard?.setName ?? null,
-        card_external_id: firstCard?.externalId ?? null,
-        card_image_url: firstCard?.imageUrl ?? null,
+        tcg: 'pokemon',
+        trade_data: tradeData,
         listing_type: listingType,
         city: location || null,
       },
@@ -86,18 +89,18 @@ export const EmailCaptureStep = ({
         </p>
 
         {/* Selected card preview */}
-        {firstCard ? (
+        {firstCardItem ? (
           <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/50 p-3">
             <img
-              src={firstCard.imageUrl}
-              alt={firstCard.name}
+              src={firstCardItem.card.imageUrl}
+              alt={firstCardItem.card.name}
               className="h-14 w-10 rounded object-cover"
             />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-foreground truncate">{firstCard.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{firstCard.setName}</p>
-              {selectedCards.length > 1 && (
-                <p className="text-xs text-primary">+{selectedCards.length - 1} more</p>
+              <p className="text-sm font-medium text-foreground truncate">{firstCardItem.card.name}</p>
+              <p className="text-xs text-muted-foreground truncate">{firstCardItem.card.setName}</p>
+              {allItems.length > 1 && (
+                <p className="text-xs text-primary">+{allItems.length - 1} more</p>
               )}
             </div>
           </div>

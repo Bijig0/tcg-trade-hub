@@ -63,10 +63,17 @@ export const PreRegistrationForm = () => {
       email,
       display_name: displayName || null,
       tcg,
-      card_name: selectedCard?.name ?? cardName,
-      card_set: selectedCard?.setName ?? null,
-      card_external_id: selectedCard?.externalId ?? null,
-      card_image_url: selectedCard?.imageUrl ?? null,
+      trade_data: {
+        listingType: derivedListingType(),
+        myOffer: {
+          blanked: false,
+          items: selectedCard
+            ? [{ type: 'card', card: selectedCard }]
+            : cardName
+              ? [{ type: 'custom', text: cardName }]
+              : [],
+        },
+      },
       listing_type: derivedListingType(),
       asking_price: askingPrice ? parseFloat(askingPrice) : null,
       city: city || null,
@@ -97,7 +104,7 @@ export const PreRegistrationForm = () => {
     );
   }
 
-  const resolvedCardName = selectedCard?.name ?? cardName;
+  const hasCardOrName = !!(selectedCard || cardName);
 
   return (
     <form onSubmit={handleSubmit} className="mx-auto max-w-lg space-y-5">
@@ -281,7 +288,7 @@ export const PreRegistrationForm = () => {
       {/* Submit */}
       <button
         type="submit"
-        disabled={mutation.isPending || !email || !resolvedCardName || interests.size === 0}
+        disabled={mutation.isPending || !email || !hasCardOrName || interests.size === 0}
         className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {mutation.isPending ? 'Registering...' : 'Get Early Access'}

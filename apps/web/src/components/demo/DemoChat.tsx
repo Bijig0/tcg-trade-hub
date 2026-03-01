@@ -6,7 +6,7 @@ import { DemoChatHeader } from './DemoChatHeader';
 import { DemoMessageBubble } from './DemoMessageBubble';
 import { DemoSystemMessage } from './DemoSystemMessage';
 import { ReservationCard } from './ReservationCard';
-import { TradeEditor, flattenToCards } from './TradeEditor';
+import { TradeEditor } from './TradeEditor';
 import type { OfferItem } from './TradeEditor';
 import { EmailCaptureStep } from './EmailCaptureStep';
 import { demoConversation } from './demoConversation';
@@ -43,11 +43,25 @@ export const DemoChat = () => {
     }, 500);
   }, []);
 
-  const primaryItems = listingType === 'wtb' ? theirOfferItems : myOfferItems;
-  const primaryBlanked = listingType === 'wtb' ? theirOfferBlanked : myOfferBlanked;
-  const fallbackItems = listingType === 'wtb' ? myOfferItems : theirOfferItems;
-
-  const emailCards = flattenToCards(primaryBlanked ? fallbackItems : primaryItems);
+  const tradeData = {
+    listingType,
+    myOffer: {
+      blanked: myOfferBlanked,
+      items: myOfferItems.map((item) =>
+        item.type === 'card'
+          ? { type: 'card' as const, card: item.card }
+          : { type: 'custom' as const, text: item.text },
+      ),
+    },
+    theirOffer: {
+      blanked: theirOfferBlanked,
+      items: theirOfferItems.map((item) =>
+        item.type === 'card'
+          ? { type: 'card' as const, card: item.card }
+          : { type: 'custom' as const, text: item.text },
+      ),
+    },
+  };
 
   return (
     <PhoneFrame>
@@ -106,7 +120,7 @@ export const DemoChat = () => {
         {/* Email Capture panel */}
         <div className="w-full shrink-0 flex flex-col overflow-hidden">
           <EmailCaptureStep
-            selectedCards={emailCards}
+            tradeData={tradeData}
             listingType={listingType}
             onSuccess={(position, email) => {
               setSuccessData({ position, email });
