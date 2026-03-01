@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Pressable, Alert } from 'react-native';
 import { Check, Clock } from 'lucide-react-native';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import SlideToConfirm from '@/components/ui/SlideToConfirm/SlideToConfirm';
@@ -12,6 +12,8 @@ type CompletionBarProps = {
   otherUserAvatarUrl: string | null;
   onComplete: () => void;
   isPending: boolean;
+  onUncomplete: () => void;
+  isUncompletePending: boolean;
 };
 
 /** Derive up to 2-character initials from a display name. */
@@ -29,6 +31,9 @@ const getInitials = (name: string): string =>
  * Top row shows the current user with a SlideToConfirm gesture
  * (or a "Done" badge if already completed). Bottom row shows the other
  * user with a "Waiting" or "Done" indicator.
+ *
+ * The current user's Done badge is tappable to undo completion, but
+ * only while the other party hasn't completed yet.
  */
 const CompletionBar = ({
   userCompleted,
@@ -37,6 +42,8 @@ const CompletionBar = ({
   otherUserAvatarUrl,
   onComplete,
   isPending,
+  onUncomplete,
+  isUncompletePending,
 }: CompletionBarProps) => {
   const { profile } = useAuth();
 
@@ -44,6 +51,15 @@ const CompletionBar = ({
   const currentUserAvatar = profile?.avatar_url ?? null;
   const currentUserInitials = useMemo(() => getInitials(currentUserName), [currentUserName]);
   const otherInitials = useMemo(() => getInitials(otherUserName), [otherUserName]);
+
+  const canUncomplete = userCompleted && !otherCompleted;
+
+  const handleUncompletePress = () => {
+    Alert.alert('Undo completion?', 'Your completion status will be reset.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Undo', style: 'destructive', onPress: onUncomplete },
+    ]);
+  };
 
   return (
     <View className="gap-3">
@@ -62,7 +78,10 @@ const CompletionBar = ({
             </View>
           </View>
           {userCompleted ? (
-            <DoneBadge />
+            <DoneBadge
+              onPress={canUncomplete ? handleUncompletePress : undefined}
+              disabled={isUncompletePending}
+            />
           ) : (
             <SlideToConfirm
               onConfirm={onComplete}
@@ -89,12 +108,32 @@ const CompletionBar = ({
   );
 };
 
-const DoneBadge = () => (
-  <View className="h-12 flex-row items-center justify-center gap-1.5 rounded-full bg-green-500/20">
-    <Check size={16} color="#22c55e" />
-    <Text className="text-sm font-semibold text-green-500">Done</Text>
-  </View>
-);
+type DoneBadgeProps = {
+  onPress?: () => void;
+  disabled?: boolean;
+};
+
+const DoneBadge = ({ onPress, disabled }: DoneBadgeProps) => {
+  const content = (
+    <View className="h-12 flex-row items-center justify-center gap-1.5 rounded-full bg-green-500/20">
+      <Check size={16} color="#22c55e" />
+      <Text className="text-sm font-semibold text-green-500">Done</Text>
+      {onPress ? (
+        <Text className="text-[10px] text-green-500/60"> (tap to undo)</Text>
+      ) : null}
+    </View>
+  );
+
+  if (onPress) {
+    return (
+      <Pressable onPress={onPress} disabled={disabled}>
+        {content}
+      </Pressable>
+    );
+  }
+
+  return content;
+};
 
 const WaitingBadge = () => (
   <View className="h-12 flex-row items-center justify-center gap-1.5 rounded-full bg-muted">
