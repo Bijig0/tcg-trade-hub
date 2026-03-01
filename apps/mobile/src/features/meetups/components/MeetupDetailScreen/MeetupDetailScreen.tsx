@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import MapView from 'react-native-maps';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { ArrowLeft, MessageCircle, XCircle, Navigation } from 'lucide-react-native';
+import { ArrowLeft, MessageCircle, XCircle, Navigation, Crosshair } from 'lucide-react-native';
 
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Badge from '@/components/ui/Badge/Badge';
@@ -90,6 +90,10 @@ const MeetupDetailScreen = () => {
     }
     return FALLBACK_REGION;
   }, [meetup?.shopCoords]);
+
+  const handleCenterOnMarker = useCallback(() => {
+    mapRef.current?.animateToRegion(mapRegion, 500);
+  }, [mapRegion]);
 
   const handleDirectionsReady = useCallback(
     (result: { distance: number; duration: number }) => {
@@ -222,6 +226,7 @@ const MeetupDetailScreen = () => {
           <MeetupMapMarker
             coordinate={meetup.shopCoords}
             title={locationName}
+            label={locationName}
           />
         )}
         {showDirections && (
@@ -239,13 +244,21 @@ const MeetupDetailScreen = () => {
         className="absolute left-0 right-0 top-0"
         style={{ pointerEvents: 'box-none' }}
       >
-        <View className="mx-4 mt-1" style={{ pointerEvents: 'auto' }}>
+        <View className="mx-4 mt-1 flex-row items-center justify-between" style={{ pointerEvents: 'auto' }}>
           <Pressable
             onPress={() => router.back()}
             className="h-10 w-10 items-center justify-center rounded-full bg-background/90 shadow-sm"
           >
             <ArrowLeft size={20} className="text-foreground" />
           </Pressable>
+          {meetup.shopCoords ? (
+            <Pressable
+              onPress={handleCenterOnMarker}
+              className="h-10 w-10 items-center justify-center rounded-full bg-background/90 shadow-sm"
+            >
+              <Crosshair size={20} className="text-foreground" />
+            </Pressable>
+          ) : null}
         </View>
       </SafeAreaView>
 
