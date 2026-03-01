@@ -17,8 +17,14 @@ import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashb
 import { Route as ApiRpcSplatRouteImport } from './routes/api/rpc/$'
 import { Route as AuthedDashboardProfileRouteImport } from './routes/_authed/dashboard/profile'
 import { Route as AuthedDashboardNotificationsRouteImport } from './routes/_authed/dashboard/notifications'
+import { Route as AuthedDashboardListingsIndexRouteImport } from './routes/_authed/dashboard/listings/index'
 import { Route as AuthedDashboardEventsIndexRouteImport } from './routes/_authed/dashboard/events/index'
+import { Route as AuthedDashboardCollectionIndexRouteImport } from './routes/_authed/dashboard/collection/index'
+import { Route as AuthedDashboardListingsNewRouteImport } from './routes/_authed/dashboard/listings/new'
+import { Route as AuthedDashboardListingsListingIdRouteImport } from './routes/_authed/dashboard/listings/$listingId'
 import { Route as AuthedDashboardEventsNewRouteImport } from './routes/_authed/dashboard/events/new'
+import { Route as AuthedDashboardCollectionImportRouteImport } from './routes/_authed/dashboard/collection/import'
+import { Route as AuthedDashboardCollectionAddRouteImport } from './routes/_authed/dashboard/collection/add'
 
 const AuthedRoute = AuthedRouteImport.update({
   id: '/_authed',
@@ -60,16 +66,52 @@ const AuthedDashboardNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
+const AuthedDashboardListingsIndexRoute =
+  AuthedDashboardListingsIndexRouteImport.update({
+    id: '/listings/',
+    path: '/listings/',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
 const AuthedDashboardEventsIndexRoute =
   AuthedDashboardEventsIndexRouteImport.update({
     id: '/events/',
     path: '/events/',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
+const AuthedDashboardCollectionIndexRoute =
+  AuthedDashboardCollectionIndexRouteImport.update({
+    id: '/collection/',
+    path: '/collection/',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardListingsNewRoute =
+  AuthedDashboardListingsNewRouteImport.update({
+    id: '/listings/new',
+    path: '/listings/new',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardListingsListingIdRoute =
+  AuthedDashboardListingsListingIdRouteImport.update({
+    id: '/listings/$listingId',
+    path: '/listings/$listingId',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
 const AuthedDashboardEventsNewRoute =
   AuthedDashboardEventsNewRouteImport.update({
     id: '/events/new',
     path: '/events/new',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardCollectionImportRoute =
+  AuthedDashboardCollectionImportRouteImport.update({
+    id: '/collection/import',
+    path: '/collection/import',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardCollectionAddRoute =
+  AuthedDashboardCollectionAddRouteImport.update({
+    id: '/collection/add',
+    path: '/collection/add',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
 
@@ -81,8 +123,14 @@ export interface FileRoutesByFullPath {
   '/dashboard/profile': typeof AuthedDashboardProfileRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/dashboard/': typeof AuthedDashboardIndexRoute
+  '/dashboard/collection/add': typeof AuthedDashboardCollectionAddRoute
+  '/dashboard/collection/import': typeof AuthedDashboardCollectionImportRoute
   '/dashboard/events/new': typeof AuthedDashboardEventsNewRoute
+  '/dashboard/listings/$listingId': typeof AuthedDashboardListingsListingIdRoute
+  '/dashboard/listings/new': typeof AuthedDashboardListingsNewRoute
+  '/dashboard/collection/': typeof AuthedDashboardCollectionIndexRoute
   '/dashboard/events/': typeof AuthedDashboardEventsIndexRoute
+  '/dashboard/listings/': typeof AuthedDashboardListingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -91,8 +139,14 @@ export interface FileRoutesByTo {
   '/dashboard/profile': typeof AuthedDashboardProfileRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/dashboard': typeof AuthedDashboardIndexRoute
+  '/dashboard/collection/add': typeof AuthedDashboardCollectionAddRoute
+  '/dashboard/collection/import': typeof AuthedDashboardCollectionImportRoute
   '/dashboard/events/new': typeof AuthedDashboardEventsNewRoute
+  '/dashboard/listings/$listingId': typeof AuthedDashboardListingsListingIdRoute
+  '/dashboard/listings/new': typeof AuthedDashboardListingsNewRoute
+  '/dashboard/collection': typeof AuthedDashboardCollectionIndexRoute
   '/dashboard/events': typeof AuthedDashboardEventsIndexRoute
+  '/dashboard/listings': typeof AuthedDashboardListingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,8 +158,14 @@ export interface FileRoutesById {
   '/_authed/dashboard/profile': typeof AuthedDashboardProfileRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
+  '/_authed/dashboard/collection/add': typeof AuthedDashboardCollectionAddRoute
+  '/_authed/dashboard/collection/import': typeof AuthedDashboardCollectionImportRoute
   '/_authed/dashboard/events/new': typeof AuthedDashboardEventsNewRoute
+  '/_authed/dashboard/listings/$listingId': typeof AuthedDashboardListingsListingIdRoute
+  '/_authed/dashboard/listings/new': typeof AuthedDashboardListingsNewRoute
+  '/_authed/dashboard/collection/': typeof AuthedDashboardCollectionIndexRoute
   '/_authed/dashboard/events/': typeof AuthedDashboardEventsIndexRoute
+  '/_authed/dashboard/listings/': typeof AuthedDashboardListingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,8 +177,14 @@ export interface FileRouteTypes {
     | '/dashboard/profile'
     | '/api/rpc/$'
     | '/dashboard/'
+    | '/dashboard/collection/add'
+    | '/dashboard/collection/import'
     | '/dashboard/events/new'
+    | '/dashboard/listings/$listingId'
+    | '/dashboard/listings/new'
+    | '/dashboard/collection/'
     | '/dashboard/events/'
+    | '/dashboard/listings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -127,8 +193,14 @@ export interface FileRouteTypes {
     | '/dashboard/profile'
     | '/api/rpc/$'
     | '/dashboard'
+    | '/dashboard/collection/add'
+    | '/dashboard/collection/import'
     | '/dashboard/events/new'
+    | '/dashboard/listings/$listingId'
+    | '/dashboard/listings/new'
+    | '/dashboard/collection'
     | '/dashboard/events'
+    | '/dashboard/listings'
   id:
     | '__root__'
     | '/'
@@ -139,8 +211,14 @@ export interface FileRouteTypes {
     | '/_authed/dashboard/profile'
     | '/api/rpc/$'
     | '/_authed/dashboard/'
+    | '/_authed/dashboard/collection/add'
+    | '/_authed/dashboard/collection/import'
     | '/_authed/dashboard/events/new'
+    | '/_authed/dashboard/listings/$listingId'
+    | '/_authed/dashboard/listings/new'
+    | '/_authed/dashboard/collection/'
     | '/_authed/dashboard/events/'
+    | '/_authed/dashboard/listings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -208,11 +286,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardNotificationsRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
+    '/_authed/dashboard/listings/': {
+      id: '/_authed/dashboard/listings/'
+      path: '/listings'
+      fullPath: '/dashboard/listings/'
+      preLoaderRoute: typeof AuthedDashboardListingsIndexRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
     '/_authed/dashboard/events/': {
       id: '/_authed/dashboard/events/'
       path: '/events'
       fullPath: '/dashboard/events/'
       preLoaderRoute: typeof AuthedDashboardEventsIndexRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/collection/': {
+      id: '/_authed/dashboard/collection/'
+      path: '/collection'
+      fullPath: '/dashboard/collection/'
+      preLoaderRoute: typeof AuthedDashboardCollectionIndexRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/listings/new': {
+      id: '/_authed/dashboard/listings/new'
+      path: '/listings/new'
+      fullPath: '/dashboard/listings/new'
+      preLoaderRoute: typeof AuthedDashboardListingsNewRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/listings/$listingId': {
+      id: '/_authed/dashboard/listings/$listingId'
+      path: '/listings/$listingId'
+      fullPath: '/dashboard/listings/$listingId'
+      preLoaderRoute: typeof AuthedDashboardListingsListingIdRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
     '/_authed/dashboard/events/new': {
@@ -222,6 +328,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardEventsNewRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
+    '/_authed/dashboard/collection/import': {
+      id: '/_authed/dashboard/collection/import'
+      path: '/collection/import'
+      fullPath: '/dashboard/collection/import'
+      preLoaderRoute: typeof AuthedDashboardCollectionImportRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/collection/add': {
+      id: '/_authed/dashboard/collection/add'
+      path: '/collection/add'
+      fullPath: '/dashboard/collection/add'
+      preLoaderRoute: typeof AuthedDashboardCollectionAddRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
   }
 }
 
@@ -229,16 +349,28 @@ interface AuthedDashboardRouteChildren {
   AuthedDashboardNotificationsRoute: typeof AuthedDashboardNotificationsRoute
   AuthedDashboardProfileRoute: typeof AuthedDashboardProfileRoute
   AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
+  AuthedDashboardCollectionAddRoute: typeof AuthedDashboardCollectionAddRoute
+  AuthedDashboardCollectionImportRoute: typeof AuthedDashboardCollectionImportRoute
   AuthedDashboardEventsNewRoute: typeof AuthedDashboardEventsNewRoute
+  AuthedDashboardListingsListingIdRoute: typeof AuthedDashboardListingsListingIdRoute
+  AuthedDashboardListingsNewRoute: typeof AuthedDashboardListingsNewRoute
+  AuthedDashboardCollectionIndexRoute: typeof AuthedDashboardCollectionIndexRoute
   AuthedDashboardEventsIndexRoute: typeof AuthedDashboardEventsIndexRoute
+  AuthedDashboardListingsIndexRoute: typeof AuthedDashboardListingsIndexRoute
 }
 
 const AuthedDashboardRouteChildren: AuthedDashboardRouteChildren = {
   AuthedDashboardNotificationsRoute: AuthedDashboardNotificationsRoute,
   AuthedDashboardProfileRoute: AuthedDashboardProfileRoute,
   AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
+  AuthedDashboardCollectionAddRoute: AuthedDashboardCollectionAddRoute,
+  AuthedDashboardCollectionImportRoute: AuthedDashboardCollectionImportRoute,
   AuthedDashboardEventsNewRoute: AuthedDashboardEventsNewRoute,
+  AuthedDashboardListingsListingIdRoute: AuthedDashboardListingsListingIdRoute,
+  AuthedDashboardListingsNewRoute: AuthedDashboardListingsNewRoute,
+  AuthedDashboardCollectionIndexRoute: AuthedDashboardCollectionIndexRoute,
   AuthedDashboardEventsIndexRoute: AuthedDashboardEventsIndexRoute,
+  AuthedDashboardListingsIndexRoute: AuthedDashboardListingsIndexRoute,
 }
 
 const AuthedDashboardRouteWithChildren = AuthedDashboardRoute._addFileChildren(
