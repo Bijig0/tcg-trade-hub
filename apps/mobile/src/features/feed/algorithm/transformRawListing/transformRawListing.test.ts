@@ -15,6 +15,8 @@ const makeRaw = (overrides: Partial<RawFeedListing> = {}): RawFeedListing => ({
   trade_wants: [],
   accepts_cash: true,
   accepts_trades: false,
+  location: null,
+  location_name: null,
   status: 'active',
   created_at: '2026-01-15T10:00:00Z',
   updated_at: '2026-01-15T10:00:00Z',
@@ -107,5 +109,50 @@ describe('transformRawListing', () => {
     const result = transformRawListing(makeRaw());
     expect(result.items).toHaveLength(1);
     expect((result.items[0] as Record<string, unknown>).card_name).toBe('Charizard VMAX');
+  });
+
+  it('should compute real distance_km when both locations are available', () => {
+    // Listing in Sydney, user in Melbourne (~714 km)
+    const raw = makeRaw({
+      location: { type: 'Point', coordinates: [151.2093, -33.8688] },
+    });
+    const userLocation = { latitude: -37.8136, longitude: 144.9631 };
+    const result = transformRawListing(raw, userLocation);
+
+    expect(result.distance_km).toBeGreaterThan(700);
+    expect(result.distance_km).toBeLessThan(730);
+  });
+
+  it('should fall back to owner location when listing location is null', () => {
+    const raw = makeRaw({
+      location: null,
+      users: {
+        id: 'user-1',
+        display_name: 'TrainerAsh',
+        avatar_url: null,
+        location: { type: 'Point', coordinates: [151.2093, -33.8688] },
+        rating_score: 4.8,
+        total_trades: 15,
+      },
+    });
+    const userLocation = { latitude: -37.8136, longitude: 144.9631 };
+    const result = transformRawListing(raw, userLocation);
+
+    expect(result.distance_km).toBeGreaterThan(700);
+    expect(result.distance_km).toBeLessThan(730);
+  });
+
+  it('should return 0 distance when user location is not provided', () => {
+    const raw = makeRaw({
+      location: { type: 'Point', coordinates: [151.2093, -33.8688] },
+    });
+    const result = transformRawListing(raw);
+
+    expect(result.distance_km).toBe(0);
+  });
+
+  it('should return 0 distance when neither location is available', () => {
+    const result = transformRawListing(makeRaw(), { latitude: -37.8136, longitude: 144.9631 });
+    expect(result.distance_km).toBe(0);
   });
 });

@@ -8,7 +8,7 @@ import { ArrowLeft, MapPin, Clock, MessageSquare, Navigation } from 'lucide-reac
 
 import { useSheetPositionStore } from '@/stores/sheetPositionStore/sheetPositionStore';
 import useShopDetail from '@/features/shops/hooks/useShopDetail/useShopDetail';
-import parseLocationCoords from '@/features/meetups/utils/parseLocationCoords/parseLocationCoords';
+import parseLocationCoords from '@/utils/parseLocationCoords/parseLocationCoords';
 import MeetupMapMarker from '@/features/meetups/components/MeetupMapMarker/MeetupMapMarker';
 import useUserLocation from '@/hooks/useUserLocation/useUserLocation';
 import MapDirectionsOverlay from '@/components/MapDirectionsOverlay/MapDirectionsOverlay';

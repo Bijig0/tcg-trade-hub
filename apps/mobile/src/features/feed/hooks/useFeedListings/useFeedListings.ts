@@ -2,6 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthProvider';
 import { useFeedStore } from '@/stores/feedStore/feedStore';
+import parseLocationCoords from '@/utils/parseLocationCoords/parseLocationCoords';
 import { feedKeys } from '../../queryKeys';
 import { buildExclusionSets } from '../../algorithm';
 import { transformRawListing } from '../../algorithm';
@@ -25,8 +26,9 @@ type FeedPage = {
  * - searchQuery → filters by card name via listing_items join
  */
 const useFeedListings = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const filters = useFeedStore((s) => s.filters);
+  const userLocation = profile?.location ? parseLocationCoords(profile.location) : null;
 
   return useInfiniteQuery<FeedPage, Error>({
     queryKey: feedKeys.list(filters),
@@ -117,7 +119,9 @@ const useFeedListings = () => {
       console.log(`[useFeedListings] user=${user.id}, swipedIds=${swipedIds.length}, blockedUserIds=${blockedUserIds.length}, search="${filters.searchQuery}", fetched=${rawListings.length}`);
 
       // 3. Transform and sort
-      const listings = (rawListings as unknown as RawFeedListing[]).map(transformRawListing);
+      const listings = (rawListings as unknown as RawFeedListing[]).map(
+        (raw) => transformRawListing(raw, userLocation),
+      );
       const sorted = sortListings(listings, filters.sort);
 
       // 4. Determine next cursor

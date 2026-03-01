@@ -204,6 +204,8 @@ export const ListingRowSchema = z.object({
   trade_wants: z.array(TradeWantSchema),
   accepts_cash: z.boolean(),
   accepts_trades: z.boolean(),
+  location: z.unknown().nullable(),
+  location_name: z.string().nullable(),
   status: ListingStatusSchema,
   created_at: z.string(),
   updated_at: z.string(),
@@ -223,6 +225,8 @@ export const ListingInsertSchema = ListingRowSchema.omit({
   trade_wants: z.array(TradeWantSchema).default([]),
   accepts_cash: z.boolean().default(false),
   accepts_trades: z.boolean().default(false),
+  location: z.unknown().nullable().optional(),
+  location_name: z.string().nullable().optional(),
 });
 
 export const ListingItemRowSchema = z.object({

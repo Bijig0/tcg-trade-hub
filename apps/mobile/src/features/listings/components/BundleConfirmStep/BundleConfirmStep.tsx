@@ -3,6 +3,7 @@ import { View, Text, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { ChevronDown } from 'lucide-react-native';
 import Badge from '@/components/ui/Badge/Badge';
+import LocationPreview from '@/components/LocationPreview/LocationPreview';
 import ListingTypeBadge from '../ListingTypeBadge/ListingTypeBadge';
 import type { SelectedCard } from '../../schemas';
 import type { ListingType, TradeWant } from '@tcg-trade-hub/database';
@@ -17,6 +18,8 @@ type BundleConfirmStepProps = {
   tradeWants: TradeWant[];
   typeOverride: ListingType | null;
   onTypeOverride: (type: ListingType | null) => void;
+  locationCoords?: { latitude: number; longitude: number } | null;
+  locationName?: string;
 };
 
 const CASH_LABELS: Record<ListingType, string> = {
@@ -44,6 +47,8 @@ const BundleConfirmStep = ({
   tradeWants,
   typeOverride,
   onTypeOverride,
+  locationCoords,
+  locationName,
 }: BundleConfirmStepProps) => {
   const [showOverridePicker, setShowOverridePicker] = useState(false);
 
@@ -205,6 +210,18 @@ const BundleConfirmStep = ({
         <View>
           <Text className="mb-1 text-sm font-medium text-muted-foreground">Notes</Text>
           <Text className="text-sm text-foreground">{description}</Text>
+        </View>
+      ) : null}
+
+      {/* Location */}
+      {locationCoords ? (
+        <View>
+          <Text className="mb-1 text-sm font-medium text-muted-foreground">Location</Text>
+          <LocationPreview
+            location={locationCoords}
+            locationName={locationName}
+            height={100}
+          />
         </View>
       ) : null}
     </View>

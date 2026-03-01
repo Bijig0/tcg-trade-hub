@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { meetupKeys } from '../../queryKeys';
-import parseLocationCoords from '../../utils/parseLocationCoords/parseLocationCoords';
+import parseLocationCoords from '@/utils/parseLocationCoords/parseLocationCoords';
 import type {
   MeetupRow,
   ShopRow,

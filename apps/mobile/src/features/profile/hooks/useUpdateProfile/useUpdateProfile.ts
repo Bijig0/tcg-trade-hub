@@ -11,6 +11,7 @@ type UpdateProfileParams = {
   radius_km?: number;
   preferred_tcgs?: TcgType[];
   auto_match?: boolean;
+  location?: string;
 };
 
 /**

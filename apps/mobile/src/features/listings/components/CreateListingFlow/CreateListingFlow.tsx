@@ -1,18 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TextInput,
   Alert,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, DollarSign } from 'lucide-react-native';
+import { ArrowLeft, DollarSign, MapPin } from 'lucide-react-native';
 import { Pressable, ScrollView } from 'react-native';
 import { cn } from '@/lib/cn';
 import Button from '@/components/ui/Button/Button';
 import { useListingFormStore } from '@/stores/listingFormStore/listingFormStore';
+import { useAuth } from '@/context/AuthProvider';
+import parseLocationCoords from '@/utils/parseLocationCoords/parseLocationCoords';
+import LocationPicker from '@/components/LocationPicker/LocationPicker';
+import LocationPreview from '@/components/LocationPreview/LocationPreview';
 import useCreateBundleListing from '../../hooks/useCreateBundleListing/useCreateBundleListing';
 import MultiCardSelector from '../MultiCardSelector/MultiCardSelector';
 import BundleConfirmStep from '../BundleConfirmStep/BundleConfirmStep';
@@ -38,8 +43,20 @@ const TOTAL_STEPS = 4;
 const CreateListingFlow = () => {
   const router = useRouter();
   const store = useListingFormStore();
+  const { profile } = useAuth();
   const createBundleListing = useCreateBundleListing();
   const [isPublishing, setIsPublishing] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+
+  // Auto-fill location from profile when entering step 3 (if store location is null)
+  useEffect(() => {
+    if (store.step === 3 && !store.locationCoords && profile?.location) {
+      const coords = parseLocationCoords(profile.location);
+      if (coords) {
+        store.setLocation(coords, '');
+      }
+    }
+  }, [store.step]);
 
   const canProceed = (): boolean => {
     switch (store.step) {
@@ -95,6 +112,8 @@ const CreateListingFlow = () => {
         tradeWants: store.tradeWants,
         acceptsCash: store.acceptsCash,
         acceptsTrades: store.acceptsTrades,
+        locationCoords: store.locationCoords,
+        locationName: store.locationName || null,
       },
       {
         onSuccess: () => {
@@ -160,6 +179,67 @@ const CreateListingFlow = () => {
                 </View>
               </>
             )}
+
+            {/* Location */}
+            <View className="gap-2">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-base text-muted-foreground">
+                  Listing location
+                </Text>
+                <Pressable onPress={() => setShowLocationPicker(true)}>
+                  <Text className="text-sm font-medium text-primary">Change</Text>
+                </Pressable>
+              </View>
+              {store.locationCoords ? (
+                <LocationPreview
+                  location={store.locationCoords}
+                  locationName={store.locationName}
+                  onPress={() => setShowLocationPicker(true)}
+                />
+              ) : (
+                <Pressable
+                  onPress={() => setShowLocationPicker(true)}
+                  className="flex-row items-center gap-2 rounded-lg border border-dashed border-border p-4"
+                >
+                  <MapPin size={18} className="text-muted-foreground" />
+                  <Text className="text-sm text-muted-foreground">
+                    Tap to set listing location
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+
+            <Modal
+              visible={showLocationPicker}
+              animationType="slide"
+              presentationStyle="pageSheet"
+              onRequestClose={() => setShowLocationPicker(false)}
+            >
+              <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+                <View className="flex-row items-center border-b border-border px-4 py-3">
+                  <Pressable onPress={() => setShowLocationPicker(false)} className="mr-3 p-1">
+                    <ArrowLeft size={24} className="text-foreground" />
+                  </Pressable>
+                  <Text className="text-lg font-semibold text-foreground">Set Location</Text>
+                </View>
+                <View className="flex-1 px-4 pt-4">
+                  <LocationPicker
+                    initialLocation={store.locationCoords}
+                    initialLocationName={store.locationName}
+                    onLocationChange={(coords, name) => {
+                      store.setLocation(coords, name);
+                    }}
+                    mapHeight={300}
+                  />
+                  <View className="mt-4">
+                    <Button size="lg" onPress={() => setShowLocationPicker(false)} className="w-full">
+                      <Text className="text-base font-semibold text-primary-foreground">Done</Text>
+                    </Button>
+                  </View>
+                </View>
+              </SafeAreaView>
+            </Modal>
+
             <Text className="text-base text-muted-foreground">
               Notes (optional)
             </Text>
@@ -193,6 +273,8 @@ const CreateListingFlow = () => {
             tradeWants={store.tradeWants}
             typeOverride={store.typeOverride}
             onTypeOverride={store.setTypeOverride}
+            locationCoords={store.locationCoords}
+            locationName={store.locationName}
           />
         );
 

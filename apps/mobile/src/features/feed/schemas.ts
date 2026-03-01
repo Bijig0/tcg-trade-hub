@@ -33,6 +33,8 @@ export type ListingOwner = z.infer<typeof ListingOwnerSchema>;
 
 export const ListingWithDistanceSchema = ListingRowSchema.extend({
   distance_km: z.number(),
+  location: z.unknown().nullable().optional(),
+  location_name: z.string().nullable().optional(),
   owner: ListingOwnerSchema,
   items: z.array(ListingItemRowSchema),
   offer_count: z.number().default(0),
