@@ -20,6 +20,8 @@
     "@tanstack/react-start": "^1.161.0",
     "@tcg-trade-hub/api": "workspace:*",
     "@tcg-trade-hub/database": "workspace:*",
+    "@vis.gl/react-google-maps": "^1.7.1",
+    "lucide-react": "^0.575.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "zod": "^3.24.0"
