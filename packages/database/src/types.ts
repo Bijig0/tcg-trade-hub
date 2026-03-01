@@ -967,6 +967,9 @@ export type Database = {
           created_at: string
           description: string | null
           email: string | null
+          google_rating: number | null
+          google_review_count: number | null
+          hosts_events: boolean
           hours: Json | null
           id: string
           location: unknown
@@ -974,6 +977,9 @@ export type Database = {
           name: string
           owner_id: string | null
           phone: string | null
+          seating_capacity: number | null
+          social_links: Json | null
+          suburb: string | null
           supported_tcgs: Database["public"]["Enums"]["tcg_type"][]
           updated_at: string
           verified: boolean
@@ -985,6 +991,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           email?: string | null
+          google_rating?: number | null
+          google_review_count?: number | null
+          hosts_events?: boolean
           hours?: Json | null
           id?: string
           location: unknown
@@ -992,6 +1001,9 @@ export type Database = {
           name: string
           owner_id?: string | null
           phone?: string | null
+          seating_capacity?: number | null
+          social_links?: Json | null
+          suburb?: string | null
           supported_tcgs?: Database["public"]["Enums"]["tcg_type"][]
           updated_at?: string
           verified?: boolean
@@ -1003,6 +1015,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           email?: string | null
+          google_rating?: number | null
+          google_review_count?: number | null
+          hosts_events?: boolean
           hours?: Json | null
           id?: string
           location?: unknown
@@ -1010,6 +1025,9 @@ export type Database = {
           name?: string
           owner_id?: string | null
           phone?: string | null
+          seating_capacity?: number | null
+          social_links?: Json | null
+          suburb?: string | null
           supported_tcgs?: Database["public"]["Enums"]["tcg_type"][]
           updated_at?: string
           verified?: boolean
@@ -1200,7 +1218,7 @@ export type Database = {
       report_status: "pending" | "reviewed" | "resolved"
       shop_event_status: "draft" | "published" | "cancelled" | "completed"
       swipe_direction: "like" | "pass"
-      tcg_type: "pokemon" | "mtg" | "yugioh"
+      tcg_type: "pokemon" | "mtg" | "yugioh" | "onepiece" | "lorcana" | "fab" | "starwars"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1372,7 +1390,7 @@ export const Constants = {
       report_status: ["pending", "reviewed", "resolved"],
       shop_event_status: ["draft", "published", "cancelled", "completed"],
       swipe_direction: ["like", "pass"],
-      tcg_type: ["pokemon", "mtg", "yugioh"],
+      tcg_type: ["pokemon", "mtg", "yugioh", "onepiece", "lorcana", "fab", "starwars"],
     },
   },
 } as const

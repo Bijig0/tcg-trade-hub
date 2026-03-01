@@ -12,7 +12,7 @@ export const UserRolesArraySchema = z.array(UserRoleSchema);
 export type UserRolesArray = z.infer<typeof UserRolesArraySchema>;
 
 // --- Enum schemas ---
-export const TcgTypeSchema = z.enum(['pokemon', 'mtg', 'onepiece']);
+export const TcgTypeSchema = z.enum(['pokemon', 'mtg', 'onepiece', 'lorcana', 'fab', 'starwars']);
 export const ListingTypeSchema = z.enum(['wts', 'wtb', 'wtt']);
 export const CardConditionSchema = z.enum(['nm', 'lp', 'mp', 'hp', 'dmg']);
 export const ListingCategorySchema = z.enum(['singles', 'sealed', 'graded', 'bulk']);
@@ -388,6 +388,7 @@ export const ShopRowSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   address: z.string(),
+  suburb: z.string().nullable(),
   location: z.unknown(),
   hours: z.unknown().nullable(),
   website: z.string().nullable(),
@@ -399,6 +400,11 @@ export const ShopRowSchema = z.object({
   email: z.string().nullable(),
   logo_url: z.string().nullable(),
   cover_photo_url: z.string().nullable(),
+  google_rating: z.number().nullable(),
+  google_review_count: z.number().int().nullable(),
+  social_links: z.unknown().nullable(),
+  hosts_events: z.boolean(),
+  seating_capacity: z.number().int().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -409,6 +415,7 @@ export const ShopInsertSchema = ShopRowSchema.omit({
   created_at: true,
   updated_at: true,
 }).extend({
+  suburb: z.string().nullable().optional(),
   hours: z.unknown().nullable().optional(),
   website: z.string().nullable().optional(),
   phone: z.string().nullable().optional(),
@@ -418,6 +425,11 @@ export const ShopInsertSchema = ShopRowSchema.omit({
   email: z.string().nullable().optional(),
   logo_url: z.string().nullable().optional(),
   cover_photo_url: z.string().nullable().optional(),
+  google_rating: z.number().nullable().optional(),
+  google_review_count: z.number().int().nullable().optional(),
+  social_links: z.unknown().nullable().optional(),
+  hosts_events: z.boolean().default(false),
+  seating_capacity: z.number().int().nullable().optional(),
 });
 
 export const ShopUpdateSchema = ShopRowSchema.omit({

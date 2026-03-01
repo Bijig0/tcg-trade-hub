@@ -7,6 +7,9 @@ const TCG_OPTIONS: { value: TcgType; label: string }[] = [
   { value: 'pokemon', label: 'Pokemon' },
   { value: 'mtg', label: 'Magic: The Gathering' },
   { value: 'onepiece', label: 'One Piece' },
+  { value: 'lorcana', label: 'Lorcana' },
+  { value: 'fab', label: 'Flesh and Blood' },
+  { value: 'starwars', label: 'Star Wars: Unlimited' },
 ];
 
 export const ShopProfileEditor = () => {
@@ -21,21 +24,30 @@ export const ShopProfileEditor = () => {
 
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
+  const [suburb, setSuburb] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
   const [description, setDescription] = useState('');
   const [supportedTcgs, setSupportedTcgs] = useState<TcgType[]>([]);
+  const [hostsEvents, setHostsEvents] = useState(false);
+  const [seatingCapacity, setSeatingCapacity] = useState('');
+  const [instagramUrl, setInstagramUrl] = useState('');
 
   useEffect(() => {
     if (shop) {
       setName(shop.name);
       setAddress(shop.address);
+      setSuburb(shop.suburb ?? '');
       setEmail(shop.email ?? '');
       setPhone(shop.phone ?? '');
       setWebsite(shop.website ?? '');
       setDescription(shop.description ?? '');
       setSupportedTcgs(shop.supported_tcgs);
+      setHostsEvents(shop.hosts_events ?? false);
+      setSeatingCapacity(shop.seating_capacity?.toString() ?? '');
+      const links = shop.social_links as Record<string, string> | null;
+      setInstagramUrl(links?.instagram ?? '');
     }
   }, [shop]);
 
@@ -55,14 +67,19 @@ export const ShopProfileEditor = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const socialLinks = instagramUrl ? { instagram: instagramUrl } : null;
     mutation.mutate({
       name,
       address,
+      suburb: suburb || null,
       email: email || null,
       phone: phone || null,
       website: website || null,
       description: description || null,
       supported_tcgs: supportedTcgs,
+      hosts_events: hostsEvents,
+      seating_capacity: seatingCapacity ? parseInt(seatingCapacity, 10) : null,
+      social_links: socialLinks,
     });
   };
 
@@ -103,6 +120,18 @@ export const ShopProfileEditor = () => {
           required
           value={address}
           onChange={(e) => setAddress(e.target.value)}
+          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="suburb" className="mb-1 block text-sm font-medium text-foreground">
+          Suburb
+        </label>
+        <input
+          id="suburb"
+          value={suburb}
+          onChange={(e) => setSuburb(e.target.value)}
           className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
@@ -180,6 +209,57 @@ export const ShopProfileEditor = () => {
           ))}
         </div>
       </div>
+
+      <div className="flex items-center gap-3">
+        <input
+          id="hostsEvents"
+          type="checkbox"
+          checked={hostsEvents}
+          onChange={(e) => setHostsEvents(e.target.checked)}
+          className="h-4 w-4 rounded border-input text-primary focus:ring-ring"
+        />
+        <label htmlFor="hostsEvents" className="text-sm font-medium text-foreground">
+          Hosts events (tournaments, leagues, etc.)
+        </label>
+      </div>
+
+      <div>
+        <label htmlFor="seatingCapacity" className="mb-1 block text-sm font-medium text-foreground">
+          Seating Capacity
+        </label>
+        <input
+          id="seatingCapacity"
+          type="number"
+          min="0"
+          value={seatingCapacity}
+          onChange={(e) => setSeatingCapacity(e.target.value)}
+          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          placeholder="e.g. 30"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="instagramUrl" className="mb-1 block text-sm font-medium text-foreground">
+          Instagram URL
+        </label>
+        <input
+          id="instagramUrl"
+          type="url"
+          value={instagramUrl}
+          onChange={(e) => setInstagramUrl(e.target.value)}
+          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          placeholder="https://instagram.com/yourshop"
+        />
+      </div>
+
+      {shop.google_rating != null && (
+        <div className="rounded-lg border border-border bg-muted/50 p-3">
+          <p className="text-sm font-medium text-foreground">Google Rating</p>
+          <p className="text-sm text-muted-foreground">
+            {shop.google_rating}/5 ({shop.google_review_count ?? 0} reviews)
+          </p>
+        </div>
+      )}
 
       <button
         type="submit"

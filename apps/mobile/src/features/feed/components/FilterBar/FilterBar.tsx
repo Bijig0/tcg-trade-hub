@@ -10,6 +10,9 @@ const TCG_OPTIONS: { label: string; value: TcgType | null }[] = [
   { label: 'Pokemon', value: 'pokemon' },
   { label: 'MTG', value: 'mtg' },
   { label: 'One Piece', value: 'onepiece' },
+  { label: 'Lorcana', value: 'lorcana' },
+  { label: 'Flesh and Blood', value: 'fab' },
+  { label: 'Star Wars', value: 'starwars' },
 ];
 
 const CATEGORY_OPTIONS: { label: string; value: ListingCategory | null }[] = [

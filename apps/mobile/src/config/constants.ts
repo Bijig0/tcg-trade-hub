@@ -18,6 +18,9 @@ export const TCG_LABELS = {
   pokemon: 'Pokemon',
   mtg: 'Magic: The Gathering',
   onepiece: 'One Piece',
+  lorcana: 'Lorcana',
+  fab: 'Flesh and Blood',
+  starwars: 'Star Wars: Unlimited',
 } as const;
 
 export const CONDITION_LABELS = {

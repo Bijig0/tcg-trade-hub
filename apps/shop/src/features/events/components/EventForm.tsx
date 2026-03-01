@@ -21,6 +21,9 @@ const TCG_OPTIONS: { value: TcgType; label: string }[] = [
   { value: 'pokemon', label: 'Pokemon' },
   { value: 'mtg', label: 'Magic: The Gathering' },
   { value: 'onepiece', label: 'One Piece' },
+  { value: 'lorcana', label: 'Lorcana' },
+  { value: 'fab', label: 'Flesh and Blood' },
+  { value: 'starwars', label: 'Star Wars: Unlimited' },
 ];
 
 export const EventForm = ({ onSuccess }: EventFormProps) => {
