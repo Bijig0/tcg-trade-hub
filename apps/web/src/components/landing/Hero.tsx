@@ -43,9 +43,9 @@ const StaticOfferCard = () => (
         <span className="text-sm">&#128176;</span>
         <p className="text-xs font-medium text-success">+ $50 cash</p>
       </div>
-      <div className="w-full rounded-xl bg-primary py-3 text-center text-sm font-semibold text-primary-foreground">
+      <Link to="/get-started" className="block w-full rounded-xl bg-primary py-3 text-center text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90">
         Make Your Counter-Offer
-      </div>
+      </Link>
     </div>
   </div>
 );
