@@ -16,6 +16,8 @@ type BundleListingInput = {
   tradeWants?: TradeWant[];
   acceptsCash: boolean;
   acceptsTrades: boolean;
+  locationCoords?: { latitude: number; longitude: number } | null;
+  locationName?: string | null;
 };
 
 /**
@@ -28,7 +30,7 @@ const useCreateBundleListing = () => {
   const queryClient = useQueryClient();
 
   return useMutation<ListingRow, Error, BundleListingInput>({
-    mutationFn: async ({ type, selectedCards, cashAmount, description, tradeWants, acceptsCash, acceptsTrades }) => {
+    mutationFn: async ({ type, selectedCards, cashAmount, description, tradeWants, acceptsCash, acceptsTrades, locationCoords, locationName }) => {
       const scoped = __DEV__
         ? devEmitter.forPath('flow:p2p-trade', createTraceId(), 'mobile:createListing')
         : undefined;
@@ -66,6 +68,10 @@ const useCreateBundleListing = () => {
           trade_wants: JSON.stringify(tradeWants ?? []),
           accepts_cash: acceptsCash,
           accepts_trades: acceptsTrades,
+          location: locationCoords
+            ? `POINT(${locationCoords.longitude} ${locationCoords.latitude})`
+            : null,
+          location_name: locationName ?? null,
         })
         .select()
         .single();

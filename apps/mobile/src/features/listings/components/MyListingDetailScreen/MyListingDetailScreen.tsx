@@ -1,19 +1,23 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator, Dimensions, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import MapView from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import BottomSheet, { BottomSheetFlatList, BottomSheetScrollView, type BottomSheetFlatListMethods } from '@gorhom/bottom-sheet';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react-native';
+import { ArrowLeft, MapPin, Pencil, Trash2 } from 'lucide-react-native';
 
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import SegmentedFilter from '@/components/ui/SegmentedFilter/SegmentedFilter';
+import LocationPicker from '@/components/LocationPicker/LocationPicker';
+import Button from '@/components/ui/Button/Button';
+import parseLocationCoords from '@/utils/parseLocationCoords/parseLocationCoords';
 import useListingDetail from '@/features/feed/hooks/useListingDetail/useListingDetail';
 import useListingOffers from '../../hooks/useListingOffers/useListingOffers';
 import useRespondToOffer from '../../hooks/useRespondToOffer/useRespondToOffer';
 import useDeleteListing from '../../hooks/useDeleteListing/useDeleteListing';
 import useRealtimeOfferUpdates from '../../hooks/useRealtimeOfferUpdates/useRealtimeOfferUpdates';
 import useTradeOpportunities from '../../hooks/useTradeOpportunities/useTradeOpportunities';
+import useUpdateListingLocation from '../../hooks/useUpdateListingLocation/useUpdateListingLocation';
 import MyBundleSummary from '../MyBundleSummary/MyBundleSummary';
 import ReceivedOfferCard from '../ReceivedOfferCard/ReceivedOfferCard';
 import TradeOpportunityCard from '../TradeOpportunityCard/TradeOpportunityCard';
@@ -40,13 +44,24 @@ const MyListingDetailScreen = () => {
 
   const [selectedOffer, setSelectedOffer] = useState<OfferWithItems | null>(null);
   const [detailTab, setDetailTab] = useState<DetailTab>('opportunities');
+  const [showLocationEditor, setShowLocationEditor] = useState(false);
+  const [editingCoords, setEditingCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [editingName, setEditingName] = useState('');
 
   const { data: listing, isLoading: isListingLoading } = useListingDetail(id ?? '');
   const { data: offerData, isLoading: isOffersLoading } = useListingOffers(id ?? '');
   const { data: opportunities, isLoading: isOpportunitiesLoading } = useTradeOpportunities(id ?? '');
   const respondToOffer = useRespondToOffer();
   const deleteListing = useDeleteListing();
+  const updateLocation = useUpdateListingLocation();
   useRealtimeOfferUpdates(id ?? '');
+
+  // Parse listing location for the map marker
+  const listingCoords = useMemo(
+    () => (listing ? parseLocationCoords((listing as Record<string, unknown>).location) : null),
+    [listing],
+  );
+  const listingLocationName = (listing as Record<string, unknown> | undefined)?.location_name as string | undefined;
 
   const snapPoints = useMemo(() => ['20%', '55%', '92%'], []);
 
@@ -139,14 +154,20 @@ const MyListingDetailScreen = () => {
     );
   }, [id, router]);
 
-  // Map region from shops
+  // Map region from shops + listing location
   const initialRegion = useMemo(() => {
     const shops = offerData?.shops ?? [];
     const shopPoints = shops
       .filter((s) => s.lat !== 0 || s.lng !== 0)
       .map((s) => ({ lat: s.lat, lng: s.lng }));
 
-    if (shopPoints.length === 0) {
+    // Include listing location point
+    const allPoints = [...shopPoints];
+    if (listingCoords) {
+      allPoints.push({ lat: listingCoords.latitude, lng: listingCoords.longitude });
+    }
+
+    if (allPoints.length === 0) {
       return {
         latitude: 37.7749,
         longitude: -122.4194,
@@ -155,8 +176,8 @@ const MyListingDetailScreen = () => {
       };
     }
 
-    const lats = shopPoints.map((p) => p.lat);
-    const lngs = shopPoints.map((p) => p.lng);
+    const lats = allPoints.map((p) => p.lat);
+    const lngs = allPoints.map((p) => p.lng);
     const latDelta = Math.max((Math.max(...lats) - Math.min(...lats)) * 1.5, 0.02);
     const lngDelta = Math.max((Math.max(...lngs) - Math.min(...lngs)) * 1.5, 0.02);
 
@@ -166,7 +187,7 @@ const MyListingDetailScreen = () => {
       latitudeDelta: latDelta,
       longitudeDelta: lngDelta,
     };
-  }, [offerData]);
+  }, [offerData, listingCoords]);
 
   if (isListingLoading) {
     return (
@@ -292,7 +313,73 @@ const MyListingDetailScreen = () => {
         {shops.map((shop) => (
           <ShopMarker key={`shop-${shop.id}`} shop={shop} />
         ))}
+        {listingCoords && (
+          <Marker
+            coordinate={listingCoords}
+            title={listing.title}
+            description={listingLocationName ?? 'Listing location'}
+            onCalloutPress={() => {
+              setEditingCoords(listingCoords);
+              setEditingName(listingLocationName ?? '');
+              setShowLocationEditor(true);
+            }}
+          >
+            <MapPin size={28} color="#3b82f6" fill="#3b82f6" />
+          </Marker>
+        )}
       </MapView>
+
+      {/* Location edit modal */}
+      <Modal
+        visible={showLocationEditor}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowLocationEditor(false)}
+      >
+        <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+          <View className="flex-row items-center border-b border-border px-4 py-3">
+            <Pressable onPress={() => setShowLocationEditor(false)} className="mr-3 p-1">
+              <ArrowLeft size={24} className="text-foreground" />
+            </Pressable>
+            <Text className="text-lg font-semibold text-foreground">Edit Location</Text>
+          </View>
+          <View className="flex-1 px-4 pt-4">
+            <LocationPicker
+              initialLocation={editingCoords}
+              initialLocationName={editingName}
+              onLocationChange={(coords, name) => {
+                setEditingCoords(coords);
+                setEditingName(name);
+              }}
+              mapHeight={300}
+            />
+            <View className="mt-4">
+              <Button
+                size="lg"
+                onPress={() => {
+                  if (editingCoords && id) {
+                    updateLocation.mutate(
+                      { listingId: id, coords: editingCoords, locationName: editingName },
+                      {
+                        onSuccess: () => {
+                          setShowLocationEditor(false);
+                          Alert.alert('Updated', 'Listing location has been updated.');
+                        },
+                      },
+                    );
+                  }
+                }}
+                disabled={updateLocation.isPending}
+                className="w-full"
+              >
+                <Text className="text-base font-semibold text-primary-foreground">
+                  {updateLocation.isPending ? 'Saving...' : 'Save Location'}
+                </Text>
+              </Button>
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
 
       {/* Header */}
       <SafeAreaView
@@ -310,6 +397,16 @@ const MyListingDetailScreen = () => {
           </Text>
 
           <View className="flex-row gap-1">
+            <Pressable
+              onPress={() => {
+                setEditingCoords(listingCoords);
+                setEditingName(listingLocationName ?? '');
+                setShowLocationEditor(true);
+              }}
+              className="p-2"
+            >
+              <MapPin size={18} className="text-muted-foreground" />
+            </Pressable>
             <Pressable
               onPress={() => router.push(`/(tabs)/(listings)/listing/${id}/edit`)}
               className="p-2"

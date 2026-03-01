@@ -1,4 +1,6 @@
 import type { ListingWithDistance } from '../../schemas';
+import parseLocationCoords from '@/utils/parseLocationCoords/parseLocationCoords';
+import haversineDistance from '@/utils/haversineDistance/haversineDistance';
 
 type RawUserProfile = {
   id: string;
@@ -26,6 +28,8 @@ export type RawFeedListing = {
   trade_wants: unknown[];
   accepts_cash: boolean;
   accepts_trades: boolean;
+  location: unknown;
+  location_name: string | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -33,16 +37,32 @@ export type RawFeedListing = {
   users: unknown;
 };
 
+type UserCoords = { latitude: number; longitude: number };
+
 /**
  * Transforms a raw Supabase listing row (with joined relations)
  * into the `ListingWithDistance` shape used by the feed UI.
  *
- * Distance is currently hardcoded to 0 — will be computed from
- * PostGIS when location-based sorting is implemented.
+ * Computes real distance_km using the Haversine formula when
+ * both listing location and user location are available.
+ * Falls back to 0 when either location is missing.
  */
-const transformRawListing = (raw: RawFeedListing): ListingWithDistance => {
+const transformRawListing = (
+  raw: RawFeedListing,
+  userLocation?: UserCoords | null,
+): ListingWithDistance => {
   const userProfile = raw.users as RawUserProfile;
   const items = (raw.listing_items ?? []) as unknown as ListingWithDistance['items'];
+
+  // Resolve listing location: prefer listing.location, fall back to owner's location
+  const listingCoords =
+    parseLocationCoords(raw.location) ??
+    parseLocationCoords(userProfile.location);
+
+  const distanceKm =
+    listingCoords && userLocation
+      ? haversineDistance(userLocation, listingCoords)
+      : 0;
 
   return {
     id: raw.id,
@@ -57,10 +77,12 @@ const transformRawListing = (raw: RawFeedListing): ListingWithDistance => {
     trade_wants: raw.trade_wants ?? [],
     accepts_cash: raw.accepts_cash ?? false,
     accepts_trades: raw.accepts_trades ?? false,
+    location: raw.location ?? null,
+    location_name: raw.location_name ?? null,
     status: raw.status,
     created_at: raw.created_at,
     updated_at: raw.updated_at,
-    distance_km: 0, // TODO: compute from PostGIS when location available
+    distance_km: Math.round(distanceKm * 10) / 10,
     owner: {
       display_name: userProfile.display_name,
       avatar_url: userProfile.avatar_url,

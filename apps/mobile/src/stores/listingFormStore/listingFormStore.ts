@@ -23,6 +23,10 @@ type ListingFormState = {
   // Trade wants (available for all listing types now)
   tradeWants: TradeWant[];
 
+  // Location
+  locationCoords: { latitude: number; longitude: number } | null;
+  locationName: string;
+
   // Computed
   getEffectiveType: () => ListingType;
 
@@ -50,6 +54,9 @@ type ListingFormState = {
   // Trade wants actions
   addTradeWant: (want: TradeWant) => void;
   removeTradeWant: (index: number) => void;
+
+  // Location actions
+  setLocation: (coords: { latitude: number; longitude: number } | null, name: string) => void;
 };
 
 const INITIAL_STATE = {
@@ -63,6 +70,8 @@ const INITIAL_STATE = {
   cashAmount: '0',
   description: '',
   tradeWants: [] as TradeWant[],
+  locationCoords: null as { latitude: number; longitude: number } | null,
+  locationName: '',
 };
 
 export const useListingFormStore = create<ListingFormState>()(
@@ -143,6 +152,13 @@ export const useListingFormStore = create<ListingFormState>()(
     removeTradeWant: (index) =>
       set((s) => {
         s.tradeWants.splice(index, 1);
+      }),
+
+    // Location actions
+    setLocation: (coords, name) =>
+      set((s) => {
+        s.locationCoords = coords;
+        s.locationName = name;
       }),
   })),
 );

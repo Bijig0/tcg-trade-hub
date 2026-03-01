@@ -7,15 +7,19 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft, MapPin } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthProvider';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Button from '@/components/ui/Button/Button';
 import Input from '@/components/ui/Input/Input';
+import LocationPicker from '@/components/LocationPicker/LocationPicker';
+import LocationPreview from '@/components/LocationPreview/LocationPreview';
+import parseLocationCoords from '@/utils/parseLocationCoords/parseLocationCoords';
 import { cn } from '@/lib/cn';
 import { TCG_LABELS } from '@/config/constants';
 import useUpdateProfile from '../../hooks/useUpdateProfile/useUpdateProfile';
@@ -37,12 +41,19 @@ const EditProfileScreen = () => {
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(profile?.avatar_url ?? null);
   const [selectedTcgs, setSelectedTcgs] = useState<TcgType[]>(profile?.preferred_tcgs ?? []);
+  const [locationCoords, setLocationCoords] = useState<{ latitude: number; longitude: number } | null>(
+    profile?.location ? parseLocationCoords(profile.location) : null,
+  );
+  const [locationName, setLocationName] = useState('');
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
 
   useEffect(() => {
     if (profile) {
       setDisplayName(profile.display_name);
       setAvatarUrl(profile.avatar_url);
       setSelectedTcgs([...profile.preferred_tcgs]);
+      const parsed = parseLocationCoords(profile.location);
+      if (parsed) setLocationCoords(parsed);
     }
   }, [profile]);
 
@@ -84,18 +95,21 @@ const EditProfileScreen = () => {
       return;
     }
 
-    updateProfile.mutate(
-      {
-        display_name: displayName.trim(),
-        avatar_url: avatarUrl,
-        preferred_tcgs: selectedTcgs,
+    const params: Parameters<typeof updateProfile.mutate>[0] = {
+      display_name: displayName.trim(),
+      avatar_url: avatarUrl,
+      preferred_tcgs: selectedTcgs,
+    };
+
+    if (locationCoords) {
+      params.location = `POINT(${locationCoords.longitude} ${locationCoords.latitude})`;
+    }
+
+    updateProfile.mutate(params, {
+      onSuccess: () => {
+        router.back();
       },
-      {
-        onSuccess: () => {
-          router.back();
-        },
-      },
-    );
+    });
   };
 
   return (
@@ -132,6 +146,65 @@ const EditProfileScreen = () => {
             onChangeText={setDisplayName}
             autoCapitalize="words"
           />
+        </View>
+
+        {/* Location */}
+        <View className="mt-6 px-6">
+          <View className="mb-3 flex-row items-center justify-between">
+            <Text className="text-sm font-medium text-foreground">Location</Text>
+            <Pressable onPress={() => setShowLocationPicker(true)}>
+              <Text className="text-sm font-medium text-primary">Change</Text>
+            </Pressable>
+          </View>
+          {locationCoords ? (
+            <LocationPreview
+              location={locationCoords}
+              locationName={locationName}
+              onPress={() => setShowLocationPicker(true)}
+            />
+          ) : (
+            <Pressable
+              onPress={() => setShowLocationPicker(true)}
+              className="flex-row items-center gap-2 rounded-lg border border-dashed border-border p-4"
+            >
+              <MapPin size={18} className="text-muted-foreground" />
+              <Text className="text-sm text-muted-foreground">
+                Tap to set your location
+              </Text>
+            </Pressable>
+          )}
+
+          <Modal
+            visible={showLocationPicker}
+            animationType="slide"
+            presentationStyle="pageSheet"
+            onRequestClose={() => setShowLocationPicker(false)}
+          >
+            <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+              <View className="flex-row items-center border-b border-border px-4 py-3">
+                <Pressable onPress={() => setShowLocationPicker(false)} className="mr-3 p-1">
+                  <ArrowLeft size={24} className="text-foreground" />
+                </Pressable>
+                <Text className="text-lg font-semibold text-foreground">Set Location</Text>
+              </View>
+              <View className="flex-1 px-4 pt-4">
+                <LocationPicker
+                  initialLocation={locationCoords}
+                  initialLocationName={locationName}
+                  onLocationChange={(coords, name) => {
+                    setLocationCoords(coords);
+                    setLocationName(name);
+                  }}
+                  mapHeight={300}
+                />
+                <View className="mt-4">
+                  <Button size="lg" onPress={() => setShowLocationPicker(false)} className="w-full">
+                    <Text className="text-base font-semibold text-primary-foreground">Done</Text>
+                  </Button>
+                </View>
+              </View>
+            </SafeAreaView>
+          </Modal>
         </View>
 
         {/* Preferred TCGs */}
