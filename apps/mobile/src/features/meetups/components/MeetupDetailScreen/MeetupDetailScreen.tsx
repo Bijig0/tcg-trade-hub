@@ -19,6 +19,7 @@ import { useSheetPositionStore } from '@/stores/sheetPositionStore/sheetPosition
 import useMeetupDetail from '../../hooks/useMeetupDetail/useMeetupDetail';
 import useCompleteMeetup from '../../hooks/useCompleteMeetup/useCompleteMeetup';
 import useCancelMeetup from '../../hooks/useCancelMeetup/useCancelMeetup';
+import useUncompleteMeetup from '../../hooks/useUncompleteMeetup/useUncompleteMeetup';
 import useRealtimeMeetupUpdates from '../../hooks/useRealtimeMeetupUpdates/useRealtimeMeetupUpdates';
 import RatingModal from '../RatingModal/RatingModal';
 import DevMeetupActions from '../DevMeetupActions/DevMeetupActions';
@@ -75,6 +76,7 @@ const MeetupDetailScreen = () => {
 
   const completeMeetup = useCompleteMeetup(handleBothCompleted);
   const cancelMeetup = useCancelMeetup();
+  const uncompleteMeetup = useUncompleteMeetup();
 
   const snapPoints = useMemo(() => ['15%', '55%', '85%'], []);
   const initialIndex = getPosition(SHEET_KEY, 2);
@@ -203,6 +205,10 @@ const MeetupDetailScreen = () => {
 
   const handleComplete = () => {
     completeMeetup.mutate({ meetupId: meetup.id });
+  };
+
+  const handleUncomplete = () => {
+    uncompleteMeetup.mutate({ meetupId: meetup.id });
   };
 
   const handleCancel = () => {
@@ -362,6 +368,8 @@ const MeetupDetailScreen = () => {
                 otherUserAvatarUrl={other_user.avatar_url}
                 onComplete={handleComplete}
                 isPending={completeMeetup.isPending}
+                onUncomplete={handleUncomplete}
+                isUncompletePending={uncompleteMeetup.isPending}
               />
             </View>
           )}
