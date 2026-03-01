@@ -12,6 +12,9 @@ const TCG_OPTIONS: { value: TcgType; label: string }[] = [
   { value: 'pokemon', label: 'Pokemon' },
   { value: 'mtg', label: 'Magic: The Gathering' },
   { value: 'onepiece', label: 'One Piece' },
+  { value: 'lorcana', label: 'Lorcana' },
+  { value: 'fab', label: 'Flesh and Blood' },
+  { value: 'starwars', label: 'Star Wars: Unlimited' },
 ];
 
 export const ShopRegistrationForm = ({ onSuccess }: ShopRegistrationFormProps) => {
@@ -19,11 +22,13 @@ export const ShopRegistrationForm = ({ onSuccess }: ShopRegistrationFormProps) =
   const { refreshSession } = useAuth();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
+  const [suburb, setSuburb] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
   const [description, setDescription] = useState('');
   const [supportedTcgs, setSupportedTcgs] = useState<TcgType[]>([]);
+  const [hostsEvents, setHostsEvents] = useState(false);
 
   const mutation = useMutation({
     mutationFn: (data: Parameters<typeof client.shop.register>[0]) =>
@@ -47,12 +52,14 @@ export const ShopRegistrationForm = ({ onSuccess }: ShopRegistrationFormProps) =
     mutation.mutate({
       name,
       address,
+      suburb: suburb || null,
       location: null,
       email: email || null,
       phone: phone || null,
       website: website || null,
       description: description || null,
       supported_tcgs: supportedTcgs,
+      hosts_events: hostsEvents,
     });
   };
 
@@ -89,6 +96,19 @@ export const ShopRegistrationForm = ({ onSuccess }: ShopRegistrationFormProps) =
           onChange={(e) => setAddress(e.target.value)}
           className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           placeholder="123 Main St, City, State 12345"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="suburb" className="mb-1 block text-sm font-medium text-foreground">
+          Suburb
+        </label>
+        <input
+          id="suburb"
+          value={suburb}
+          onChange={(e) => setSuburb(e.target.value)}
+          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          placeholder="e.g. Melbourne CBD"
         />
       </div>
 
@@ -168,6 +188,19 @@ export const ShopRegistrationForm = ({ onSuccess }: ShopRegistrationFormProps) =
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <input
+          id="hostsEvents"
+          type="checkbox"
+          checked={hostsEvents}
+          onChange={(e) => setHostsEvents(e.target.checked)}
+          className="h-4 w-4 rounded border-input text-primary focus:ring-ring"
+        />
+        <label htmlFor="hostsEvents" className="text-sm font-medium text-foreground">
+          Hosts events (tournaments, leagues, etc.)
+        </label>
       </div>
 
       <button

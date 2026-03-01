@@ -16,6 +16,9 @@ const TCG_OPTIONS: TcgOption[] = [
   { value: 'pokemon', label: 'Pokemon', emoji: '\u26A1' },
   { value: 'mtg', label: 'Magic: The Gathering', emoji: '\u2728' },
   { value: 'onepiece', label: 'One Piece', emoji: '\u2693' },
+  { value: 'lorcana', label: 'Lorcana', emoji: '\u2728' },
+  { value: 'fab', label: 'Flesh and Blood', emoji: '\u2694' },
+  { value: 'starwars', label: 'Star Wars: Unlimited', emoji: '\u2B50' },
 ];
 
 const TcgSelectOnboarding = () => {

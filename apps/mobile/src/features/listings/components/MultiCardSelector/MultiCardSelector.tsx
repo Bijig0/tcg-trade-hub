@@ -59,6 +59,9 @@ const MultiCardSelector = ({ selectedCards, onToggle }: MultiCardSelectorProps) 
     pokemon: 'Pokemon',
     mtg: 'MTG',
     onepiece: 'One Piece',
+    lorcana: 'Lorcana',
+    fab: 'FaB',
+    starwars: 'Star Wars',
   };
 
   const handleExternalSelect = (card: NormalizedCard) => {

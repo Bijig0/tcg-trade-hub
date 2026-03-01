@@ -21,6 +21,9 @@ const TCG_LABELS: Record<string, string> = {
   pokemon: 'Pokemon',
   mtg: 'Magic: The Gathering',
   onepiece: 'One Piece',
+  lorcana: 'Lorcana',
+  fab: 'Flesh and Blood',
+  starwars: 'Star Wars: Unlimited',
 };
 
 const CONDITION_LABELS: Record<string, string> = {
