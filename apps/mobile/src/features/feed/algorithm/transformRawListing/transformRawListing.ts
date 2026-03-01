@@ -35,6 +35,7 @@ export type RawFeedListing = {
   updated_at: string;
   listing_items: unknown[] | null;
   users: unknown;
+  shops: unknown;
 };
 
 type UserCoords = { latitude: number; longitude: number };
@@ -53,6 +54,7 @@ const transformRawListing = (
 ): ListingWithDistance => {
   const userProfile = raw.users as RawUserProfile;
   const items = (raw.listing_items ?? []) as unknown as ListingWithDistance['items'];
+  const shopData = raw.shops as { name: string; verified: boolean; logo_url: string | null } | null;
 
   // Resolve listing location: prefer listing.location, fall back to owner's location
   const listingCoords =
@@ -91,6 +93,7 @@ const transformRawListing = (
     },
     items,
     offer_count: 0,
+    shop: shopData ?? null,
   } as ListingWithDistance;
 };
 

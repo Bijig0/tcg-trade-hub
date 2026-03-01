@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { Star } from 'lucide-react-native';
+import { BadgeCheck, Star } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import ListingTypeBadges from '@/features/listings/components/ListingTypeBadges/ListingTypeBadges';
 import BundlePreview from '@/features/listings/components/BundlePreview/BundlePreview';
@@ -33,7 +33,8 @@ const ListingCard = ({ listing, className, detailBasePath = '/(tabs)/(listings)'
     <Pressable
       onPress={handlePress}
       className={cn(
-        'flex-row rounded-xl border border-border bg-card p-3 active:bg-accent',
+        'flex-row rounded-xl border bg-card p-3 active:bg-accent',
+        listing.shop ? 'border-primary/20' : 'border-border',
         className,
       )}
     >
@@ -66,9 +67,18 @@ const ListingCard = ({ listing, className, detailBasePath = '/(tabs)/(listings)'
           </View>
 
           <View className="flex-row items-center gap-1">
-            <Text className="text-xs text-muted-foreground" numberOfLines={1}>
-              {listing.owner.display_name}
-            </Text>
+            {listing.shop ? (
+              <>
+                <BadgeCheck size={12} className="text-primary" />
+                <Text className="text-xs font-medium text-primary" numberOfLines={1}>
+                  {listing.shop.name}
+                </Text>
+              </>
+            ) : (
+              <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+                {listing.owner.display_name}
+              </Text>
+            )}
             <Star size={10} className="text-yellow-500" fill="#eab308" />
             <Text className="text-xs text-muted-foreground">
               {listing.owner.rating_score.toFixed(1)}

@@ -65,6 +65,11 @@ const useFeedListings = () => {
             location,
             rating_score,
             total_trades
+          ),
+          shops (
+            name,
+            verified,
+            logo_url
           )
         `)
         .eq('status', 'active')

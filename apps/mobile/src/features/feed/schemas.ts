@@ -31,6 +31,14 @@ export const ListingOwnerSchema = z.object({
 
 export type ListingOwner = z.infer<typeof ListingOwnerSchema>;
 
+export const ListingShopSchema = z.object({
+  name: z.string(),
+  verified: z.boolean(),
+  logo_url: z.string().nullable(),
+});
+
+export type ListingShop = z.infer<typeof ListingShopSchema>;
+
 export const ListingWithDistanceSchema = ListingRowSchema.extend({
   distance_km: z.number(),
   location: z.unknown().nullable().optional(),
@@ -38,6 +46,7 @@ export const ListingWithDistanceSchema = ListingRowSchema.extend({
   owner: ListingOwnerSchema,
   items: z.array(ListingItemRowSchema),
   offer_count: z.number().default(0),
+  shop: ListingShopSchema.nullable().default(null),
 });
 
 export type ListingWithDistance = z.infer<typeof ListingWithDistanceSchema>;

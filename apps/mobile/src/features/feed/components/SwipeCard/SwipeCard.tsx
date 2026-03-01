@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Info } from 'lucide-react-native';
+import { BadgeCheck, Info } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import { TCG_LABELS } from '@/config/constants';
 import PhotoCarousel from '../PhotoCarousel/PhotoCarousel';
@@ -78,7 +78,8 @@ const SwipeCard = ({ listing, className, onOpenDetail }: SwipeCardProps) => {
   return (
     <View
       className={cn(
-        'flex-1 overflow-hidden rounded-2xl border border-border bg-card',
+        'flex-1 overflow-hidden rounded-2xl border bg-card',
+        listing.shop ? 'border-primary/20' : 'border-border',
         className,
       )}
     >
@@ -133,6 +134,15 @@ const SwipeCard = ({ listing, className, onOpenDetail }: SwipeCardProps) => {
         <Text className="mt-1 text-sm text-muted-foreground">
           {TCG_LABELS[listing.tcg] ?? listing.tcg} &middot; {items.length} card{items.length !== 1 ? 's' : ''}
         </Text>
+
+        {listing.shop && (
+          <View className="mt-1 flex-row items-center gap-1">
+            <BadgeCheck size={14} className="text-primary" />
+            <Text className="text-sm font-medium text-primary" numberOfLines={1}>
+              {listing.shop.name}
+            </Text>
+          </View>
+        )}
 
         <View className="mt-3 flex-row items-center gap-2">
           <Text className="text-xs text-muted-foreground">

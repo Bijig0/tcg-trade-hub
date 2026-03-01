@@ -44,6 +44,7 @@ const makeRaw = (overrides: Partial<RawFeedListing> = {}): RawFeedListing => ({
     rating_score: 4.8,
     total_trades: 15,
   },
+  shops: null,
   ...overrides,
 });
 
@@ -154,5 +155,23 @@ describe('transformRawListing', () => {
   it('should return 0 distance when neither location is available', () => {
     const result = transformRawListing(makeRaw(), { latitude: -37.8136, longitude: 144.9631 });
     expect(result.distance_km).toBe(0);
+  });
+
+  it('should set shop to null when shops is null', () => {
+    const result = transformRawListing(makeRaw({ shops: null }));
+    expect(result.shop).toBeNull();
+  });
+
+  it('should map shop data when shops is present', () => {
+    const result = transformRawListing(
+      makeRaw({
+        shops: { name: 'Good Games Melbourne', verified: true, logo_url: 'https://example.com/logo.png' },
+      }),
+    );
+    expect(result.shop).toEqual({
+      name: 'Good Games Melbourne',
+      verified: true,
+      logo_url: 'https://example.com/logo.png',
+    });
   });
 });
