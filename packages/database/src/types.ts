@@ -291,6 +291,7 @@ export type Database = {
           id: string
           listing_id: string
           market_price: number | null
+          notes: string | null
           quantity: number
           tcg: Database["public"]["Enums"]["tcg_type"]
         }
@@ -308,6 +309,7 @@ export type Database = {
           id?: string
           listing_id: string
           market_price?: number | null
+          notes?: string | null
           quantity?: number
           tcg: Database["public"]["Enums"]["tcg_type"]
         }
@@ -325,6 +327,7 @@ export type Database = {
           id?: string
           listing_id?: string
           market_price?: number | null
+          notes?: string | null
           quantity?: number
           tcg?: Database["public"]["Enums"]["tcg_type"]
         }

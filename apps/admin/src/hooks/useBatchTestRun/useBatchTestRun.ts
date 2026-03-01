@@ -92,25 +92,32 @@ const useBatchTestRun = () => {
   }, [isBatchRunning]);
 
   // Batch run mutation
+  //
+  // The request is long-running (~minutes). We open the WS *before* calling
+  // the mutation so progress events stream in from the start. On completion
+  // (or error / already-running), we tear the WS down.
   const batchMutation = useMutation({
     mutationFn: async (mode: 'all' | 'failed-only') => {
-      return graphClient.maestro.batchRun({ mode });
-    },
-    onMutate: () => {
+      // Open WS + set running state synchronously so progress events arrive
+      // before the first scenario even starts.
       setIsBatchRunning(true);
       setBatchProgress(0);
       setScenarioProgress({});
+
+      const result = await graphClient.maestro.batchRun({ mode });
+
+      // If the server says "already running", treat as a no-op
+      if (!result.ok) {
+        throw new Error(result.error);
+      }
+      return result;
     },
-    onSuccess: () => {
+    onSettled: () => {
       setIsBatchRunning(false);
-      // Invalidate relevant queries to reflect new results
       queryClient.invalidateQueries({ queryKey: recordingKeys.all });
       queryClient.invalidateQueries({
         queryKey: graphOrpc.maestro.testRuns.queryOptions().queryKey,
       });
-    },
-    onError: () => {
-      setIsBatchRunning(false);
     },
   });
 

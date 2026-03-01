@@ -147,11 +147,20 @@ const maestroTestRuns = os
     return context.getLatestTestRuns();
   });
 
+const BatchRunOutputSchema = z.discriminatedUnion('ok', [
+  z.object({ ok: z.literal(true) }).merge(BatchResultSchema),
+  z.object({ ok: z.literal(false), error: z.string() }),
+]);
+
 const maestroBatchRun = os
   .input(z.object({ mode: BatchModeSchema }))
-  .output(BatchResultSchema)
+  .output(BatchRunOutputSchema)
   .handler(async ({ input, context }) => {
-    return context.triggerBatchTest(input.mode);
+    if (context.isBatchRunning()) {
+      return { ok: false as const, error: "A batch run is already in progress" };
+    }
+    const result = await context.triggerBatchTest(input.mode);
+    return { ok: true as const, ...result };
   });
 
 const maestroBatchStatus = os
