@@ -23,10 +23,12 @@ import {
   getRecording,
   upsertRecording,
   deleteRecording,
+  listLatestTestRuns,
 } from "flow-graph";
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { triggerRecording, checkMaestroHealth, RecordingError, type RecordingErrorCode } from "./recordingRunner";
+import { runBatchTests, isBatchRunning } from "./batchTestRunner";
 import { getScenarios } from "./scenarios";
 import { WebSocketServer, type WebSocket } from "ws";
 import { z } from "zod";
@@ -557,6 +559,19 @@ const server = createServer(async (req, res) => {
               return { ok: false as const, error: (err as Error).message, code: "UNKNOWN" as const, hint: "" };
             }
           },
+          getLatestTestRuns: () => listLatestTestRuns(db),
+          triggerBatchTest: async (mode) => {
+            return runBatchTests(db, RECORDINGS_DIR, {
+              mode,
+              onProgress: (event) => {
+                const payload = JSON.stringify(event);
+                wsClients.forEach((ws) => {
+                  try { ws.send(payload); } catch { /* noop */ }
+                });
+              },
+            });
+          },
+          isBatchRunning: () => isBatchRunning(),
         },
       });
       if (matched) return;

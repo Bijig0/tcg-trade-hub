@@ -67,18 +67,45 @@ const ScenarioIdSchema = z
   .max(100)
   .regex(SCENARIO_ID_PATTERN, 'Invalid scenario ID format (lowercase alphanumeric + hyphens only)');
 
+const TestRunMetaSchema = z.object({
+  id: z.number().int(),
+  scenarioId: z.string(),
+  flowFile: z.string(),
+  flowHash: z.string(),
+  status: z.enum(['passed', 'failed', 'running']),
+  durationMs: z.number().nullable(),
+  errorMessage: z.string().nullable(),
+  batchId: z.string().nullable(),
+  createdAt: z.string(),
+});
+
+const BatchModeSchema = z.enum(['all', 'failed-only']);
+
+const BatchResultSchema = z.object({
+  batchId: z.string(),
+  total: z.number().int(),
+  passed: z.number().int(),
+  failed: z.number().int(),
+  cached: z.number().int(),
+  durationMs: z.number(),
+});
+
 // ---------------------------------------------------------------------------
 // Context — extended by serve.ts with actual implementations
 // ---------------------------------------------------------------------------
 
 type MaestroHealthResult = z.infer<typeof MaestroHealthSchema>;
 type RecordingResult = z.infer<typeof RecordingResultSchema>;
+type BatchResultType = z.infer<typeof BatchResultSchema>;
 
 export type GraphContext = {
   getWsClientCount: () => number;
   getPathCount: () => number;
   getMaestroHealth: () => Promise<MaestroHealthResult>;
   triggerMaestroRecording: (pathId: string) => Promise<RecordingResult>;
+  getLatestTestRuns: () => z.infer<typeof TestRunMetaSchema>[];
+  triggerBatchTest: (mode: z.infer<typeof BatchModeSchema>) => Promise<BatchResultType>;
+  isBatchRunning: () => boolean;
 };
 
 const os = baseOs.$context<GraphContext>();
@@ -114,6 +141,25 @@ const maestroRecord = os
     return context.triggerMaestroRecording(input.pathId);
   });
 
+const maestroTestRuns = os
+  .output(z.array(TestRunMetaSchema))
+  .handler(async ({ context }) => {
+    return context.getLatestTestRuns();
+  });
+
+const maestroBatchRun = os
+  .input(z.object({ mode: BatchModeSchema }))
+  .output(BatchResultSchema)
+  .handler(async ({ input, context }) => {
+    return context.triggerBatchTest(input.mode);
+  });
+
+const maestroBatchStatus = os
+  .output(z.object({ running: z.boolean() }))
+  .handler(async ({ context }) => {
+    return { running: context.isBatchRunning() };
+  });
+
 // ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
@@ -123,6 +169,9 @@ export const graphRouter = {
   maestro: {
     health: maestroHealth,
     record: maestroRecord,
+    testRuns: maestroTestRuns,
+    batchRun: maestroBatchRun,
+    batchStatus: maestroBatchStatus,
   },
 };
 
@@ -134,4 +183,7 @@ export {
   RecordingResultSchema,
   RecordingErrorCodeSchema,
   ScenarioIdSchema,
+  TestRunMetaSchema,
+  BatchResultSchema,
+  BatchModeSchema,
 };
