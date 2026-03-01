@@ -97,24 +97,13 @@ const readBody = (req: import("node:http").IncomingMessage): Promise<string> =>
 // Security: restrict CORS to localhost origins only
 // ---------------------------------------------------------------------------
 
-const ALLOWED_ORIGINS = new Set([
-  "http://localhost:3000",  // web app (dev)
-  "http://127.0.0.1:3000",
-  "http://localhost:3001",  // admin UI (dev)
-  "http://127.0.0.1:3001",
-  "http://localhost:3004",  // admin UI (alt port)
-  "http://127.0.0.1:3004",
-  "http://localhost:5173",  // vite default
-  "http://127.0.0.1:5173",
-  `http://localhost:${PORT}`,
-  `http://127.0.0.1:${PORT}`,
-]);
+const isLocalhostOrigin = (origin: string): boolean =>
+  /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 
 const getCorsHeaders = (req: import("node:http").IncomingMessage): Record<string, string> => {
   const origin = req.headers.origin ?? "";
-  const allowedOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "";
   return {
-    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Origin": isLocalhostOrigin(origin) ? origin : "",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Vary": "Origin",
