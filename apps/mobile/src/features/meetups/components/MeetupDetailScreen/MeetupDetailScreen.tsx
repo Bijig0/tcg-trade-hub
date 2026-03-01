@@ -3,6 +3,7 @@ import { View, Text, Pressable, ActivityIndicator, Alert, Dimensions } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import MapView from 'react-native-maps';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { ArrowLeft, MessageCircle, XCircle, Navigation, Crosshair } from 'lucide-react-native';
 
@@ -52,7 +53,13 @@ const MeetupDetailScreen = () => {
   const [rateeId, setRateeId] = useState('');
   const [routeInfo, setRouteInfo] = useState<{ distance: number; duration: number } | null>(null);
   const mapRef = useRef<MapView>(null);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const sheetPosition = useSharedValue(0);
   const userLocation = useUserLocation();
+
+  const centerButtonStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: sheetPosition.value - 56 }],
+  }));
 
   const { getPosition, setPosition } = useSheetPositionStore();
 
