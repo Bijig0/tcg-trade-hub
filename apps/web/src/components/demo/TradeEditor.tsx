@@ -85,7 +85,7 @@ const OfferSection = ({
     .join(' + ');
 
   return (
-    <div className={`rounded-xl border-2 ${borderColor} bg-card overflow-hidden`}>
+    <div className={`rounded-xl border-2 ${borderColor} bg-card`}>
       {/* Section header */}
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
@@ -215,7 +215,7 @@ const OfferSection = ({
       )}
 
       {/* Total value footer */}
-      <div className="border-t border-border/50 bg-secondary/30 px-4 py-3">
+      <div className="border-t border-border/50 bg-secondary/30 px-4 py-3 rounded-b-xl">
         <div className="flex items-baseline justify-between">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
