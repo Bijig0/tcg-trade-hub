@@ -122,7 +122,7 @@ function LandingPage() {
             description="Build detailed trade proposals with specific cards, sets, and cash supplements. No more vague DMs — both sides see exactly what's on the table."
             visual={
               <div className="w-full max-w-xs">
-                <DemoOfferCard onCounterOffer={() => {}} />
+                <DemoOfferCard />
               </div>
             }
             reversed

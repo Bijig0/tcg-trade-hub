@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router';
+
 export const DemoMeetupCard = () => {
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -27,20 +29,18 @@ export const DemoMeetupCard = () => {
 
         {/* Buttons (non-interactive) */}
         <div className="flex gap-2 pt-1">
-          <button
-            type="button"
-            disabled
-            className="flex-1 rounded-lg border border-success/30 bg-success/10 py-2 text-xs font-medium text-success/50 cursor-not-allowed"
+          <Link
+            to="/get-started"
+            className="flex-1 rounded-lg border border-success/30 bg-success/10 py-2 text-center text-xs font-medium text-success transition-opacity hover:opacity-80"
           >
             Accept
-          </button>
-          <button
-            type="button"
-            disabled
-            className="flex-1 rounded-lg border border-border bg-secondary py-2 text-xs font-medium text-muted-foreground cursor-not-allowed"
+          </Link>
+          <Link
+            to="/get-started"
+            className="flex-1 rounded-lg border border-border bg-secondary py-2 text-center text-xs font-medium text-muted-foreground transition-opacity hover:opacity-80"
           >
             Suggest New Time
-          </button>
+          </Link>
         </div>
       </div>
     </div>

@@ -27,7 +27,7 @@ const CardChip = ({ card }: { card: OfferCardItem }) => (
   </div>
 );
 
-export const DemoOfferCard = ({ onCounterOffer }: DemoOfferCardProps) => {
+export const DemoOfferCard = () => {
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       {/* Header */}
@@ -74,13 +74,12 @@ export const DemoOfferCard = ({ onCounterOffer }: DemoOfferCardProps) => {
         </div>
 
         {/* CTA */}
-        <button
-          type="button"
-          onClick={onCounterOffer}
-          className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+        <Link
+          to="/get-started"
+          className="block w-full rounded-xl bg-primary py-3 text-center text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
         >
           Make Your Counter-Offer
-        </button>
+        </Link>
       </div>
     </div>
   );
