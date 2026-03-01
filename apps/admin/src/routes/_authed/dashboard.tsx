@@ -139,7 +139,7 @@ function AdminDashboard() {
   const [isTestCoverageOpen, setIsTestCoverageOpen] = useState(false);
   const [recordingPathId, setRecordingPathId] = useState<string | null>(null);
   const mobileLink = useMobileLink();
-  const { setupStatus } = useMaestroHealth(health.status === 'healthy');
+  const { maestroHealth, setupStatus } = useMaestroHealth(health.status === 'healthy');
 
   // Scenarios
   const { data: scenariosList } = useQuery({
@@ -297,6 +297,8 @@ function AdminDashboard() {
         onRetry={retry}
         onToggleTestCoverage={toggleTestCoverage}
         mobileLink={mobileLink}
+        maestroHealth={maestroHealth}
+        maestroSetupStatus={setupStatus}
       />
       <div className="flex flex-1 overflow-hidden">
         <TestCoverage isOpen={isTestCoverageOpen} onToggle={toggleTestCoverage} />
@@ -417,14 +419,23 @@ const ErrorState = ({ error, onRetry }: ErrorStateProps) => (
 
 type MobileLinkState = ReturnType<typeof useMobileLink>;
 
+type MaestroHealthData = {
+  maestroInstalled: boolean;
+  maestroVersion: string | null;
+  simulatorBooted: boolean;
+  simulatorName: string | null;
+} | null;
+
 type HealthBarProps = {
   health: HealthData;
   onRetry: () => void;
   onToggleTestCoverage?: () => void;
   mobileLink?: MobileLinkState;
+  maestroHealth?: MaestroHealthData;
+  maestroSetupStatus?: MaestroSetupStatus;
 };
 
-const HealthBar = ({ health, onRetry, onToggleTestCoverage, mobileLink }: HealthBarProps) => {
+const HealthBar = ({ health, onRetry, onToggleTestCoverage, mobileLink, maestroHealth, maestroSetupStatus }: HealthBarProps) => {
   const isStale =
     health.lastChecked !== null &&
     Date.now() - health.lastChecked > HEALTH_POLL_INTERVAL * 3;
@@ -456,6 +467,8 @@ const HealthBar = ({ health, onRetry, onToggleTestCoverage, mobileLink }: Health
             <SimulatorDropdown mobileLink={mobileLink} />
           </>
         )}
+        <span className="text-xs text-muted-foreground">|</span>
+        <MaestroIndicator status={maestroSetupStatus} health={maestroHealth} />
       </div>
 
       <div className="flex items-center gap-4">
@@ -487,6 +500,66 @@ const HealthBar = ({ health, onRetry, onToggleTestCoverage, mobileLink }: Health
           </button>
         )}
       </div>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Maestro Indicator
+// ---------------------------------------------------------------------------
+
+const MaestroIcon = () => (
+  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-2.625 0V5.625m0 12.75v-12.75A1.125 1.125 0 014.5 4.5h15a1.125 1.125 0 011.125 1.125v12.75M3.375 19.5h17.25m0 0a1.125 1.125 0 001.125-1.125m-18.375 0h18.375m-18.375 0V5.625m18.375 12.75V5.625m0 0A1.125 1.125 0 0019.5 4.5h-15a1.125 1.125 0 00-1.125 1.125m17.25 0v12.75" />
+  </svg>
+);
+
+type MaestroIndicatorProps = {
+  status?: MaestroSetupStatus;
+  health?: MaestroHealthData;
+};
+
+const MaestroIndicator = ({ status, health }: MaestroIndicatorProps) => {
+  if (!status || status === 'checking') {
+    return (
+      <div className="flex items-center gap-1.5">
+        <MaestroIcon />
+        <div className="h-1.5 w-1.5 animate-spin rounded-full border border-muted-foreground border-t-transparent" />
+        <span className="text-xs text-muted-foreground">Maestro</span>
+      </div>
+    );
+  }
+
+  if (status === 'maestro-missing') {
+    return (
+      <div className="flex items-center gap-1.5" title="Maestro CLI not installed. Run: curl -Ls &quot;https://get.maestro.mobile.dev&quot; | bash">
+        <MaestroIcon />
+        <span className="inline-block h-2 w-2 rounded-full bg-destructive" />
+        <span className="text-xs text-destructive">Not installed</span>
+      </div>
+    );
+  }
+
+  if (status === 'no-simulator') {
+    return (
+      <div className="flex items-center gap-1.5" title="Maestro installed but no iOS simulator is booted">
+        <MaestroIcon />
+        <span className="inline-block h-2 w-2 rounded-full bg-yellow-500" />
+        <span className="text-xs text-yellow-600 dark:text-yellow-400">
+          {health?.maestroVersion ? `v${health.maestroVersion}` : 'Installed'} — no simulator
+        </span>
+      </div>
+    );
+  }
+
+  // ready
+  return (
+    <div className="flex items-center gap-1.5" title={`Maestro ${health?.maestroVersion ?? ''} connected to ${health?.simulatorName ?? 'simulator'}`}>
+      <MaestroIcon />
+      <span className="inline-block h-2 w-2 rounded-full bg-success" />
+      <span className="text-xs text-muted-foreground">
+        Maestro {health?.maestroVersion ? `v${health.maestroVersion}` : ''}
+      </span>
     </div>
   );
 };
