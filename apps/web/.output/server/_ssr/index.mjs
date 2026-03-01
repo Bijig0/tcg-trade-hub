@@ -1005,7 +1005,7 @@ let entriesPromise;
 let baseManifestPromise;
 let cachedFinalManifestPromise;
 async function loadEntries() {
-  const routerEntry = await import("./router-CJrfgYso.mjs").then((n) => n.r);
+  const routerEntry = await import("./router-D0gF7n5R.mjs").then((n) => n.r);
   const startEntry = await import("./start-HYkvq4Ni.mjs");
   return { startEntry, routerEntry };
 }

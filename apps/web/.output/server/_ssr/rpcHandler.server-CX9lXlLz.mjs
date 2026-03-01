@@ -639,29 +639,39 @@ const fetchWithTimeout = async (url, init) => {
     clearTimeout(timer);
   }
 };
-const normalizeTcgdexCard = (card) => {
-  const setCode = card.id.replace(/-[^-]+$/, "");
-  return {
-    externalId: card.id,
-    tcg: "pokemon",
-    name: card.name,
-    setName: setCode,
-    setCode,
-    number: card.localId,
-    imageUrl: card.image ? `${card.image}/high.webp` : "",
-    marketPrice: null,
-    rarity: "Unknown"
-  };
+const extractPokemonPrice = (card) => {
+  const variants = card.tcgplayer?.prices;
+  if (variants) {
+    for (const key of ["holofoil", "reverseHolofoil", "normal", "1stEditionHolofoil", "1stEditionNormal"]) {
+      const price = variants[key]?.market;
+      if (price != null) return price;
+    }
+  }
+  return card.cardmarket?.prices?.averageSellPrice ?? null;
 };
+const normalizePokemonCard = (card) => ({
+  externalId: card.id,
+  tcg: "pokemon",
+  name: card.name,
+  setName: card.set.name,
+  setCode: card.set.id.toUpperCase(),
+  number: card.number,
+  imageUrl: card.images.large ?? card.images.small ?? "",
+  marketPrice: extractPokemonPrice(card),
+  rarity: card.rarity ?? "Unknown"
+});
 const searchPokemon = async (query) => {
-  const url = `https://api.tcgdex.net/v2/en/cards?name=${encodeURIComponent(query)}&pagination:itemsPerPage=${MAX_RESULTS}`;
-  const res = await fetchWithTimeout(url);
+  const url = `https://api.pokemontcg.io/v2/cards?q=name:"${encodeURIComponent(query)}*"&pageSize=${MAX_RESULTS}&select=id,name,set,number,images,rarity,tcgplayer,cardmarket`;
+  const headers = { "Content-Type": "application/json" };
+  const apiKey = process.env.POKEMON_TCG_API_KEY;
+  if (apiKey) headers["X-Api-Key"] = apiKey;
+  const res = await fetchWithTimeout(url, { headers });
   if (res.status === 404) return [];
   if (!res.ok) {
-    throw new Error(`TCGdex API error (${res.status})`);
+    throw new Error(`pokemontcg.io API error (${res.status})`);
   }
   const data = await res.json();
-  return data.map(normalizeTcgdexCard);
+  return (data.data ?? []).map(normalizePokemonCard);
 };
 const normalizeScrydexCard = (card, tcg) => {
   const image = card.images?.[0];

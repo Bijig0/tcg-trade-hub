@@ -22,43 +22,78 @@ const fetchWithTimeout = async (
 };
 
 // ---------------------------------------------------------------------------
-// TCGdex API (Pokemon) — free, no key required
-// https://api.tcgdex.net/v2/en
+// pokemontcg.io v2 (Pokemon) — free, 20K req/day with API key, 1K without
+// https://docs.pokemontcg.io
 // ---------------------------------------------------------------------------
 
-type TcgdexCard = {
+type PokemonTcgCardSet = {
   id: string;
-  localId: string;
   name: string;
-  image: string;
 };
 
-const normalizeTcgdexCard = (card: TcgdexCard): NormalizedCard => {
-  const setCode = card.id.replace(/-[^-]+$/, '');
-  return {
-    externalId: card.id,
-    tcg: 'pokemon',
-    name: card.name,
-    setName: setCode,
-    setCode,
-    number: card.localId,
-    imageUrl: card.image ? `${card.image}/high.webp` : '',
-    marketPrice: null,
-    rarity: 'Unknown',
+type PokemonTcgPriceVariant = {
+  market?: number | null;
+};
+
+type PokemonTcgCard = {
+  id: string;
+  name: string;
+  number: string;
+  rarity?: string;
+  set: PokemonTcgCardSet;
+  images: {
+    small?: string;
+    large?: string;
+  };
+  tcgplayer?: {
+    prices?: Record<string, PokemonTcgPriceVariant>;
+  };
+  cardmarket?: {
+    prices?: {
+      averageSellPrice?: number | null;
+    };
   };
 };
 
+const extractPokemonPrice = (card: PokemonTcgCard): number | null => {
+  const variants = card.tcgplayer?.prices;
+  if (variants) {
+    for (const key of ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal']) {
+      const price = variants[key]?.market;
+      if (price != null) return price;
+    }
+  }
+  return card.cardmarket?.prices?.averageSellPrice ?? null;
+};
+
+const normalizePokemonCard = (card: PokemonTcgCard): NormalizedCard => ({
+  externalId: card.id,
+  tcg: 'pokemon',
+  name: card.name,
+  setName: card.set.name,
+  setCode: card.set.id.toUpperCase(),
+  number: card.number,
+  imageUrl: card.images.large ?? card.images.small ?? '',
+  marketPrice: extractPokemonPrice(card),
+  rarity: card.rarity ?? 'Unknown',
+});
+
 const searchPokemon = async (query: string): Promise<NormalizedCard[]> => {
-  const url = `https://api.tcgdex.net/v2/en/cards?name=${encodeURIComponent(query)}&pagination:itemsPerPage=${MAX_RESULTS}`;
-  const res = await fetchWithTimeout(url);
+  const url = `https://api.pokemontcg.io/v2/cards?q=name:"${encodeURIComponent(query)}*"&pageSize=${MAX_RESULTS}&select=id,name,set,number,images,rarity,tcgplayer,cardmarket`;
+
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const apiKey = process.env.POKEMON_TCG_API_KEY;
+  if (apiKey) headers['X-Api-Key'] = apiKey;
+
+  const res = await fetchWithTimeout(url, { headers });
 
   if (res.status === 404) return [];
   if (!res.ok) {
-    throw new Error(`TCGdex API error (${res.status})`);
+    throw new Error(`pokemontcg.io API error (${res.status})`);
   }
 
-  const data = (await res.json()) as TcgdexCard[];
-  return data.map(normalizeTcgdexCard);
+  const data = (await res.json()) as { data?: PokemonTcgCard[] };
+  return (data.data ?? []).map(normalizePokemonCard);
 };
 
 // ---------------------------------------------------------------------------

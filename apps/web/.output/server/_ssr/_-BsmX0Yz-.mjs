@@ -41,7 +41,7 @@ const rpcHandler = createServerFn().handler(rpcHandler_createServerFn_handler, a
 }) => {
   const {
     handleRPC
-  } = await import("./rpcHandler.server-DIExdlag.mjs");
+  } = await import("./rpcHandler.server-CX9lXlLz.mjs");
   return handleRPC(request);
 });
 export {
