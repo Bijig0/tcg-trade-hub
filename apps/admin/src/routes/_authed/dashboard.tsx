@@ -233,10 +233,6 @@ function AdminDashboard() {
         // Batch progress events override everything when batch is running
         const batchEntry = batch.scenarioProgress[s.id];
         if (batchEntry) {
-          if (batchEntry.phase === 'testing') {
-            map[s.id] = 'testing';
-            continue;
-          }
           if (batchEntry.phase === 'recording') {
             map[s.id] = 'recording';
             continue;
