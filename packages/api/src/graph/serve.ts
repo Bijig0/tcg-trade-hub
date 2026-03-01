@@ -521,6 +521,10 @@ const server = createServer(async (req, res) => {
 
     // ---- oRPC handler ----
     if (url.pathname.startsWith("/api/rpc")) {
+      // Set CORS headers before oRPC writes its own response
+      for (const [key, value] of Object.entries(corsHeaders)) {
+        res.setHeader(key, value);
+      }
       const { matched } = await rpcHandler.handle(req, res, {
         prefix: "/api/rpc",
         context: {
