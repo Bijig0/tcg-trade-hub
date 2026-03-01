@@ -116,111 +116,143 @@ const OfferSection = ({
 
       <div className="border-t border-border/50" />
 
-      {/* Item rows */}
-      {items.length > 0 && (
-        <div>
-          {items.map((item, i) => (
-            <div key={offerItemId(item)}>
-              {item.type === 'card' ? (
-                <CardPill card={item.card} onRemove={(id) => handleRemove(id)} />
-              ) : (
-                <div className="flex items-center gap-3 px-3 py-2.5">
-                  <div className="flex h-12 w-9 shrink-0 items-center justify-center rounded bg-secondary">
-                    <svg className="h-5 w-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                      <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
-                    </svg>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-foreground truncate leading-tight">
-                      {item.text}
-                    </p>
-                    <span className="mt-1 inline-block rounded bg-violet-500/15 px-1.5 py-0.5 text-[10px] font-medium text-violet-400 leading-tight">
-                      Custom item
-                    </span>
-                  </div>
-                  <span className="shrink-0 text-xs font-semibold text-muted-foreground tabular-nums">
-                    --
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemove(item.id)}
-                    className="shrink-0 rounded-full p-0.5 text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-colors"
-                    aria-label={`Remove ${item.text}`}
-                  >
-                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M18 6L6 18M6 6l12 12" />
-                    </svg>
-                  </button>
+      {blanked ? (
+        /* Blanked state — "We'll find for you" visual */
+        <div className="flex flex-col items-center gap-2 px-4 py-6 bg-secondary/20">
+          <svg className="h-10 w-10 text-muted-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+            <path d="M20 3v4M22 5h-4" />
+          </svg>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            We'll find for you
+          </span>
+        </div>
+      ) : (
+        <>
+          {/* Item rows */}
+          {items.length > 0 && (
+            <div>
+              {items.map((item, i) => (
+                <div key={offerItemId(item)}>
+                  {item.type === 'card' ? (
+                    <CardPill card={item.card} onRemove={(id) => handleRemove(id)} />
+                  ) : (
+                    <div className="flex items-center gap-3 px-3 py-2.5">
+                      <div className="flex h-12 w-9 shrink-0 items-center justify-center rounded bg-secondary">
+                        <svg className="h-5 w-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                          <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-foreground truncate leading-tight">
+                          {item.text}
+                        </p>
+                        <span className="mt-1 inline-block rounded bg-violet-500/15 px-1.5 py-0.5 text-[10px] font-medium text-violet-400 leading-tight">
+                          Custom item
+                        </span>
+                      </div>
+                      <span className="shrink-0 text-xs font-semibold text-muted-foreground tabular-nums">
+                        --
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemove(item.id)}
+                        className="shrink-0 rounded-full p-0.5 text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        aria-label={`Remove ${item.text}`}
+                      >
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M18 6L6 18M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                  {i < items.length - 1 && (
+                    <div className="mx-3 border-t border-border/40" />
+                  )}
                 </div>
-              )}
-              {i < items.length - 1 && (
-                <div className="mx-3 border-t border-border/40" />
-              )}
+              ))}
+              <div className="mx-3 border-t border-border/40" />
             </div>
-          ))}
-          <div className="mx-3 border-t border-border/40" />
-        </div>
-      )}
+          )}
 
-      {/* Card search */}
-      <div className="px-3 py-2">
-        <CardAutocomplete
-          tcg="pokemon"
-          onSelect={handleAddCard}
-          selectedCard={null}
-          onClear={() => {}}
-          onAddCustomText={handleAddCustom}
-        />
-      </div>
-
-      {/* Add Cash button */}
-      {enableCash && !showCash && (
-        <div className="px-3 pb-3 pt-1">
-          <button
-            type="button"
-            onClick={() => setShowCash(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-2.5 text-xs font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
-            </svg>
-            Add Cash
-          </button>
-        </div>
-      )}
-
-      {/* Cash input */}
-      {enableCash && showCash && (
-        <div className="px-3 pb-3 pt-1">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={cashAmount}
-                onChange={(e) => setCashAmount(e.target.value)}
-                placeholder="0.00"
-                className="w-full rounded-lg border border-input bg-background pl-7 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setShowCash(false);
-                setCashAmount('');
-              }}
-              className="shrink-0 rounded-lg p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-              aria-label="Remove cash"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
+          {/* Card search */}
+          <div className="px-3 py-2">
+            <CardAutocomplete
+              tcg="pokemon"
+              onSelect={handleAddCard}
+              selectedCard={null}
+              onClear={() => {}}
+              onAddCustomText={handleAddCustom}
+            />
           </div>
-        </div>
+
+          {/* "We'll find for you" button — shown when section is empty and not blanked */}
+          {items.length === 0 && (
+            <div className="px-3 pb-2">
+              <button
+                type="button"
+                onClick={() => onBlankedChange(true)}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-2.5 text-xs font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+                  <path d="M20 3v4M22 5h-4" />
+                </svg>
+                We'll find for you
+              </button>
+            </div>
+          )}
+
+          {/* Add Cash button */}
+          {enableCash && !showCash && (
+            <div className="px-3 pb-3 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowCash(true)}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-2.5 text-xs font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+                </svg>
+                Add Cash
+              </button>
+            </div>
+          )}
+
+          {/* Cash input */}
+          {enableCash && showCash && (
+            <div className="px-3 pb-3 pt-1">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={cashAmount}
+                    onChange={(e) => setCashAmount(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full rounded-lg border border-input bg-background pl-7 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCash(false);
+                    setCashAmount('');
+                  }}
+                  className="shrink-0 rounded-lg p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  aria-label="Remove cash"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Total value footer */}
@@ -231,12 +263,12 @@ const OfferSection = ({
               Total Value
             </p>
             <p className="text-[10px] text-muted-foreground/70">
-              {itemCountLabel || '0 items'}
-              {showCash && cashAmount ? ' + cash' : ''}
+              {blanked ? 'Open to suggestions' : (itemCountLabel || '0 items')}
+              {!blanked && showCash && cashAmount ? ' + cash' : ''}
             </p>
           </div>
           <span className="text-base font-bold text-primary tabular-nums">
-            ${(cardTotal + cashValue).toFixed(2)}
+            {blanked ? '--' : `$${(cardTotal + cashValue).toFixed(2)}`}
           </span>
         </div>
       </div>
@@ -282,16 +314,23 @@ export const TradeEditor = ({
   listingType,
   myOfferItems,
   theirOfferItems,
+  myOfferBlanked,
+  theirOfferBlanked,
   onMyOfferItemsChange,
   onTheirOfferItemsChange,
+  onMyOfferBlankedChange,
+  onTheirOfferBlankedChange,
   onListingTypeChange,
   onSubmit,
   onBack,
 }: TradeEditorProps) => {
+  const myFilled = myOfferItems.length > 0 || myOfferBlanked;
+  const theirFilled = theirOfferItems.length > 0 || theirOfferBlanked;
+
   const isSubmitDisabled =
-    (listingType === 'wtt' && myOfferItems.length === 0 && theirOfferItems.length === 0) ||
-    (listingType === 'wts' && myOfferItems.length === 0) ||
-    (listingType === 'wtb' && theirOfferItems.length === 0);
+    (listingType === 'wtt' && !myFilled && !theirFilled) ||
+    (listingType === 'wts' && !myFilled) ||
+    (listingType === 'wtb' && !theirFilled);
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden min-h-0">
@@ -343,6 +382,8 @@ export const TradeEditor = ({
             label="My Offer"
             items={myOfferItems}
             onItemsChange={onMyOfferItemsChange}
+            blanked={myOfferBlanked}
+            onBlankedChange={onMyOfferBlankedChange}
             enableCash
             borderColor="border-primary"
             dotColor="bg-primary"
@@ -357,6 +398,8 @@ export const TradeEditor = ({
             label="Their Offer"
             items={theirOfferItems}
             onItemsChange={onTheirOfferItemsChange}
+            blanked={theirOfferBlanked}
+            onBlankedChange={onTheirOfferBlankedChange}
             borderColor="border-violet-400"
             dotColor="bg-violet-400"
           />

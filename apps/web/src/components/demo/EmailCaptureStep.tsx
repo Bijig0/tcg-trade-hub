@@ -40,17 +40,17 @@ export const EmailCaptureStep = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setTouched({ email: true });
-    if (emailError || !firstCard) return;
+    if (emailError) return;
 
     mutation.mutate(
       {
         email,
         display_name: displayName || null,
-        tcg: firstCard.tcg ?? 'pokemon',
-        card_name: firstCard.name,
-        card_set: firstCard.setName ?? null,
-        card_external_id: firstCard.externalId ?? null,
-        card_image_url: firstCard.imageUrl ?? null,
+        tcg: firstCard?.tcg ?? 'pokemon',
+        card_name: firstCard?.name ?? 'Open to suggestions',
+        card_set: firstCard?.setName ?? null,
+        card_external_id: firstCard?.externalId ?? null,
+        card_image_url: firstCard?.imageUrl ?? null,
         listing_type: listingType,
         city: location || null,
       },

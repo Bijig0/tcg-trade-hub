@@ -24,6 +24,8 @@ export const DemoChat = () => {
   const [phase, setPhase] = useState<Phase>('chat');
   const [myOfferItems, setMyOfferItems] = useState<OfferItem[]>([]);
   const [theirOfferItems, setTheirOfferItems] = useState<OfferItem[]>([]);
+  const [myOfferBlanked, setMyOfferBlanked] = useState(false);
+  const [theirOfferBlanked, setTheirOfferBlanked] = useState(false);
   const [listingType, setListingType] = useState<ListingType>('wtt');
   const [successData, setSuccessData] = useState<SuccessData | null>(null);
 
@@ -33,15 +35,19 @@ export const DemoChat = () => {
     setPhase('chat');
     setMyOfferItems([]);
     setTheirOfferItems([]);
+    setMyOfferBlanked(false);
+    setTheirOfferBlanked(false);
     setListingType('wtt');
     setTimeout(() => {
       setSuccessData(null);
     }, 500);
   }, []);
 
-  const emailCards = flattenToCards(
-    listingType === 'wtb' ? theirOfferItems : myOfferItems,
-  );
+  const primaryItems = listingType === 'wtb' ? theirOfferItems : myOfferItems;
+  const primaryBlanked = listingType === 'wtb' ? theirOfferBlanked : myOfferBlanked;
+  const fallbackItems = listingType === 'wtb' ? myOfferItems : theirOfferItems;
+
+  const emailCards = flattenToCards(primaryBlanked ? fallbackItems : primaryItems);
 
   return (
     <PhoneFrame>
@@ -85,8 +91,12 @@ export const DemoChat = () => {
             listingType={listingType}
             myOfferItems={myOfferItems}
             theirOfferItems={theirOfferItems}
+            myOfferBlanked={myOfferBlanked}
+            theirOfferBlanked={theirOfferBlanked}
             onMyOfferItemsChange={setMyOfferItems}
             onTheirOfferItemsChange={setTheirOfferItems}
+            onMyOfferBlankedChange={setMyOfferBlanked}
+            onTheirOfferBlankedChange={setTheirOfferBlanked}
             onListingTypeChange={setListingType}
             onSubmit={() => setPhase('email')}
             onBack={() => setPhase('chat')}
