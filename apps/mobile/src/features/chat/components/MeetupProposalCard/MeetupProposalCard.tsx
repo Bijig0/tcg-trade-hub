@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MapPin, ChevronRight } from 'lucide-react-native';
+import { useQuery } from '@tanstack/react-query';
+import { MapPin, ChevronRight, Calendar } from 'lucide-react-native';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/context/AuthProvider';
+import { supabase } from '@/lib/supabase';
 import Card, {
   CardHeader,
   CardTitle,
@@ -38,6 +40,20 @@ const MeetupProposalCard = ({
   const { user } = useAuth();
   const router = useRouter();
   const payload = message.payload as unknown as MeetupProposalPayload | null;
+
+  // Look up the meetup record when this proposal has been responded to
+  const { data: meetupId } = useQuery({
+    queryKey: ['meetup-by-proposal', message.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('meetups')
+        .select('id')
+        .eq('proposal_message_id', message.id)
+        .maybeSingle();
+      return data?.id ?? null;
+    },
+    enabled: hasResponse,
+  });
 
   if (!payload) return null;
 
@@ -82,6 +98,11 @@ const MeetupProposalCard = ({
       pathname: '/(tabs)/(messages)/offer-detail',
       params: { conversationId },
     });
+  };
+
+  const handleViewMeetup = () => {
+    if (!meetupId) return;
+    router.push(`/(tabs)/(meetups)/${meetupId}`);
   };
 
   return (
@@ -166,7 +187,23 @@ const MeetupProposalCard = ({
           </CardFooter>
         ) : null}
 
-        {conversationId ? (
+        {meetupId ? (
+          <CardFooter>
+            <Button
+              size="sm"
+              variant="default"
+              onPress={handleViewMeetup}
+              className="flex-1"
+            >
+              <View className="flex-row items-center gap-2">
+                <Calendar size={16} className="text-primary-foreground" />
+                <Text className="text-sm font-semibold text-primary-foreground">
+                  View Meetup
+                </Text>
+              </View>
+            </Button>
+          </CardFooter>
+        ) : conversationId ? (
           <CardFooter>
             <Button
               size="sm"
