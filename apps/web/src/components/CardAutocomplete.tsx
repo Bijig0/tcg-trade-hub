@@ -24,7 +24,7 @@ export const CardAutocomplete = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(query), 300);
+    const timer = setTimeout(() => setDebouncedQuery(query), 500);
     return () => clearTimeout(timer);
   }, [query]);
 
@@ -43,6 +43,8 @@ export const CardAutocomplete = ({
       input: { query: debouncedQuery, tcg },
     }),
     enabled: debouncedQuery.length >= 2,
+    staleTime: 1000 * 60 * 5,
+    placeholderData: (prev) => prev,
   });
 
   const handleSelect = (card: NormalizedCard) => {

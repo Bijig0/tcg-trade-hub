@@ -244,6 +244,7 @@ export const ListingItemRowSchema = z.object({
   market_price: z.number().nullable(),
   asking_price: z.number().nullable(),
   quantity: z.number().int().positive(),
+  notes: z.string().nullable(),
   created_at: z.string(),
 });
 
@@ -259,6 +260,7 @@ export const ListingItemInsertSchema = ListingItemRowSchema.omit({
   market_price: z.number().nullable().optional(),
   asking_price: z.number().nullable().optional(),
   quantity: z.number().int().positive().default(1),
+  notes: z.string().nullable().optional(),
 });
 
 export const OfferRowSchema = z.object({

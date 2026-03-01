@@ -20,6 +20,7 @@ export const SelectedCardSchema = z.object({
   fromCollection: z.boolean(),
   addToCollection: z.boolean(),
   askingPrice: z.string().default(''),
+  notes: z.string().nullable().optional(),
   /** Unique selection key: collection_items.id for collection cards, externalId for external search */
   selectionId: z.string(),
 });

@@ -92,6 +92,7 @@ const useCreateBundleListing = () => {
         market_price: sc.card.marketPrice ?? null,
         asking_price: sc.askingPrice ? parseFloat(sc.askingPrice) : null,
         quantity: 1,
+        notes: sc.notes ?? null,
       }));
 
       const { error: itemsError } = await supabase
