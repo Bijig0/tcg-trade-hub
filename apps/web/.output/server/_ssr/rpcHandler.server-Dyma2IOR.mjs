@@ -639,39 +639,55 @@ const fetchWithTimeout = async (url, init) => {
     clearTimeout(timer);
   }
 };
-const extractPokemonPrice = (card) => {
-  const variants = card.tcgplayer?.prices;
-  if (variants) {
-    for (const key of ["holofoil", "reverseHolofoil", "normal", "1stEditionHolofoil", "1stEditionNormal"]) {
-      const price = variants[key]?.market;
-      if (price != null) return price;
+const extractTcgPlayerImageUrl = (tcgplayerUrl) => {
+  if (!tcgplayerUrl) return "";
+  const match = tcgplayerUrl.match(/\/product\/(\d+)/);
+  if (!match?.[1]) return "";
+  return `https://product-images.tcgplayer.com/fit-in/437x437/${match[1]}.jpg`;
+};
+const extractPokeWalletPrice = (card) => {
+  if (card.tcgplayer?.prices?.length) {
+    for (const entry of card.tcgplayer.prices) {
+      if (entry.market_price != null) return entry.market_price;
+    }
+    for (const entry of card.tcgplayer.prices) {
+      if (entry.mid_price != null) return entry.mid_price;
     }
   }
-  return card.cardmarket?.prices?.averageSellPrice ?? null;
+  if (card.cardmarket?.prices?.length) {
+    for (const entry of card.cardmarket.prices) {
+      if (entry.avg != null) return entry.avg;
+    }
+  }
+  return null;
 };
-const normalizePokemonCard = (card) => ({
+const normalizePokeWalletCard = (card) => ({
   externalId: card.id,
   tcg: "pokemon",
-  name: card.name,
-  setName: card.set.name,
-  setCode: card.set.id.toUpperCase(),
-  number: card.number,
-  imageUrl: card.images.large ?? card.images.small ?? "",
-  marketPrice: extractPokemonPrice(card),
-  rarity: card.rarity ?? "Unknown"
+  name: card.card_info.name,
+  setName: card.card_info.set_name,
+  setCode: card.card_info.set_code,
+  number: card.card_info.card_number ?? "",
+  imageUrl: extractTcgPlayerImageUrl(card.tcgplayer?.url),
+  marketPrice: extractPokeWalletPrice(card),
+  rarity: card.card_info.rarity ?? "Unknown"
 });
 const searchPokemon = async (query) => {
-  const url = `https://api.pokemontcg.io/v2/cards?q=name:"${encodeURIComponent(query)}*"&pageSize=${MAX_RESULTS}&select=id,name,set,number,images,rarity,tcgplayer,cardmarket`;
-  const headers = { "Content-Type": "application/json" };
-  const apiKey = process.env.POKEMON_TCG_API_KEY;
-  if (apiKey) headers["X-Api-Key"] = apiKey;
-  const res = await fetchWithTimeout(url, { headers });
+  const apiKey = process.env.POKEWALLET_API_KEY;
+  if (!apiKey) {
+    console.warn("[cardSearch] POKEWALLET_API_KEY not set — Pokemon search unavailable");
+    return [];
+  }
+  const url = `https://api.pokewallet.io/search?q=${encodeURIComponent(query)}&limit=${MAX_RESULTS}`;
+  const res = await fetchWithTimeout(url, {
+    headers: { "X-API-Key": apiKey }
+  });
   if (res.status === 404) return [];
   if (!res.ok) {
-    throw new Error(`pokemontcg.io API error (${res.status})`);
+    throw new Error(`PokéWallet API error (${res.status})`);
   }
   const data = await res.json();
-  return (data.data ?? []).map(normalizePokemonCard);
+  return (data.results ?? []).filter((card) => card.card_info.card_number != null).map(normalizePokeWalletCard);
 };
 const normalizeScrydexCard = (card, tcg) => {
   const image = card.images?.[0];

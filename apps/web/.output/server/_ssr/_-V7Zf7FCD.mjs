@@ -41,7 +41,7 @@ const rpcHandler = createServerFn().handler(rpcHandler_createServerFn_handler, a
 }) => {
   const {
     handleRPC
-  } = await import("./rpcHandler.server-CX9lXlLz.mjs");
+  } = await import("./rpcHandler.server-Dyma2IOR.mjs");
   return handleRPC(request);
 });
 export {
