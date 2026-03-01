@@ -6,6 +6,8 @@ const ICON_MAP: Record<string, string> = {
   store: '\u{1F3EA}',
   calendar: '\u{1F4C5}',
   bell: '\u{1F514}',
+  cards: '\u{1F0CF}',
+  tag: '\u{1F3F7}\uFE0F',
 };
 
 export const MobileNav = () => {
