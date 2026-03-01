@@ -15,3 +15,13 @@ export const getServerEnv = () => {
     GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
   });
 };
+
+const clientEnvSchema = z.object({
+  VITE_GOOGLE_MAPS_API_KEY: z.string().min(1).optional(),
+});
+
+export const getClientEnv = () => {
+  return clientEnvSchema.parse({
+    VITE_GOOGLE_MAPS_API_KEY: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+  });
+};
