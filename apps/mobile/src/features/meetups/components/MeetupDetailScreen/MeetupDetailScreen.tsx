@@ -251,29 +251,39 @@ const MeetupDetailScreen = () => {
         className="absolute left-0 right-0 top-0"
         style={{ pointerEvents: 'box-none' }}
       >
-        <View className="mx-4 mt-1 flex-row items-center justify-between" style={{ pointerEvents: 'auto' }}>
+        <View className="mx-4 mt-1" style={{ pointerEvents: 'auto' }}>
           <Pressable
             onPress={() => router.back()}
             className="h-10 w-10 items-center justify-center rounded-full bg-background/90 shadow-sm"
           >
             <ArrowLeft size={20} className="text-foreground" />
           </Pressable>
-          {meetup.shopCoords ? (
-            <Pressable
-              onPress={handleCenterOnMarker}
-              className="h-10 w-10 items-center justify-center rounded-full bg-background/90 shadow-sm"
-            >
-              <Crosshair size={20} className="text-foreground" />
-            </Pressable>
-          ) : null}
         </View>
       </SafeAreaView>
 
+      {/* Re-center button — floats just above the bottom sheet */}
+      {meetup.shopCoords ? (
+        <Animated.View
+          className="absolute right-4"
+          style={[{ top: 0 }, centerButtonStyle]}
+          pointerEvents="box-none"
+        >
+          <Pressable
+            onPress={handleCenterOnMarker}
+            className="h-11 w-11 items-center justify-center rounded-full border border-border bg-card shadow-md"
+          >
+            <Crosshair size={20} className="text-primary" />
+          </Pressable>
+        </Animated.View>
+      ) : null}
+
       {/* Bottom sheet */}
       <BottomSheet
+        ref={bottomSheetRef}
         index={initialIndex}
         snapPoints={snapPoints}
         onChange={handleSheetChange}
+        animatedPosition={sheetPosition}
         enableDynamicSizing={false}
         enablePanDownToClose={false}
         backgroundStyle={{ borderRadius: 20, backgroundColor: '#0f0f13' }}
