@@ -193,6 +193,7 @@ export type TradeWant = z.infer<typeof TradeWantSchema>;
 export const ListingRowSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string().uuid(),
+  shop_id: z.string().uuid().nullable(),
   type: ListingTypeSchema,
   tcg: TcgTypeSchema,
   category: ListingCategorySchema,
@@ -213,6 +214,7 @@ export const ListingRowSchema = z.object({
 
 export const ListingInsertSchema = ListingRowSchema.omit({
   id: true,
+  shop_id: true,
   status: true,
   created_at: true,
   updated_at: true,

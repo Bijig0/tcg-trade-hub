@@ -355,6 +355,7 @@ export type Database = {
           description: string | null
           id: string
           photos: string[]
+          shop_id: string | null
           status: Database["public"]["Enums"]["listing_status"]
           tcg: Database["public"]["Enums"]["tcg_type"]
           title: string
@@ -370,6 +371,7 @@ export type Database = {
           description?: string | null
           id?: string
           photos?: string[]
+          shop_id?: string | null
           status?: Database["public"]["Enums"]["listing_status"]
           tcg: Database["public"]["Enums"]["tcg_type"]
           title: string
@@ -385,6 +387,7 @@ export type Database = {
           description?: string | null
           id?: string
           photos?: string[]
+          shop_id?: string | null
           status?: Database["public"]["Enums"]["listing_status"]
           tcg?: Database["public"]["Enums"]["tcg_type"]
           title?: string
@@ -395,6 +398,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "listings_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "listings_user_id_fkey"
             columns: ["user_id"]
